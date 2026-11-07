@@ -8,7 +8,7 @@
 
 ## Установка
 
-**[Скачать последнюю версию](https://github.com/Q7N3T/shuttle/releases/latest)** · macOS 14+, Apple Silicon и Intel
+**[Скачать последнюю версию](https://github.com/Q7N3T/shuttle/releases/latest)** · [Сайт](https://q7n3t.github.io/shuttle/) · macOS 14+, Apple Silicon и Intel
 
 1. Откройте DMG.
 2. Перетащите Shuttle в «Программы».
