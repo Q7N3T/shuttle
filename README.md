@@ -25,6 +25,9 @@
 - Таблица с сортировкой и раскрытием папок
 - Очередь передач с прогрессом и отменой
 - Тёмная и светлая темы
+- Автообновления: новая версия придёт сама
+
+[История версий](CHANGELOG.md) · [все сборки](https://github.com/Q7N3T/shuttle/releases)
 
 ## Подключение
 
@@ -43,4 +46,4 @@ xcodegen generate
 open Shuttle.xcodeproj
 ```
 
-DMG: `scripts/make-dmg.sh`
+Выпуск новой версии: поднимите версию в `project.yml`, допишите `CHANGELOG.md` и запустите `scripts/release.sh`.

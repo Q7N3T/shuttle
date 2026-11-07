@@ -4,6 +4,10 @@ options:
   developmentLanguage: ru
   deploymentTarget:
     macOS: "14.0"
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
 targets:
   Shuttle:
     type: application
@@ -14,6 +18,8 @@ targets:
         type: folder
         buildPhase: resources
       - path: Resources/ru.lproj
+    dependencies:
+      - package: Sparkle
     preBuildScripts:
       - name: Build libmtp
         script: "\"$SRCROOT/scripts/build-deps.sh\""
@@ -25,11 +31,16 @@ targets:
         CFBundleDevelopmentRegion: ru
         CFBundleLocalizations: [ru]
         CFBundleAllowMixedLocalizations: true
-        CFBundleShortVersionString: "0.2.1"
-        CFBundleVersion: "3"
+        CFBundleShortVersionString: "0.3.0"
+        CFBundleVersion: "4"
         ATSApplicationFontsPath: Fonts
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "14.0"
+        # Автообновления (Sparkle): список версий лежит в репозитории.
+        SUFeedURL: https://raw.githubusercontent.com/Q7N3T/shuttle/main/appcast.xml
+        SUPublicEDKey: OQkMHjKc/6xCJsLy7qUifmQ41D+OVyLJf1hB25fUHuE=
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 86400
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.vadimgrekov.shuttle

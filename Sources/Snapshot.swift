@@ -52,8 +52,32 @@ enum Snapshot {
         t2.state = .done; t2.sent = 9_400_000; t2.total = 9_400_000
         s.transfers = [t1, t2]
 
-        let view = ThemedRoot(theme: dark ? .dark : .light) { ContentView() }
+        let updates = UpdateModel(start: false)
+        let info = UpdateInfo(version: "0.3.1", size: 4_100_000, notes: [
+            "Автообновления: Shuttle сам предложит новую версию",
+            "Настройки (⌘,) — галки обновлений и тема",
+            "Красивое окно DMG",
+        ])
+        if args.contains("update") { updates.phase = .found(info) }
+        if args.contains("downloading") { updates.phase = .downloading(received: 2_600_000, total: 4_100_000) }
+        if args.contains("installed") { updates.phase = .installed("0.3.1") }
+        if args.contains("settings") {
+            updates.resetSkipped()
+            let v = ThemedRoot(theme: dark ? .dark : .light) { SettingsView() }
+                .environmentObject(updates).environment(\.isSnapshot, true)
+            let r = ImageRenderer(content: v)
+            r.scale = 2
+            if let img = r.nsImage, let tiff = img.tiffRepresentation,
+               let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+                try? png.write(to: out)
+            }
+            exit(0)
+        }
+        let view = ThemedRoot(theme: dark ? .dark : .light) {
+                ContentView().overlay { UpdateOverlay() }
+            }
             .environmentObject(s)
+            .environmentObject(updates)
             .environment(\.isSnapshot, true)
             .frame(width: 1040, height: 700)
         let r = ImageRenderer(content: view)

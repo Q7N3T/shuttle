@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct ShuttleApp: App {
     @StateObject private var state = AppState()
+    @StateObject private var updates = UpdateModel()
     @AppStorage("theme") private var theme: ThemeMode = .system
 
     init() {
@@ -16,14 +17,24 @@ struct ShuttleApp: App {
         WindowGroup {
             ThemedRoot(theme: theme) {
                 ContentView()
+                    .overlay { UpdateOverlay() }
             }
             .environmentObject(state)
+            .environmentObject(updates)
             .frame(minWidth: 820, minHeight: 560)
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1040, height: 700)
         .commands {
             ShuttleCommands(state: state, theme: $theme)
+            CommandGroup(after: .appInfo) {
+                Button("Проверить обновления…") { updates.checkNow() }
+            }
+        }
+
+        Settings {
+            ThemedRoot(theme: theme) { SettingsView() }
+                .environmentObject(updates)
         }
     }
 }
