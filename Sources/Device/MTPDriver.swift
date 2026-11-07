@@ -76,7 +76,7 @@ final class MTPDriver: DeviceDriver {
 
         var name = takeString(LIBMTP_Get_Friendlyname(dev)) ?? ""
         let model = takeString(LIBMTP_Get_Modelname(dev)) ?? ""
-        if name.isEmpty { name = model.isEmpty ? "Устройство" : model }
+        if name.isEmpty { name = model.isEmpty ? L("Устройство") : model }
         let serial = takeString(LIBMTP_Get_Serialnumber(dev)) ?? ""
 
         // Nintendo (0x057E) или DBI — это Switch, а не телефон.
@@ -97,7 +97,7 @@ final class MTPDriver: DeviceDriver {
 
     /// «1: SD Card» → «SD Card».
     private func cleanStorageName(_ raw: String?) -> String {
-        guard let raw, !raw.isEmpty else { return "Память" }
+        guard let raw, !raw.isEmpty else { return L("Память") }
         return raw.replacingOccurrences(of: #"^\s*\d+\s*:\s*"#, with: "", options: .regularExpression)
     }
 
@@ -112,7 +112,7 @@ final class MTPDriver: DeviceDriver {
             let p = f.pointee
             out.append(RemoteItem(
                 id: p.item_id, parentID: p.parent_id, storageID: p.storage_id,
-                name: p.filename.map { String(cString: $0) } ?? "без имени",
+                name: p.filename.map { String(cString: $0) } ?? L("без имени"),
                 size: p.filesize,
                 modified: Date(timeIntervalSince1970: TimeInterval(p.modificationdate)),
                 isFolder: p.filetype == LIBMTP_FILETYPE_FOLDER))
@@ -135,14 +135,14 @@ final class MTPDriver: DeviceDriver {
         let r = url.path.withCString { LIBMTP_Get_File_To_File(dev, item.id, $0, progressThunk, ctx.toOpaque()) }
         if r != 0 {
             try? FileManager.default.removeItem(at: url)
-            throw failure(dev, cancelled: box.cancelled, fallback: "Ошибка скачивания")
+            throw failure(dev, cancelled: box.cancelled, fallback: L("Ошибка скачивания"))
         }
     }
 
     /// Докачка: дописываем к файлу кусками по 1 МБ.
     private func downloadPartial(_ dev: UnsafeMutablePointer<LIBMTP_mtpdevice_t>, _ item: RemoteItem,
                                  to url: URL, offset: UInt64, progress: (UInt64, UInt64) -> Bool) throws {
-        guard let h = try? FileHandle(forWritingTo: url) else { throw MTPError.failed("Не удалось открыть файл") }
+        guard let h = try? FileHandle(forWritingTo: url) else { throw MTPError.failed(L("Не удалось открыть файл")) }
         defer { try? h.close() }
         try h.truncate(atOffset: offset)
         try h.seekToEnd()
@@ -154,7 +154,7 @@ final class MTPDriver: DeviceDriver {
             let r = LIBMTP_GetPartialObject(dev, item.id, pos, min(chunk, UInt32(item.size - pos)), &data, &size)
             guard r == 0, let data, size > 0 else {
                 if let data { free(data) }
-                throw failure(dev, cancelled: false, fallback: "Ошибка докачки")
+                throw failure(dev, cancelled: false, fallback: L("Ошибка докачки"))
             }
             h.write(Data(bytes: data, count: Int(size)))
             free(data)
@@ -167,7 +167,7 @@ final class MTPDriver: DeviceDriver {
     func upload(_ url: URL, parent: UInt32, storage: UInt32,
                 progress: @escaping (UInt64, UInt64) -> Bool) throws -> UInt32 {
         let dev = try dev()
-        guard let f = LIBMTP_new_file_t() else { throw MTPError.failed("Не хватает памяти") }
+        guard let f = LIBMTP_new_file_t() else { throw MTPError.failed(L("Не хватает памяти")) }
         defer { LIBMTP_destroy_file_t(f) }
 
         let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
@@ -184,22 +184,22 @@ final class MTPDriver: DeviceDriver {
         let ctx = Unmanaged.passRetained(box)
         defer { ctx.release() }
         let r = url.path.withCString { LIBMTP_Send_File_From_File(dev, $0, f, progressThunk, ctx.toOpaque()) }
-        if r != 0 { throw failure(dev, cancelled: box.cancelled, fallback: "Ошибка загрузки") }
+        if r != 0 { throw failure(dev, cancelled: box.cancelled, fallback: L("Ошибка загрузки")) }
         return f.pointee.item_id
     }
 
     func createFolder(_ name: String, parent: UInt32, storage: UInt32) throws -> UInt32 {
         let dev = try dev()
-        guard let cName = strdup(name) else { throw MTPError.failed("Не хватает памяти") }
+        guard let cName = strdup(name) else { throw MTPError.failed(L("Не хватает памяти")) }
         defer { free(cName) }
         let id = LIBMTP_Create_Folder(dev, cName, parent, storage)
-        if id == 0 { throw failure(dev, cancelled: false, fallback: "Не удалось создать папку") }
+        if id == 0 { throw failure(dev, cancelled: false, fallback: L("Не удалось создать папку")) }
         return id
     }
 
     func delete(_ id: UInt32) throws {
         let dev = try dev()
-        if LIBMTP_Delete_Object(dev, id) != 0 { throw failure(dev, cancelled: false, fallback: "Не удалось удалить") }
+        if LIBMTP_Delete_Object(dev, id) != 0 { throw failure(dev, cancelled: false, fallback: L("Не удалось удалить")) }
     }
 
     func rename(_ id: UInt32, to name: String) throws {
@@ -207,7 +207,7 @@ final class MTPDriver: DeviceDriver {
         guard let cName = strdup(name) else { return }
         defer { free(cName) }
         if LIBMTP_Set_Object_Filename(dev, id, cName) != 0 {
-            throw failure(dev, cancelled: false, fallback: "Не удалось переименовать")
+            throw failure(dev, cancelled: false, fallback: L("Не удалось переименовать"))
         }
     }
 

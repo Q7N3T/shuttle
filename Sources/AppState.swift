@@ -251,7 +251,6 @@ final class AppState: ObservableObject {
             switch e {
             case .busy: connection = .busy
             case .locked: connection = .locked
-            case .failed(let m) where m.contains("отладку"): connection = .locked
             default: connection = .searching
             }
             if wasConnected { resetDevice() }

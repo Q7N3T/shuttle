@@ -18,6 +18,8 @@ targets:
         type: folder
         buildPhase: resources
       - path: Resources/Localized
+    scheme:
+      testTargets: [ShuttleTests]
     dependencies:
       - package: Sparkle
     preBuildScripts:
@@ -62,3 +64,27 @@ targets:
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: HDYY45A296
         MACOSX_DEPLOYMENT_TARGET: "14.0"
+      configs:
+        Debug:
+          # Автотесты подгружают тестовый бандл в приложение — в Debug без Hardened Runtime.
+          ENABLE_HARDENED_RUNTIME: NO
+
+  ShuttleTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [Tests]
+    dependencies:
+      - target: Shuttle
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.vadimgrekov.shuttle.tests
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Shuttle.app/Contents/MacOS/Shuttle
+        BUNDLE_LOADER: $(TEST_HOST)
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: HDYY45A296
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/Shuttle-Bridging-Header.h
+        HEADER_SEARCH_PATHS: $(SRCROOT)/build/deps/include

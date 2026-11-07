@@ -115,7 +115,7 @@ final class DeviceService: @unchecked Sendable {
         for name in path {
             let items = try list(storage: storage, parent: parent)
             guard let f = items.first(where: { $0.isFolder && $0.name.caseInsensitiveCompare(name) == .orderedSame }) else {
-                throw MTPError.failed("Папка «\(path.joined(separator: "/"))» не найдена")
+                throw MTPError.failed(L("Папка «%@» не найдена", path.joined(separator: "/")))
             }
             parent = f.id
             crumbs.append((f.id, f.name))

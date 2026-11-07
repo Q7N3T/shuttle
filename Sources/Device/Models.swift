@@ -78,12 +78,12 @@ enum MTPError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .notConnected: "Устройство не подключено"
-        case .busy: "Устройство занято другой программой. Закройте «Захват изображений», «Фото» и Android File Transfer."
-        case .locked: "Разблокируйте телефон и выберите в уведомлении USB режим «Передача файлов»."
-        case .cancelled: "Отменено"
-        case .interrupted: "Связь прервалась — продолжим, когда устройство вернётся"
-        case .noSpace(let n, let f): "Не хватает места: нужно \(formatBytes(n)), свободно \(formatBytes(f))"
+        case .notConnected: L("Устройство не подключено")
+        case .busy: L("Устройство занято другой программой. Закройте «Захват изображений», «Фото» и Android File Transfer.")
+        case .locked: L("Разблокируйте телефон и выберите в уведомлении USB режим «Передача файлов».")
+        case .cancelled: L("Отменено")
+        case .interrupted: L("Связь прервалась — продолжим, когда устройство вернётся")
+        case .noSpace(let n, let f): L("Не хватает места: нужно %@, свободно %@", formatBytes(n), formatBytes(f))
         case .failed(let m): m
         }
     }

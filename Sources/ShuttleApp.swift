@@ -41,7 +41,10 @@ struct ShuttleApp: App {
                 .id(settings.language)
         }
 
-        MenuBarExtra(isInserted: $settings.menuBarIcon) {
+        // SwiftUI записывает isInserted при каждой перестройке; запись того же значения
+        // шлёт objectWillChange и зацикливает обновление — пишем только настоящие изменения.
+        MenuBarExtra(isInserted: Binding(get: { settings.menuBarIcon },
+                                         set: { if settings.menuBarIcon != $0 { settings.menuBarIcon = $0 } })) {
             MenuBarView().environmentObject(state)
         } label: {
             Image(nsImage: MenuBarIcon.image)

@@ -60,9 +60,9 @@ enum ThemeMode: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .system: "Авто"
-        case .dark: "Тёмная"
-        case .light: "Светлая"
+        case .system: L("Авто")
+        case .dark: L("Тёмная")
+        case .light: L("Светлая")
         }
     }
     var icon: String {
@@ -177,8 +177,19 @@ struct ProgressTrack: View {
     }
 }
 
+/// Размер на языке интерфейса Shuttle (а не системы): «4,2 МБ» / «4.2 MB». Десятичные единицы, как в Finder.
 func formatBytes(_ bytes: UInt64) -> String {
-    ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file)
+    let en = L10n.english
+    let units = en ? ["B", "KB", "MB", "GB", "TB"] : ["Б", "КБ", "МБ", "ГБ", "ТБ"]
+    var v = Double(bytes)
+    var i = 0
+    while v >= 1000, i < units.count - 1 { v /= 1000; i += 1 }
+    let digits = i == 0 || v >= 100 ? 0 : (v >= 10 ? 1 : 1)
+    let f = NumberFormatter()
+    f.locale = Locale(identifier: en ? "en_US" : "ru_RU")
+    f.minimumFractionDigits = 0
+    f.maximumFractionDigits = digits
+    return (f.string(from: NSNumber(value: v)) ?? String(Int(v))) + " " + units[i]
 }
 
 // MARK: - Режим снимка (отладка): ImageRenderer не рисует ScrollView и Menu.

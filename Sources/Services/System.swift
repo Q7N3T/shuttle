@@ -79,7 +79,7 @@ enum PhotosExport {
     static func add(_ urls: [URL]) async throws -> Int {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
-            throw MTPError.failed("Разрешите Shuttle добавлять фото: Настройки → Конфиденциальность → Фото")
+            throw MTPError.failed(L("Разрешите Shuttle добавлять фото: Настройки → Конфиденциальность → Фото"))
         }
         let media = urls.filter { MediaKind.isMedia($0.lastPathComponent) }
         try await PHPhotoLibrary.shared().performChanges {

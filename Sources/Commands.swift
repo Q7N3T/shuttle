@@ -6,19 +6,33 @@ extension Notification.Name {
 }
 
 /// Строка меню macOS: Файл, Правка, Вид, Переход, Устройство, Справка.
+/// Разбита на небольшие блоки: одно большое описание меню переполняет стек SwiftUI.
 /// Команды относятся к панели, где последний раз кликали (Mac или устройство).
 struct ShuttleCommands: Commands {
     @ObservedObject var state: AppState
     @Binding var theme: ThemeMode
-    @AppStorage("showMacPane") private var showMac = true
-
-    private var connected: Bool { state.device != nil }
-    private var onDevice: Bool { state.activeSide == .device }
-    private var phone: Bool { state.device?.kind == .phone }
-    private var console: Bool { state.device?.kind == .console }
 
     var body: some Commands {
-        // MARK: Файл
+        FileCommands(state: state, theme: $theme)
+        EditCommands(state: state, theme: $theme)
+        ViewCommands(state: state, theme: $theme)
+        GoCommands(state: state, theme: $theme)
+        DeviceCommands(state: state, theme: $theme)
+        HelpCommands(state: state, theme: $theme)
+    }
+}
+
+struct FileCommands: Commands, MenuPickers {
+    @ObservedObject var state: AppState
+    @Binding var theme: ThemeMode
+    @AppStorage("showMacPane") var showMac = true
+
+    var connected: Bool { state.device != nil }
+    var onDevice: Bool { state.activeSide == .device }
+    var phone: Bool { state.device?.kind == .phone }
+    var console: Bool { state.device?.kind == .console }
+
+    var body: some Commands {
         CommandGroup(replacing: .newItem) {
             Button(L("Новая папка на устройстве")) { state.beginNewFolder() }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
@@ -47,8 +61,20 @@ struct ShuttleCommands: Commands {
             Button(L("Обновить")) { state.refreshAll() }
                 .keyboardShortcut("r")
         }
+    }
+}
 
-        // MARK: Правка
+struct EditCommands: Commands, MenuPickers {
+    @ObservedObject var state: AppState
+    @Binding var theme: ThemeMode
+    @AppStorage("showMacPane") var showMac = true
+
+    var connected: Bool { state.device != nil }
+    var onDevice: Bool { state.activeSide == .device }
+    var phone: Bool { state.device?.kind == .phone }
+    var console: Bool { state.device?.kind == .console }
+
+    var body: some Commands {
         CommandGroup(replacing: .pasteboard) {
             Button(L("Выделить всё")) { state.selectAll() }
                 .keyboardShortcut("a")
@@ -69,8 +95,20 @@ struct ShuttleCommands: Commands {
             Button(L("Найти дубли на Mac…")) { state.findDuplicates() }
                 .disabled(!connected)
         }
+    }
+}
 
-        // MARK: Вид
+struct ViewCommands: Commands, MenuPickers {
+    @ObservedObject var state: AppState
+    @Binding var theme: ThemeMode
+    @AppStorage("showMacPane") var showMac = true
+
+    var connected: Bool { state.device != nil }
+    var onDevice: Bool { state.activeSide == .device }
+    var phone: Bool { state.device?.kind == .phone }
+    var console: Bool { state.device?.kind == .console }
+
+    var body: some Commands {
         CommandGroup(before: .toolbar) {
             Button(L("Быстрый просмотр")) { state.quickLook() }
                 .keyboardShortcut("y")
@@ -104,8 +142,20 @@ struct ShuttleCommands: Commands {
                 .keyboardShortcut("h", modifiers: [.command, .shift])
             Divider()
         }
+    }
+}
 
-        // MARK: Переход
+struct GoCommands: Commands, MenuPickers {
+    @ObservedObject var state: AppState
+    @Binding var theme: ThemeMode
+    @AppStorage("showMacPane") var showMac = true
+
+    var connected: Bool { state.device != nil }
+    var onDevice: Bool { state.activeSide == .device }
+    var phone: Bool { state.device?.kind == .phone }
+    var console: Bool { state.device?.kind == .console }
+
+    var body: some Commands {
         CommandMenu(L("Переход")) {
             Button(L("Наверх")) { state.goUp() }
                 .keyboardShortcut(.upArrow)
@@ -136,8 +186,20 @@ struct ShuttleCommands: Commands {
                     .keyboardShortcut("d", modifiers: [.command, .option])
             }
         }
+    }
+}
 
-        // MARK: Устройство
+struct DeviceCommands: Commands, MenuPickers {
+    @ObservedObject var state: AppState
+    @Binding var theme: ThemeMode
+    @AppStorage("showMacPane") var showMac = true
+
+    var connected: Bool { state.device != nil }
+    var onDevice: Bool { state.activeSide == .device }
+    var phone: Bool { state.device?.kind == .phone }
+    var console: Bool { state.device?.kind == .console }
+
+    var body: some Commands {
         CommandMenu(L("Устройство")) {
             if phone {
                 Button(L("Скачать новые фото (%d)", state.newPhotos.count)) { state.importNewPhotos() }
@@ -164,18 +226,37 @@ struct ShuttleCommands: Commands {
                 Text(L("Устройство не подключено"))
             }
         }
+    }
+}
 
-        // MARK: Справка
+struct HelpCommands: Commands, MenuPickers {
+    @ObservedObject var state: AppState
+    @Binding var theme: ThemeMode
+    @AppStorage("showMacPane") var showMac = true
+
+    var connected: Bool { state.device != nil }
+    var onDevice: Bool { state.activeSide == .device }
+    var phone: Bool { state.device?.kind == .phone }
+    var console: Bool { state.device?.kind == .console }
+
+    var body: some Commands {
         CommandGroup(replacing: .help) {
             Link(L("Справка Shuttle"), destination: URL(string: "https://github.com/Q7N3T/shuttle#readme")!)
-            Link(L("Как подключить Switch"), destination: URL(string: "https://github.com/Q7N3T/shuttle#подключение")!)
+            Link(L("Как подключить Switch"), destination: URL(string: L("https://github.com/Q7N3T/shuttle#подключение"))!)
             Link(L("История версий"), destination: URL(string: "https://github.com/Q7N3T/shuttle/blob/main/CHANGELOG.md")!)
         }
     }
+}
 
-    // MARK: Выбор файлов
+/// Выбор файлов для команд меню.
+protocol MenuPickers {
+    var state: AppState { get }
+}
 
-    private func pick(_ types: [UTType], multiple: Bool = true, prompt: String) -> [URL] {
+@MainActor
+extension MenuPickers {
+
+    func pick(_ types: [UTType], multiple: Bool = true, prompt: String) -> [URL] {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = multiple
         panel.canChooseDirectories = types.isEmpty
@@ -185,25 +266,26 @@ struct ShuttleCommands: Commands {
         return panel.runModal() == .OK ? panel.urls : []
     }
 
-    private func pickAndUpload() {
+    func pickAndUpload() {
         let urls = pick([], prompt: L("Отправить"))
         if !urls.isEmpty { state.handleDrop(urls) }
     }
 
-    private func pickGames() {
+    func pickGames() {
         let types = GameFiles.installable.compactMap { UTType(filenameExtension: $0) }
         let urls = pick(types, prompt: L("Установить"))
         if !urls.isEmpty { state.pendingInstall = PendingInstall(files: urls) }
     }
 
-    private func pickHomebrew() {
+    func pickHomebrew() {
         let urls = pick([.zip], multiple: false, prompt: L("Установить"))
         if let u = urls.first { state.pendingHomebrew = u }
     }
 
-    private func pickAPK() {
+    func pickAPK() {
         let types = [UTType(filenameExtension: "apk") ?? .data]
         let urls = pick(types, prompt: L("Установить"))
         if !urls.isEmpty { state.pendingAPK = urls }
     }
+
 }

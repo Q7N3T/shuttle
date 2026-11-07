@@ -94,7 +94,7 @@ enum HomebrewLayout {
         p.arguments = ["-x", "-k", zip.path, dir.path]
         try p.run()
         p.waitUntilExit()
-        guard p.terminationStatus == 0 else { throw MTPError.failed("Не удалось распаковать \(zip.lastPathComponent)") }
+        guard p.terminationStatus == 0 else { throw MTPError.failed(L("Не удалось распаковать %@", zip.lastPathComponent)) }
         // Мусор macOS из архивов.
         try? FileManager.default.removeItem(at: dir.appendingPathComponent("__MACOSX"))
         return dir
@@ -128,13 +128,13 @@ enum Atmosphere {
     static func parse(_ json: Data) throws -> AtmosphereRelease {
         guard let obj = try JSONSerialization.jsonObject(with: json) as? [String: Any],
               let tag = obj["tag_name"] as? String,
-              let assets = obj["assets"] as? [[String: Any]] else { throw MTPError.failed("Не удалось прочитать релиз Atmosphère") }
+              let assets = obj["assets"] as? [[String: Any]] else { throw MTPError.failed(L("Не удалось прочитать релиз Atmosphère")) }
         func asset(_ match: (String) -> Bool) -> URL? {
             assets.first { match(($0["name"] as? String ?? "").lowercased()) }
                 .flatMap { $0["browser_download_url"] as? String }.flatMap(URL.init(string:))
         }
         guard let zip = asset({ $0.hasPrefix("atmosphere") && $0.hasSuffix(".zip") }) else {
-            throw MTPError.failed("В релизе Atmosphère нет архива")
+            throw MTPError.failed(L("В релизе Atmosphère нет архива"))
         }
         let date = (obj["published_at"] as? String).flatMap { ISO8601DateFormatter().date(from: $0) }
         let page = (obj["html_url"] as? String).flatMap(URL.init(string:)) ?? api
@@ -148,14 +148,14 @@ enum Atmosphere {
         req.setValue("Shuttle", forHTTPHeaderField: "User-Agent")
         let (data, resp) = try await URLSession.shared.data(for: req)
         if let h = resp as? HTTPURLResponse, h.statusCode != 200 {
-            throw MTPError.failed("GitHub ответил \(h.statusCode). Попробуйте позже.")
+            throw MTPError.failed(L("GitHub ответил %d. Попробуйте позже.", h.statusCode))
         }
         return try parse(data)
     }
 
     static func download(_ url: URL) async throws -> URL {
         let (tmp, resp) = try await URLSession.shared.download(from: url)
-        if let h = resp as? HTTPURLResponse, h.statusCode != 200 { throw MTPError.failed("Не удалось скачать \(url.lastPathComponent)") }
+        if let h = resp as? HTTPURLResponse, h.statusCode != 200 { throw MTPError.failed(L("Не удалось скачать %@", url.lastPathComponent)) }
         let dest = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + "-" + url.lastPathComponent)
         try FileManager.default.moveItem(at: tmp, to: dest)
         return dest

@@ -27,7 +27,7 @@ extension AppState {
     // MARK: - Скачивание и загрузка
 
     var photosDestination: URL {
-        let name = (device?.name ?? "Устройство").replacingOccurrences(of: "/", with: "-")
+        let name = (device?.name ?? L("Устройство")).replacingOccurrences(of: "/", with: "-")
         return AppSettings.shared.photosFolder.appendingPathComponent(name, isDirectory: true)
     }
 
@@ -234,7 +234,7 @@ extension AppState {
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd HH-mm"
         let backup = AppFolders.documents(L("Резервные копии Switch"))
-            .appendingPathComponent("\(df.string(from: Date())) до \(release.version)", isDirectory: true)
+            .appendingPathComponent(L("%@ до %@", df.string(from: Date()), release.version), isDirectory: true)
         atmosphere = nil
         Task {
             let fetch = Transfer(name: "Atmosphère \(release.version)", direction: .toMac, label: L("Скачивание"), deviceKey: key)
@@ -322,7 +322,7 @@ extension AppState {
 
     func takeScreenshot() {
         let df = DateFormatter()
-        df.dateFormat = "yyyy-MM-dd 'в' HH.mm.ss"
+        df.dateFormat = L("yyyy-MM-dd 'в' HH.mm.ss")
         let dest = reserveTarget(macURL, L("Снимок экрана %@.png", df.string(from: Date())))
         let t = Transfer(name: dest.lastPathComponent, direction: .toMac, label: L("Снимок"), deviceKey: deviceKey)
         t.resultURL = dest

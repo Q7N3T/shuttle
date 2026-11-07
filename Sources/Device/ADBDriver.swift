@@ -27,7 +27,7 @@ final class ADBDriver: DeviceDriver {
 
     @discardableResult
     static func adb(_ args: [String], serial: String? = nil, timeout: TimeInterval = 30) throws -> Data {
-        guard let exe = executable else { throw MTPError.failed("adb не найден. Установите Android platform-tools.") }
+        guard let exe = executable else { throw MTPError.failed(L("adb не найден. Установите Android platform-tools.")) }
         let p = Process()
         p.executableURL = URL(fileURLWithPath: exe)
         p.arguments = (serial.map { ["-s", $0] } ?? []) + args
@@ -42,13 +42,13 @@ final class ADBDriver: DeviceDriver {
         reader.async { data = out.fileHandleForReading.readDataToEndOfFile(); group.leave() }
         if group.wait(timeout: .now() + timeout) == .timedOut {
             p.terminate()
-            throw MTPError.failed("adb не отвечает")
+            throw MTPError.failed(L("adb не отвечает"))
         }
         p.waitUntilExit()
         if p.terminationStatus != 0 {
             let msg = String(data: err.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
             throw MTPError.failed(msg.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                  ? "Ошибка adb" : msg.trimmingCharacters(in: .whitespacesAndNewlines))
+                                  ? L("Ошибка adb") : msg.trimmingCharacters(in: .whitespacesAndNewlines))
         }
         return data
     }
@@ -78,7 +78,7 @@ final class ADBDriver: DeviceDriver {
             throw MTPError.notConnected
         }
         if line.contains("unauthorized") {
-            throw MTPError.failed("Разрешите отладку по USB на телефоне (окно «Разрешить отладку?»)")
+            throw MTPError.locked
         }
         let parts = line.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
         serial = parts.first
@@ -98,14 +98,14 @@ final class ADBDriver: DeviceDriver {
             }
         }
         return DeviceInfo(name: model, kind: .phone,
-                          storages: [StorageInfo(id: 1, name: "Внутренняя память", capacity: capacity, free: free)],
+                          storages: [StorageInfo(id: 1, name: L("Внутренняя память"), capacity: capacity, free: free)],
                           battery: battery, serial: serial ?? "", transport: .adb)
     }
 
     func release() { serial = nil }
 
     private func path(_ id: UInt32) throws -> String {
-        guard let p = pathByID[id == 0 ? mtpRoot : id] else { throw MTPError.failed("Папка больше не существует") }
+        guard let p = pathByID[id == 0 ? mtpRoot : id] else { throw MTPError.failed(L("Папка больше не существует")) }
         return p
     }
 

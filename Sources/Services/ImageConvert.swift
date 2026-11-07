@@ -9,17 +9,17 @@ enum ImageConvert {
     static func heicToJPEG(_ url: URL, quality: Double = 0.9) throws -> URL {
         guard let src = CGImageSourceCreateWithURL(url as CFURL, nil),
               let img = CGImageSourceCreateImageAtIndex(src, 0, nil) else {
-            throw MTPError.failed("Не удалось прочитать \(url.lastPathComponent)")
+            throw MTPError.failed(L("Не удалось прочитать %@", url.lastPathComponent))
         }
         let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] ?? [:]
         let out = uniqueURL(url.deletingPathExtension().appendingPathExtension("jpg"))
         guard let dest = CGImageDestinationCreateWithURL(out as CFURL, UTType.jpeg.identifier as CFString, 1, nil) else {
-            throw MTPError.failed("Не удалось создать JPG")
+            throw MTPError.failed(L("Не удалось создать JPG"))
         }
         var options = props
         options[kCGImageDestinationLossyCompressionQuality] = quality
         CGImageDestinationAddImage(dest, img, options as CFDictionary)
-        guard CGImageDestinationFinalize(dest) else { throw MTPError.failed("Не удалось сохранить JPG") }
+        guard CGImageDestinationFinalize(dest) else { throw MTPError.failed(L("Не удалось сохранить JPG")) }
         if let date = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate {
             try? FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: out.path)
         }

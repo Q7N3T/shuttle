@@ -63,13 +63,13 @@ struct UpdateCard: View {
             switch updates.phase {
             case .checking:
                 ProgressView().controlSize(.small)
-                Text("Проверяем обновления…")
+                Text(L("Проверяем обновления…"))
             case .upToDate:
                 DrawnCheck(size: 16, color: p.ok)
-                Text("У вас последняя версия — \(updates.currentVersion)")
+                Text(L("У вас последняя версия — %@", updates.currentVersion))
             case .installed(let v):
                 DrawnCheck(size: 16, color: p.ok)
-                Text("Shuttle обновлён до \(v)")
+                Text(L("Shuttle обновлён до %@", v))
             default:
                 EmptyView()
             }
@@ -98,9 +98,9 @@ struct UpdateCard: View {
                 case .found(let info): notes(info)
                 case .downloading(let r, let t):
                     progress(value: t == 0 ? 0 : Double(r) / Double(t),
-                             caption: t == 0 ? "Скачиваем…" : "Скачиваем · \(formatBytes(r)) из \(formatBytes(t))")
-                case .extracting(let v): progress(value: v, caption: "Распаковываем…")
-                case .installing: progress(value: 1, caption: "Устанавливаем и перезапускаем…", busy: true)
+                             caption: t == 0 ? L("Скачиваем…") : "Скачиваем · \(formatBytes(r)) из \(formatBytes(t))")
+                case .extracting(let v): progress(value: v, caption: L("Распаковываем…"))
+                case .installing: progress(value: 1, caption: L("Устанавливаем и перезапускаем…"), busy: true)
                 case .ready(let info): notes(info)
                 case .failed(let m):
                     Text(m).font(AppFont.body(12)).foregroundStyle(p.muted).fixedSize(horizontal: false, vertical: true)
@@ -118,10 +118,10 @@ struct UpdateCard: View {
 
     private var title: String {
         switch updates.phase {
-        case .found(let i), .ready(let i): "Доступен Shuttle \(i.version)"
-        case .downloading, .extracting: "Скачиваем обновление"
-        case .installing: "Почти готово"
-        case .failed: "Не удалось обновить"
+        case .found(let i), .ready(let i): L("Доступен Shuttle %@", i.version)
+        case .downloading, .extracting: L("Скачиваем обновление")
+        case .installing: L("Почти готово")
+        case .failed: L("Не удалось обновить")
         default: ""
         }
     }
@@ -129,11 +129,11 @@ struct UpdateCard: View {
     private var subtitle: String {
         switch updates.phase {
         case .found(let i):
-            "У вас \(updates.currentVersion)" + (i.size > 0 ? " · \(formatBytes(i.size))" : "")
-        case .ready: "Обновление скачано и готово к установке"
-        case .downloading, .extracting: "Можно продолжать работать"
-        case .installing: "Shuttle перезапустится сам"
-        case .failed: "Попробуйте позже или скачайте с GitHub"
+            L("У вас %@", updates.currentVersion) + (i.size > 0 ? " · \(formatBytes(i.size))" : "")
+        case .ready: L("Обновление скачано и готово к установке")
+        case .downloading, .extracting: L("Можно продолжать работать")
+        case .installing: L("Shuttle перезапустится сам")
+        case .failed: L("Попробуйте позже или скачайте с GitHub")
         default: ""
         }
     }
@@ -142,7 +142,7 @@ struct UpdateCard: View {
     private func notes(_ info: UpdateInfo) -> some View {
         if !info.notes.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Что нового").font(AppFont.body(11, .medium)).foregroundStyle(p.muted)
+                Text(L("Что нового")).font(AppFont.body(11, .medium)).foregroundStyle(p.muted)
                 ForEach(Array(info.notes.prefix(6).enumerated()), id: \.offset) { i, line in
                     StaggeredNote(text: line, index: i)
                 }
@@ -170,22 +170,22 @@ struct UpdateCard: View {
         HStack(spacing: 8) {
             switch updates.phase {
             case .found:
-                GhostButton(title: "Пропустить эту версию") { updates.skip() }
+                GhostButton(title: L("Пропустить эту версию")) { updates.skip() }
                 Spacer()
-                Chip(title: "Позже") { updates.later() }
-                AccentButton(title: "Обновить сейчас") { updates.install() }
+                Chip(title: L("Позже")) { updates.later() }
+                AccentButton(title: L("Обновить сейчас")) { updates.install() }
             case .ready:
                 Spacer()
-                Chip(title: "Позже") { updates.later() }
-                AccentButton(title: "Перезапустить и обновить") { updates.install() }
+                Chip(title: L("Позже")) { updates.later() }
+                AccentButton(title: L("Перезапустить и обновить")) { updates.install() }
             case .downloading:
                 Spacer()
-                Chip(title: "Отменить") { updates.cancel() }
+                Chip(title: L("Отменить")) { updates.cancel() }
             case .failed:
-                Link("Открыть страницу версий", destination: URL(string: "https://github.com/Q7N3T/shuttle/releases")!)
+                Link(L("Открыть страницу версий"), destination: URL(string: "https://github.com/Q7N3T/shuttle/releases")!)
                     .font(AppFont.body(12))
                 Spacer()
-                AccentButton(title: "Понятно") { updates.close() }
+                AccentButton(title: L("Понятно")) { updates.close() }
             default:
                 EmptyView()
             }
