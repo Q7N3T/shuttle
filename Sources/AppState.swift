@@ -70,7 +70,7 @@ struct QuickFolder: Identifiable {
 
 @MainActor
 final class AppState: ObservableObject {
-    private let mtp = MTPService.shared
+    private let mtp = DeviceService.shared
 
     // Устройство
     @Published var connection: Connection = .searching
@@ -464,7 +464,7 @@ final class AppState: ObservableObject {
             Task { @MainActor in state.transfers.insert(t, at: 0) }
             let dir = FileManager.default.temporaryDirectory
                 .appendingPathComponent("Shuttle-\(UUID().uuidString)", isDirectory: true)
-            MTPService.shared.runDetached { svc in
+            DeviceService.shared.runDetached { svc in
                 t.began()
                 do {
                     try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)

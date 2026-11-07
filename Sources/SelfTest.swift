@@ -100,7 +100,7 @@ enum SelfTest {
     }
 
     private static func run() -> Int32 {
-        let svc = MTPService.shared
+        let svc = DeviceService.shared
         let fm = FileManager.default
         let work = fm.temporaryDirectory.appendingPathComponent("ShuttleSelfTest-\(UUID().uuidString)")
         try? fm.createDirectory(at: work, withIntermediateDirectories: true)
