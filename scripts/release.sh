@@ -27,7 +27,7 @@ LEN=$(sed -n 's/.*length="\([^"]*\)".*/\1/p' <<<"$SIGN")
 
 echo "▸ Релиз на GitHub"
 NOTES=$(awk -v v="$VERSION" '$0 ~ "^## \\["v"\\]" {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md | sed '/^\s*$/d')
-git add CHANGELOG.md && git commit -q -m "CHANGELOG: $VERSION" || true
+git add CHANGELOG.md && git commit -q -m "update changelog" || true
 git push -q
 gh release create "v$VERSION" "$DMG" --title "Shuttle $VERSION" --notes "$NOTES
 
@@ -37,6 +37,6 @@ gh release create "v$VERSION" "$DMG" --title "Shuttle $VERSION" --notes "$NOTES
 
 echo "▸ appcast.xml"
 python3 scripts/appcast.py "$VERSION" "$BUILD" "$URL" "$SIG" "$LEN"
-git add appcast.xml && git commit -q -m "appcast: $VERSION" && git push -q
+git add appcast.xml && git commit -q -m "update appcast" && git push -q
 
 echo "✓ Shuttle $VERSION выпущен: https://github.com/Q7N3T/shuttle/releases/tag/v$VERSION"
