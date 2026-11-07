@@ -355,7 +355,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
         <a class="btn ghost" href="#features" data-i18n="btn.more">Что умеет</a>
         <a class="btn ghost" href="https://github.com/Q7N3T/shuttle" data-i18n="btn.source">Исходники</a>
       </div>
-      <div class="meta"><span class="m-ver">—</span><span class="m-size">DMG</span><span>Apple Silicon · Intel</span></div>
+      <div class="meta"><span class="m-ver">—</span><span class="m-size">DMG</span><span>Apple Silicon</span><span>Intel</span></div>
     </div>
     <div class="frame"><i class="c1"></i><i class="c2"></i>
       <div class="orbit" aria-hidden="true"><svg viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -677,6 +677,10 @@ document.querySelectorAll('section.node').forEach(el => lineIO.observe(el));
 
 /* ---------- Свежий выпуск с GitHub ---------- */
 let release = null, releases = [], notesEN = {};
+// Картинка не загрузилась (кэш, деплой, локальный просмотр) — берём её прямо из репозитория.
+addEventListener('error', e => { const im = e.target; if (im.tagName !== 'IMG' || im.dataset.fb) return; im.dataset.fb = 1;
+  im.src = 'https://raw.githubusercontent.com/' + REPO + '/main/docs/' + im.getAttribute('src').split('?')[0]; }, true);
+document.querySelectorAll('img').forEach(im => { if (im.complete && !im.naturalWidth) im.dispatchEvent(new Event('error')); });
 fetch('changelog.en.json').then(r => r.ok ? r.json() : {}).then(j => { notesEN = j; renderChanges(); }).catch(() => {});
 function renderRelease(){
   if (!release) return;

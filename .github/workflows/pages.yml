@@ -29,6 +29,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api "repos/${{ github.repository }}/releases?per_page=20" > docs/releases.json
+      - name: Версия прямо в HTML (на случай, если JSON не дойдёт)
+        run: |
+          v=$(jq -r '[.[] | select(.draft|not) | select(.prerelease|not)][0].tag_name // "" | ltrimstr("v")' docs/releases.json)
+          [ -n "$v" ] && sed -i "s|<span class=\"m-ver\">—</span>|<span class=\"m-ver\">v$v</span>|" docs/index.html || true
       - name: Свежие картинки после каждого обновления
         run: sed -i -E "s/\.png\"/.png?v=${GITHUB_SHA::7}\"/g" docs/index.html
       - uses: actions/configure-pages@v5
