@@ -6,6 +6,16 @@
     <description>Обновления Shuttle</description>
     <language>ru</language>
     <item>
+      <title>Shuttle 0.4.0</title>
+      <pubDate>Sat, 07 Nov 2026 16:24:53 +0300</pubDate>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>0.4.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.4.0</link>
+      <description><![CDATA[<ul><li>Android: «Новые фото» одной кнопкой, синхронизация папок, HEIC → JPG, превью и сетка, пометка «уже на Mac», поиск дублей</li><li>Android по ADB (по желанию): быстрее, по Wi‑Fi, установка APK, снимок экрана телефона</li><li>Switch: установка игр через DBI с проверкой места, homebrew из архива, резервная копия сейвов, альбом сеткой, понятные имена игр, обновление Atmosphère</li><li>Передача продолжается сама после обрыва кабеля</li><li>Поиск по вложенным папкам, избранные папки, быстрый просмотр (пробел), пакетное переименование</li><li>История передач, уведомления, иконка в строке меню</li><li>Английский язык интерфейса, шрифты Unbounded и Golos Text</li></ul>]]></description>
+      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.4.0/Shuttle-0.4.0.dmg" sparkle:edSignature="XCjUGcx5rs2U9v4Cs/9sXphS5NNbLdg5neBFtsOkwQjs3nY4H94V6xTEBKNmum1dGcvqYg5j88+78deHIvX+Dw==" length="6015839" type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Shuttle 0.3.1</title>
       <pubDate>Sat, 07 Nov 2026 15:04:36 +0300</pubDate>
       <sparkle:version>5</sparkle:version>
