@@ -16,7 +16,7 @@
 :root{
   --bg:#17121A;--bg2:#1C1520;--surface:#221A26;--hover:#2B2130;--line:#3A2E3F;
   --text:#F2EAE0;--muted:#A3959F;--dim:#6E6170;--accent:#E9B949;--accent2:#F7D27A;--ink:#2A1E05;--ok:#7FC79A;--plum:#8B5CF6;
-  --grid:rgba(242,234,224,.05);
+  --grid:rgba(242,234,224,.05);--g1:#E9B949;--g2:#8B5CF6;--plus:rgba(233,185,73,.22);
   --display:"Unbounded","Arial Black",system-ui,sans-serif;
   --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -25,10 +25,10 @@
 :root[data-theme="light"]{
   --bg:#F6F1EA;--bg2:#EFE7DC;--surface:#FFFFFF;--hover:#F1E9DE;--line:#E3D8CB;
   --text:#1F1822;--muted:#7A6C76;--dim:#A99CA4;--accent:#D9A42E;--accent2:#E9B949;--ink:#2A1E05;--ok:#3E8E5E;
-  --grid:rgba(31,24,34,.066);color-scheme:light;
+  --grid:rgba(31,24,34,.066);--plus:rgba(184,134,30,.3);color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:70px}
+html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:70px;overflow-x:clip}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-bottom:34px;transition:background .4s,color .4s}
 a{color:inherit}
 img{max-width:100%;display:block}
@@ -37,7 +37,7 @@ img{max-width:100%;display:block}
 
 /* Фон: сетка из плюсиков и свечения */
 .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background-image:linear-gradient(var(--grid),var(--grid)),linear-gradient(90deg,var(--grid),var(--grid));
+  background-image:linear-gradient(var(--plus),var(--plus)),linear-gradient(90deg,var(--plus),var(--plus));
   background-size:1px 9px,9px 1px;background-position:36px 32px,32px 36px;
   -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 20%,#000 30%,transparent 85%);mask-image:radial-gradient(ellipse 80% 70% at 50% 20%,#000 30%,transparent 85%)}
 .bg{background-size:72px 72px;background-repeat:repeat}
@@ -46,9 +46,9 @@ img{max-width:100%;display:block}
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
 :root[data-theme="light"] .scan{background:repeating-linear-gradient(0deg,rgba(0,0,0,.02) 0 1px,transparent 1px 3px)}
 .bg::before{content:"";position:absolute;width:900px;height:900px;left:-300px;top:-260px;border-radius:50%;
-  background:radial-gradient(closest-side,rgba(233,185,73,.13),transparent);filter:blur(10px);animation:drift 18s ease-in-out infinite alternate}
+  background:radial-gradient(closest-side,rgba(233,185,73,.17),transparent);filter:blur(10px);animation:drift 18s ease-in-out infinite alternate}
 .bg::after{content:"";position:absolute;width:800px;height:800px;right:-260px;top:30vh;border-radius:50%;
-  background:radial-gradient(closest-side,rgba(139,92,246,.095),transparent);animation:drift 22s ease-in-out infinite alternate-reverse}
+  background:radial-gradient(closest-side,rgba(139,92,246,.15),transparent);animation:drift 22s ease-in-out infinite alternate-reverse}
 :root[data-theme="light"] .bg::before{background:radial-gradient(closest-side,rgba(233,185,73,.25),transparent)}
 @keyframes drift{to{transform:translate(120px,80px) scale(1.1)}}
 
@@ -230,6 +230,48 @@ h2.glitch{position:relative}
 h2.glitch:hover{animation:jit .32s steps(2) 1}
 @keyframes jit{0%{transform:translate(0)}25%{transform:translate(-2px,1px);text-shadow:2px 0 var(--plum)}50%{transform:translate(2px,-1px);text-shadow:-2px 0 var(--accent)}100%{transform:none;text-shadow:none}}
 
+/* Перелив и гранж */
+header.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--g1),var(--g2),transparent);opacity:.9}
+/* вертикальные линии секций — прорисовываются при прокрутке */
+section.node{position:relative}
+section.node::before{content:"";position:absolute;left:-26px;top:6px;width:1px;height:0;
+  background:linear-gradient(var(--g1),var(--g2) 60%,transparent);transition:height 1.4s cubic-bezier(.2,.8,.2,1)}
+section.node.drawn::before{height:calc(100% - 20px)}
+section.node::after{content:"";position:absolute;left:-29.5px;top:2px;width:8px;height:8px;border-radius:50%;
+  background:var(--g1);box-shadow:0 0 12px var(--g1);opacity:0;transition:opacity .4s}
+section.node.drawn::after{opacity:1}
+@media (max-width:1240px){section.node::before,section.node::after{display:none}}
+/* лента с предупреждениями */
+.ticker.warn{position:relative;background:var(--accent);border-color:transparent;transform:rotate(-1.2deg);margin:56px -10px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.ticker.warn div{color:var(--ink)!important;opacity:1!important;font-weight:700}
+.ticker.warn span::before{color:var(--ink)!important}
+.ticker.warn::before,.ticker.warn::after{content:"";position:absolute;top:0;bottom:0;width:90px;z-index:1;
+  background:repeating-linear-gradient(-45deg,#17121A 0 12px,transparent 12px 24px)}
+.ticker.warn::before{left:0}.ticker.warn::after{right:0}
+/* плёночное зерно */
+.grain{position:fixed;inset:-60px;z-index:65;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 1.2s steps(5) infinite}
+:root[data-theme="light"] .grain{opacity:.09;mix-blend-mode:multiply;filter:invert(1)}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-22px,14px)}40%{transform:translate(18px,-26px)}60%{transform:translate(-30px,-8px)}80%{transform:translate(12px,24px)}100%{transform:translate(0,0)}}
+@media (prefers-reduced-motion:reduce){.grain{animation:none}}
+/* перелив в цифрах и линиях номеров секций */
+.stat b{background:linear-gradient(90deg,var(--text) 40%,var(--g1));-webkit-background-clip:text;background-clip:text;color:transparent}
+.num::after{background:linear-gradient(90deg,var(--g1),var(--g2),transparent)}
+
+/* Ретро-кольцо у курсора: внешний слой двигается, внутренний меняет размер и крутится */
+.cur-ring,.cur-dot{position:fixed;left:0;top:0;pointer-events:none;z-index:70;opacity:0;transition:opacity .25s;will-change:transform}
+.cur-ring i{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--accent);
+  box-shadow:0 0 12px rgba(233,185,73,.35),inset 0 0 8px rgba(233,185,73,.15);
+  transition:left .25s cubic-bezier(.3,1.5,.5,1),top .25s cubic-bezier(.3,1.5,.5,1),width .25s cubic-bezier(.3,1.5,.5,1),height .25s cubic-bezier(.3,1.5,.5,1),background .2s}
+.cur-dot{width:4px;height:4px;margin:-2px 0 0 -2px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.cursor-on .cur-ring,.cursor-on .cur-dot{opacity:1}
+.cur-ring.hover i{left:-26px;top:-26px;width:52px;height:52px;border-style:dashed;background:rgba(233,185,73,.08);animation:spin 6s linear infinite}
+.cur-ring.press i{left:-12px;top:-12px;width:24px;height:24px}
+.cur-ring.hide,.cur-dot.hide{opacity:0!important}
+@media (hover:none),(pointer:coarse),(prefers-reduced-motion:reduce){.cur-ring,.cur-dot{display:none}}
+
 /* Строка состояния */
 .status{position:fixed;left:0;right:0;bottom:0;z-index:30;height:30px;display:flex;align-items:center;gap:16px;padding:0 14px;
   font-family:var(--mono);font-size:12px;color:var(--muted);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -270,8 +312,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 </style>
 </head>
 <body>
-<div class="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div>
+<div class="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
+<div class="cur-ring" aria-hidden="true"><i></i></div><div class="cur-dot" aria-hidden="true"></div>
 
 <header class="top">
   <div class="wrap">
@@ -327,7 +370,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     <div class="stat rv"><b data-count="2">0</b><span data-i18n="st.langs">языка: русский и английский</span></div>
   </div>
 
-  <section id="features">
+  <section id="features" class="node">
     <div class="sec-head rv">
       <div class="num">01 / <span data-i18n="n.f">возможности</span></div>
       <div class="code">features { <i>every</i>-device {</div>
@@ -338,7 +381,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   </section>
   <div class="close" aria-hidden="true">} }</div>
 
-  <section id="switch" class="split">
+  <section id="switch" class="split node">
     <div class="rv">
       <div class="num">02 / nintendo switch</div>
       <div class="code">switch { <i>dbi</i> --mtp {</div>
@@ -350,7 +393,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   </section>
   <div class="close" aria-hidden="true">} }</div>
 
-  <section id="android" class="split rev">
+  <section id="android" class="split rev node">
     <div class="frame rv flat"><i class="c1"></i><i class="c2"></i><div class="shot"><img src="screenshot-dark.png" class="on" alt="Камера телефона в Shuttle" loading="lazy"></div></div>
     <div class="rv">
       <div class="num">03 / android</div>
@@ -390,7 +433,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </section>
 
-  <section id="changes">
+  <section id="changes" class="node">
     <div class="sec-head rv">
       <div class="num">05 / <span data-i18n="n.c">версии</span></div>
       <div class="code">changelog { <i>releases</i> --all {</div>
@@ -600,6 +643,8 @@ function countUp(stat){
 }
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); if (e.target.classList.contains('stat')) countUp(e.target); io.unobserve(e.target); } }), { threshold: .15 });
 $$('.rv').forEach(el => io.observe(el));
+const lineIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('drawn'); lineIO.unobserve(e.target); } }), { threshold: .12 });
+document.querySelectorAll('section.node').forEach(el => lineIO.observe(el));
 
 /* ---------- Свежий выпуск с GitHub ---------- */
 let release = null, releases = [], notesEN = {};
@@ -736,6 +781,31 @@ addEventListener('keydown', e => {
   if (e.target.matches('input,textarea')) return;
   if (e.key === 't' || e.key === 'T' || e.key === 'е' || e.key === 'Е') setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 });
+
+/* ---------- Ретро-кольцо у курсора ---------- */
+(() => {
+  if (reduced || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const ring = document.querySelector('.cur-ring'), dot = document.querySelector('.cur-dot');
+  let mx = -100, my = -100, rx = -100, ry = -100, live = false;
+  addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = `translate(${mx}px, ${my}px)`;
+    if (!live) { live = true; rx = mx; ry = my; document.body.classList.add('cursor-on'); }
+    const t = e.target.closest('a,button,[role=button],.card,.chip,.pill,.dots button,.app-icon');
+    ring.classList.toggle('hover', !!t);
+    const field = e.target.closest('input,textarea');
+    ring.classList.toggle('hide', !!field); dot.classList.toggle('hide', !!field);
+  }, { passive: true });
+  addEventListener('mousedown', () => ring.classList.add('press'));
+  addEventListener('mouseup', () => ring.classList.remove('press'));
+  document.addEventListener('mouseleave', () => { document.body.classList.remove('cursor-on'); live = false; });
+  (function loop(){
+    // Кольцо догоняет курсор с задержкой — как у старых «ретро» прицелов.
+    rx += (mx - rx) * .18; ry += (my - ry) * .18;
+    ring.style.transform = `translate(${rx.toFixed(1)}px, ${ry.toFixed(1)}px)`;
+    requestAnimationFrame(loop);
+  })();
+})();
 
 applyLang(); playTitle(); typeCmd();
 })();
