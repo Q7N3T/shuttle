@@ -281,11 +281,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <div class="tag">shuttle --device switch</div>
       <div class="shot" id="hero-shot">
         <img src="screenshot-switch.png" alt="Shuttle с подключённой Nintendo Switch" class="on">
-        <img src="screenshot-dark.png" alt="Shuttle с телефоном Android" loading="lazy">
-        <img src="screenshot-update.png" alt="Окно обновления Shuttle" loading="lazy">
-        <img src="screenshot-switch-light.png" alt="Shuttle в светлой теме" loading="lazy">
       </div>
-      <div class="dots" id="dots"></div>
     </div>
   </section>
 </div>
@@ -511,18 +507,6 @@ function typeCmd(){
     else { el.innerHTML = `${cmd} <span class="out">→ ${out}</span>`; cmdTimer = setTimeout(typeCmd, 2600); }
   })();
 }
-
-/* ---------- Скриншоты по кругу ---------- */
-const shots = $$('#hero-shot img'), dots = $('#dots'); let shotIdx = 0, shotTimer;
-shots.forEach((_, i) => { const b = document.createElement('button'); b.ariaLabel = `Скриншот ${i+1}`; b.onclick = () => showShot(i, true); dots.appendChild(b); });
-function showShot(i, user){
-  shotIdx = i; shots.forEach((s, k) => s.classList.toggle('on', k === i));
-  [...dots.children].forEach((d, k) => d.classList.toggle('on', k === i));
-  const tags = ['shuttle --device switch','shuttle --device android','shuttle --update','shuttle --theme light'];
-  $('.hero .tag').textContent = tags[i];
-  clearInterval(shotTimer); shotTimer = setInterval(() => showShot((shotIdx + 1) % shots.length), user ? 9000 : 5000);
-}
-showShot(0);
 
 /* ---------- Наклон окна за курсором ---------- */
 const heroShot = $('#hero-shot');

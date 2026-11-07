@@ -37,8 +37,24 @@ enum Snapshot {
         if args.contains("nomac") { UserDefaults.standard.set(false, forKey: "showMacPane") }
         else { UserDefaults.standard.set(true, forKey: "showMacPane") }
 
-        s.macURL = URL(fileURLWithPath: NSHomeDirectory() + "/Downloads")
         let day: TimeInterval = 86_400
+        if !args.contains("switch") {
+            // Телефон: слева папка с фото на Mac, внизу — снимки с камеры.
+            s.macURL = URL(fileURLWithPath: NSHomeDirectory() + "/Pictures/Shuttle/HUAWEI nova 9")
+            s.macItems = [
+                LocalItem(url: URL(fileURLWithPath: "/p1"), name: "Отпуск 2026", size: 0, modified: .now - 30 * day, isFolder: true),
+                LocalItem(url: URL(fileURLWithPath: "/p2"), name: "IMG_2031.jpg", size: 3_800_000, modified: .now - 2 * day, isFolder: false),
+                LocalItem(url: URL(fileURLWithPath: "/p3"), name: "IMG_2032.jpg", size: 4_100_000, modified: .now - 2 * day, isFolder: false),
+                LocalItem(url: URL(fileURLWithPath: "/p4"), name: "IMG_2038.jpg", size: 3_600_000, modified: .now - day, isFolder: false),
+                LocalItem(url: URL(fileURLWithPath: "/p5"), name: "VID_0811.mp4", size: 148_000_000, modified: .now - day, isFolder: false),
+            ]
+            let t1 = Transfer(name: "VID_0815.mp4", direction: .toMac, label: L("Новые фото"))
+            t1.state = .running; t1.sent = 193_000_000; t1.total = 312_000_000; t1.bytesPerSecond = 31_000_000
+            let t2 = Transfer(name: "IMG_2041.jpg", direction: .toMac, label: L("Новые фото"))
+            t2.state = .done; t2.sent = 4_200_000; t2.total = 4_200_000
+            s.transfers = [t1, t2]
+        } else {
+        s.macURL = URL(fileURLWithPath: NSHomeDirectory() + "/Downloads")
         s.macItems = [
             LocalItem(url: URL(fileURLWithPath: "/a"), name: "Homebrew", size: 0, modified: .now - 3 * day, isFolder: true),
             LocalItem(url: URL(fileURLWithPath: "/b"), name: "atmosphere-1.9.5.zip", size: 6_200_000, modified: .now - 2 * day, isFolder: false),
@@ -51,6 +67,7 @@ enum Snapshot {
         let t2 = Transfer(name: "DBI.nro", direction: .toAndroid)
         t2.state = .done; t2.sent = 9_400_000; t2.total = 9_400_000
         s.transfers = [t1, t2]
+        }
 
         let updates = UpdateModel(start: false)
         let info = UpdateInfo(version: "0.3.1", size: 4_100_000, notes: [
