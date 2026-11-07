@@ -34,6 +34,39 @@ enum SelfTest {
             }
             return
         }
+        if CommandLine.arguments.contains("--dump-titlebar") {
+            // Положение кнопок окна и высота заголовка — для выравнивания шапки.
+            let outPath = CommandLine.arguments.drop(while: { $0 != "--dump-titlebar" }).dropFirst().first
+            if let outPath { freopen(outPath, "w", stdout) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                setvbuf(stdout, nil, _IOLBF, 0)
+                for w in NSApp.windows { print("window: \(type(of: w)) \(w.frame) visible=\(w.isVisible)") }
+                if let w = NSApp.windows.first(where: { $0.standardWindowButton(.closeButton) != nil && $0.frame.width > 600 }) {
+                    let h = w.frame.height - w.contentLayoutRect.height
+                    print("titlebar: \(h) window: \(w.frame.size)")
+                    for (n, t) in [("close", NSWindow.ButtonType.closeButton), ("mini", .miniaturizeButton), ("zoom", .zoomButton)] {
+                        if let b = w.standardWindowButton(t), let sv = b.superview {
+                            let r = sv.convert(b.frame, to: nil)
+                            // от верха окна
+                            print("\(n): x=\(Int(r.minX))…\(Int(r.maxX)) centerY=\(w.frame.height - r.midY)")
+                        }
+                    }
+                    // Элементы панели (логотип, кнопки).
+                    func walk(_ v: NSView, _ depth: Int) {
+                        let r = v.convert(v.bounds, to: nil)
+                        let top = w.frame.height - r.maxY
+                        if top < 80, r.height > 10, r.height < 60, depth > 3,
+                           String(describing: type(of: v)).contains("Hosting") {
+                            print("item \(type(of: v)): x=\(Int(r.minX))…\(Int(r.maxX)) h=\(Int(r.height)) centerY=\(w.frame.height - r.midY)")
+                        }
+                        for s in v.subviews { walk(s, depth + 1) }
+                    }
+                    if let root = w.contentView?.superview { walk(root, 0) }
+                }
+                exit(0)
+            }
+            return
+        }
         guard CommandLine.arguments.contains("--selftest") else { return }
         setvbuf(stdout, nil, _IOLBF, 0)
         let code = run()

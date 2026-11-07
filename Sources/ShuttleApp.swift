@@ -23,7 +23,7 @@ struct ShuttleApp: App {
             .environmentObject(updates)
             .frame(minWidth: 820, minHeight: 560)
         }
-        .windowStyle(.hiddenTitleBar)
+        .windowToolbarStyle(.unified(showsTitle: false))
         .defaultSize(width: 1040, height: 700)
         .commands {
             ShuttleCommands(state: state, theme: $theme)

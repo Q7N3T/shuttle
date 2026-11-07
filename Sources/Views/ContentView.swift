@@ -5,10 +5,17 @@ struct ContentView: View {
     @Environment(\.palette) private var p
     @AppStorage("theme") private var theme: ThemeMode = .system
     @AppStorage("showMacPane") private var showMac = true
+    @Environment(\.isSnapshot) private var snap
 
     var body: some View {
         VStack(spacing: 0) {
-            topBar
+            // В окне шапка — это панель инструментов (см. toolbar ниже), и macOS сама
+            // выравнивает её по кнопкам окна. В снимке панели нет — рисуем её копию.
+            if snap {
+                HStack { Color.clear.frame(width: 70, height: 1); brand; Spacer(); controls }
+                    .padding(.horizontal, 14).frame(height: 52)
+            }
+            Rectangle().fill(p.line).frame(height: 1).padding(.bottom, 12)
             DeviceCard()
                 .padding(.horizontal, 16).padding(.bottom, 10)
             if let device = state.device {
@@ -26,10 +33,16 @@ struct ContentView: View {
             .padding(.bottom, 12)
             TransferPanel()
         }
-        .background(p.bg)
+        .background(p.bg.ignoresSafeArea())
         .foregroundStyle(p.text)
         .font(AppFont.body())
-        .ignoresSafeArea(.container, edges: .top)
+        .toolbar {
+            ToolbarItem(placement: .navigation) { brand }.withoutGlass()
+            if #available(macOS 26.0, *) { ToolbarSpacer(.flexible) }
+            ToolbarItem(placement: .automatic) { controls }.withoutGlass()
+        }
+        .transparentToolbar()
+        .background(WindowChrome())
         .alert("Что-то пошло не так", isPresented: Binding(
             get: { state.errorMessage != nil },
             set: { if !$0 { state.errorMessage = nil } })) {
@@ -39,28 +52,34 @@ struct ContentView: View {
         }
     }
 
-    private var topBar: some View {
-        HStack(spacing: 8) {
-            // Место под «светофор» окна.
-            Color.clear.frame(width: 62, height: 1)
-            DroidMark(size: 18)
-            Text("Shuttle").font(AppFont.display(13, .bold))
-            Spacer()
-            IconButton(systemName: "sidebar.left", help: showMac ? "Скрыть панель Mac" : "Показать панель Mac") {
-                showMac.toggle()
+    /// Слева в шапке: логотип и название.
+    private var brand: some View {
+        HStack(spacing: 10) {
+            DroidMark(size: 24)
+            Text("Shuttle").font(AppFont.display(16, .bold)).foregroundStyle(p.text)
+        }
+        .padding(.leading, 6)
+        .fixedSize()
+    }
+
+    /// Справа в шапке: панель Mac и тема.
+    private var controls: some View {
+        HStack(spacing: 10) {
+            IconButton(systemName: "sidebar.left", help: showMac ? "Скрыть панель Mac" : "Показать панель Mac",
+                       size: 30) {
+                withAnimation(.easeOut(duration: 0.18)) { showMac.toggle() }
             }
             HStack(spacing: 2) {
                 ForEach(ThemeMode.allCases) { m in
-                    IconChip(systemName: m.icon, isOn: theme == m, help: m.title) { theme = m }
+                    IconChip(systemName: m.icon, isOn: theme == m, help: m.title, width: 30, height: 26) { theme = m }
                 }
             }
-            .padding(2)
+            .padding(3)
+            .background(Capsule().fill(p.surface))
             .overlay(Capsule().stroke(p.line, lineWidth: 1))
         }
-        .padding(.horizontal, 16)
-        .frame(height: 44)
-        .overlay(alignment: .bottom) { Rectangle().fill(p.line).frame(height: 1) }
-        .padding(.bottom, 10)
+        .padding(.trailing, snap ? 0 : 8)
+        .fixedSize()
     }
 
     /// Вкладки разделов (SD Card, Nand USER…) и быстрые папки телефона.

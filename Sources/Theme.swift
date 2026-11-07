@@ -115,13 +115,15 @@ struct IconChip: View {
     let systemName: String
     let isOn: Bool
     let help: String
+    var width: CGFloat = 26
+    var height: CGFloat = 22
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 11, weight: .medium))
-                .frame(width: 26, height: 22)
+                .font(.system(size: 12, weight: .medium))
+                .frame(width: width, height: height)
                 .foregroundStyle(isOn ? p.ink : p.muted)
                 .background(Capsule().fill(isOn ? p.accent : .clear))
                 .contentShape(Capsule())
@@ -136,14 +138,15 @@ struct IconButton: View {
     @Environment(\.palette) private var p
     let systemName: String
     let help: String
+    var size: CGFloat = 26
     var action: () -> Void
     @State private var hover = false
 
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 12, weight: .medium))
-                .frame(width: 26, height: 26)
+                .font(.system(size: size > 26 ? 14 : 12, weight: .medium))
+                .frame(width: size, height: size)
                 .foregroundStyle(hover ? p.text : p.muted)
                 .background(Circle().fill(hover ? p.hover : .clear))
                 .contentShape(Circle())
@@ -199,6 +202,50 @@ struct Scrollable<Content: View>: View {
             content.frame(maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .topLeading).clipped()
         } else {
             ScrollView(axis, showsIndicators: axis == .vertical) { content }
+        }
+    }
+}
+
+// MARK: - Окно: прозрачная шапка-панель
+
+/// Делает полосу заголовка прозрачной: сливовый фон окна идёт до самого верха,
+/// а панель инструментов (логотип, кнопки) — поверх, на одной линии с кнопками окна.
+struct WindowChrome: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { ChromeView() }
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    final class ChromeView: NSView {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            guard let w = window else { return }
+            w.titleVisibility = .hidden
+            w.titlebarAppearsTransparent = true
+            w.styleMask.insert(.fullSizeContentView)
+            w.titlebarSeparatorStyle = .none
+            w.toolbar?.showsBaselineSeparator = false
+        }
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func transparentToolbar() -> some View {
+        if #available(macOS 15.0, *) {
+            self.toolbarBackground(.hidden, for: .windowToolbar)
+        } else {
+            self
+        }
+    }
+}
+
+extension ToolbarContent {
+    /// Без «стеклянной» подложки macOS 26 вокруг элементов панели.
+    @ToolbarContentBuilder
+    func withoutGlass() -> some ToolbarContent {
+        if #available(macOS 26.0, *) {
+            self.sharedBackgroundVisibility(.hidden)
+        } else {
+            self
         }
     }
 }
