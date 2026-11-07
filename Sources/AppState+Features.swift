@@ -36,7 +36,8 @@ extension AppState {
         return AppSettings.shared.photosFolder.appendingPathComponent(name, isDirectory: true)
     }
 
-    func download(_ items: [RemoteItem], to dir: URL? = nil, label: String? = nil, markImported: Bool = false,
+    func download(_ items: [RemoteItem], to dir: URL? = nil, label: String? = nil,
+                  labelFor: ((RemoteItem) -> String)? = nil, markImported: Bool = false,
                   completion: (@MainActor () -> Void)? = nil) {
         let dir = dir ?? macURL
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -45,7 +46,7 @@ extension AppState {
         var left = items.count
         for item in items {
             let target = reserveTarget(dir, item.name)
-            let t = Transfer(name: item.name, direction: .toMac, label: label, deviceKey: key)
+            let t = Transfer(name: item.name, direction: .toMac, label: labelFor?(item) ?? label, deviceKey: key)
             t.resultURL = target
             run(t, completion: { [weak self] t in
                 guard let self else { return }
@@ -307,7 +308,8 @@ extension AppState {
         let items = newPhotos
         guard !items.isEmpty else { return }
         let dest = photosDestination
-        download(items, to: dest, label: L("Новые фото"), markImported: true) { [weak self] in
+        download(items, to: dest, labelFor: { MediaKind.isVideo($0.name) ? L("Новое видео") : L("Новое фото") },
+                 markImported: true) { [weak self] in
             self?.refreshPhotosIndex()
             self?.toast(L("Фото сохранены в %@", dest.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")))
         }

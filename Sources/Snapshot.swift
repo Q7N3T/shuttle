@@ -48,9 +48,9 @@ enum Snapshot {
                 LocalItem(url: URL(fileURLWithPath: "/p4"), name: "IMG_2038.jpg", size: 3_600_000, modified: .now - day, isFolder: false),
                 LocalItem(url: URL(fileURLWithPath: "/p5"), name: "VID_0811.mp4", size: 148_000_000, modified: .now - day, isFolder: false),
             ]
-            let t1 = Transfer(name: "VID_0815.mp4", direction: .toMac, label: L("Новые фото"))
+            let t1 = Transfer(name: "VID_0815.mp4", direction: .toMac, label: L("Новое видео"))
             t1.state = .running; t1.sent = 193_000_000; t1.total = 312_000_000; t1.bytesPerSecond = 31_000_000
-            let t2 = Transfer(name: "IMG_2041.jpg", direction: .toMac, label: L("Новые фото"))
+            let t2 = Transfer(name: "IMG_2041.jpg", direction: .toMac, label: L("Новое фото"))
             t2.state = .done; t2.sent = 4_200_000; t2.total = 4_200_000
             s.transfers = [t1, t2]
         } else {
