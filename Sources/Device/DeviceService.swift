@@ -261,16 +261,29 @@ final class DeviceService: @unchecked Sendable {
         let total = urls.reduce(UInt64(0)) { $0 + localSize($1) }
         var done: UInt64 = 0
         progress(0, total)
+        // Содержимое папок назначения читаем один раз: на больших папках MTP отвечает секундами.
+        var listings: [UInt32: [RemoteItem]] = [:]
+        func existing(in parent: UInt32) throws -> [RemoteItem] {
+            if let l = listings[parent] { return l }
+            let l = try list(storage: storage, parent: parent)
+            listings[parent] = l
+            return l
+        }
 
         func send(_ url: URL, parent: UInt32) throws {
             if token.isCancelled { throw MTPError.cancelled }
             var isDir: ObjCBool = false
             fm.fileExists(atPath: url.path, isDirectory: &isDir)
-            let existing = try list(storage: storage, parent: parent)
+            let existing = try existing(in: parent)
             let name = url.lastPathComponent
             if isDir.boolValue {
-                let folderID = try existing.first(where: { $0.isFolder && $0.name == name })?.id
-                    ?? d.createFolder(name, parent: parent, storage: storage)
+                let folderID: UInt32
+                if let f = existing.first(where: { $0.isFolder && $0.name == name }) {
+                    folderID = f.id
+                } else {
+                    folderID = try d.createFolder(name, parent: parent, storage: storage)
+                    listings[folderID] = [] // новая папка пуста — читать не нужно
+                }
                 let kids = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: nil,
                                                       options: [.skipsHiddenFiles])
                 for k in kids { try send(k, parent: folderID) }

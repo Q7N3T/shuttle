@@ -80,10 +80,10 @@ struct EditCommands: Commands, MenuPickers {
                 .keyboardShortcut("a")
             Divider()
             Button(L("Переименовать")) { state.renameSelected() }
-                .keyboardShortcut(.return, modifiers: [])
+                .keyboardShortcut(.return, modifiers: [.command])
                 .disabled(!state.hasSelection)
             Button(L("Переименовать по шаблону…")) { state.beginBatchRename() }
-                .keyboardShortcut(.return, modifiers: [.command, .shift])
+                .keyboardShortcut(.return, modifiers: [.command, .option])
                 .disabled(!state.hasSelection)
             Button(onDevice ? L("Удалить с устройства…") : L("Переместить в Корзину")) { state.deleteSelected() }
                 .keyboardShortcut(.delete)

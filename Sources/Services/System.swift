@@ -97,54 +97,85 @@ enum PhotosExport {
 
 // MARK: - Превью
 
-/// Миниатюры: из устройства (если умеет), иначе скачиваем небольшие картинки в кэш.
+/// Миниатюры: из устройства (если умеет), а в сетке — скачиваем небольшие картинки в кэш.
+/// Очередь ограничена: превью не должны мешать передачам на единственной очереди устройства.
 @MainActor
 final class Thumbnails: ObservableObject {
     static let shared = Thumbnails()
     @Published private(set) var images: [String: NSImage] = [:]
-    private var pending: Set<String> = []
+    private var queued: [(key: String, item: RemoteItem, device: String, download: Bool)] = []
+    private var inFlight: Set<String> = []
     private var failed: Set<String> = []
-    static let maxDownload: UInt64 = 15_000_000
+    static let maxDownload: UInt64 = 3_000_000
+    static let parallel = 2
+    var isBusy: () -> Bool = { false }
 
     func key(_ item: RemoteItem, _ device: String) -> String { "\(device)#\(item.id)#\(item.size)" }
 
     func image(for item: RemoteItem, device: String) -> NSImage? { images[key(item, device)] }
 
-    func request(_ item: RemoteItem, device: String, busy: Bool) {
+    private var diskDir: URL {
+        let d = AppFolders.caches.appendingPathComponent("Thumbs", isDirectory: true)
+        try? FileManager.default.createDirectory(at: d, withIntermediateDirectories: true)
+        return d
+    }
+
+    private func diskURL(_ k: String) -> URL { diskDir.appendingPathComponent(k.replacingOccurrences(of: "/", with: "_") + ".jpg") }
+
+    /// `download` — можно ли скачать сам файл, если устройство не отдаёт превью (только в сетке).
+    func request(_ item: RemoteItem, device: String, download: Bool) {
         let k = key(item, device)
-        guard images[k] == nil, !pending.contains(k), !failed.contains(k),
+        guard images[k] == nil, !inFlight.contains(k), !failed.contains(k),
               MediaKind.isImage(item.name), AppSettings.shared.thumbnails else { return }
-        // Диск-кэш
-        let disk = AppFolders.caches.appendingPathComponent("Thumbs", isDirectory: true)
-        try? FileManager.default.createDirectory(at: disk, withIntermediateDirectories: true)
-        let file = disk.appendingPathComponent(k.replacingOccurrences(of: "/", with: "_") + ".jpg")
-        if let d = try? Data(contentsOf: file), let img = NSImage(data: d) {
+        if let d = try? Data(contentsOf: diskURL(k)), let img = NSImage(data: d) {
             images[k] = img
             return
         }
-        guard !busy else { return } // во время передач очередь занята — не мешаем
-        pending.insert(k)
-        Task {
-            let data: Data? = try? await DeviceService.shared.run { svc in
-                if let t = svc.thumbnail(item) { return t }
-                guard item.size <= Thumbnails.maxDownload else { return nil }
-                let tmp = PreviewCache.url(for: item, device: device)
-                if localSize(tmp) != item.size {
-                    _ = try svc.downloadTree(item, into: tmp.deletingLastPathComponent(), token: CancelToken(),
-                                             resumeInto: tmp) { _, _ in }
-                }
-                return try? Data(contentsOf: tmp)
-            }
-            pending.remove(k)
-            if let data, let img = ImageConvert.downsample(data) {
-                images[k] = img
-                if let tiff = img.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff),
-                   let jpg = rep.representation(using: .jpeg, properties: [.compressionFactor: 0.7]) {
-                    try? jpg.write(to: file)
-                }
-            } else {
-                failed.insert(k)
-            }
+        if let i = queued.firstIndex(where: { $0.key == k }) {
+            if download && !queued[i].download { queued[i].download = true }
+            return
         }
+        queued.append((k, item, device, download && item.size <= Self.maxDownload))
+        pump()
+    }
+
+    /// Передачи закончились — продолжить отложенные превью.
+    func resume() { pump() }
+
+    /// Ушли из папки — непоказанные превью больше не нужны.
+    func cancelQueued() { queued.removeAll() }
+
+    private func pump() {
+        while inFlight.count < Self.parallel, !queued.isEmpty, !isBusy() {
+            // Свежие запросы важнее: это то, что сейчас на экране.
+            let job = queued.removeLast()
+            inFlight.insert(job.key)
+            Task { await run(job) }
+        }
+    }
+
+    private func run(_ job: (key: String, item: RemoteItem, device: String, download: Bool)) async {
+        let item = job.item, device = job.device, allow = job.download
+        let data: Data? = try? await DeviceService.shared.run { svc in
+            if let t = svc.thumbnail(item) { return t }
+            guard allow else { return nil }
+            let tmp = PreviewCache.url(for: item, device: device)
+            if localSize(tmp) != item.size {
+                _ = try svc.downloadTree(item, into: tmp.deletingLastPathComponent(), token: CancelToken(),
+                                         resumeInto: tmp) { _, _ in }
+            }
+            return try? Data(contentsOf: tmp)
+        }
+        inFlight.remove(job.key)
+        if let data, let img = ImageConvert.downsample(data) {
+            images[job.key] = img
+            if let tiff = img.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff),
+               let jpg = rep.representation(using: .jpeg, properties: [.compressionFactor: 0.7]) {
+                try? jpg.write(to: diskURL(job.key))
+            }
+        } else if allow {
+            failed.insert(job.key)
+        }
+        pump()
     }
 }

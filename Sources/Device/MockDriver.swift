@@ -39,6 +39,7 @@ final class MockDriver: DeviceDriver {
     var bytesPerSecond: Double
     var supportsPartialDownload: Bool { true }
     private(set) var log: [String] = []
+    private(set) var listCalls = 0
 
     init(kind: Kind, speed: Double? = nil) {
         self.kind = kind
@@ -65,6 +66,7 @@ final class MockDriver: DeviceDriver {
 
     func list(storage: UInt32, parent: UInt32) throws -> [RemoteItem] {
         try check()
+        listCalls += 1
         let p = parent == 0 ? mtpRoot : parent
         return nodes.values.filter { $0.storage == storage && $0.parent == p }.map(item)
     }

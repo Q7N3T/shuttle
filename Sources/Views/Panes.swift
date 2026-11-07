@@ -617,7 +617,7 @@ struct DeviceRow: View {
                      compact: compact, thumbnail: thumbs.image(for: item, device: state.deviceKey),
                      title: game.0, subtitle: row.path.map { "· " + $0 } ?? game.1,
                      onMac: state.isOnMac(item), onToggle: { state.toggleExpand(item) })
-            .onAppear { thumbs.request(item, device: state.deviceKey, busy: state.hasActiveTransfers) }
+            .onAppear { thumbs.request(item, device: state.deviceKey, download: false) }
             .onTapGesture(count: 2) { item.isFolder ? state.openAndroid(item) : state.download([item]) }
             .onTapGesture {
                 state.activeSide = .device
@@ -730,7 +730,7 @@ struct GridCell: View {
         }
         .contentShape(Rectangle())
         .onHover { hover = $0 }
-        .onAppear { thumbs.request(item, device: state.deviceKey, busy: state.hasActiveTransfers) }
+        .onAppear { thumbs.request(item, device: state.deviceKey, download: true) }
         .onTapGesture(count: 2) {
             if item.isFolder { state.openAndroid(item) } else {
                 state.androidSelection = [item.id]

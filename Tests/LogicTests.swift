@@ -99,6 +99,23 @@ final class HomebrewLayoutTests: XCTestCase {
         XCTAssertEqual(plan["fusee.bin"], ["bootloader", "payloads"])
     }
 
+    func testAtmosphereZipKeepsHbmenuInRoot() {
+        let d = tempDir()
+        write("x", d.appendingPathComponent("atmosphere/package3"))
+        write("x", d.appendingPathComponent("switch/reboot_to_payload.nro"))
+        write("x", d.appendingPathComponent("hbmenu.nro"))
+        let plan = Dictionary(uniqueKeysWithValues: HomebrewLayout.plan(unpacked: d).map { ($0.local.lastPathComponent, $0.remoteFolder) })
+        XCTAssertEqual(plan["hbmenu.nro"], [], "hbmenu.nro должен лежать в корне SD")
+        XCTAssertEqual(plan["switch"], [])
+        XCTAssertEqual(plan["atmosphere"], [])
+    }
+
+    func testLoneHbmenuGoesToRoot() {
+        let d = tempDir()
+        write("x", d.appendingPathComponent("hbmenu.nro"))
+        XCTAssertEqual(HomebrewLayout.plan(unpacked: d).first?.remoteFolder, [])
+    }
+
     func testUnknownFolderWithNROGoesToSwitch() {
         let d = tempDir()
         write("x", d.appendingPathComponent("Goldleaf/Goldleaf.nro"))

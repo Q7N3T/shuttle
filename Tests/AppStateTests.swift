@@ -94,6 +94,22 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(state.transfers.first?.attempts, 1)
     }
 
+    func testFastReplugStillResumes() async {
+        await make(.phone)
+        await openCamera()
+        let vid = state.androidRows.first { $0.item.name.hasSuffix(".mp4") }!.item
+        mock.failAfterBytes = 900_000
+        state.download([vid])
+        await waitUntil { self.state.transfers.first?.state == .waiting }
+        // Кабель вернули до следующего опроса: AppState ещё «видит» устройство.
+        XCTAssertNotNil(state.device)
+        mock.connected = true
+        await state.tick()
+        await waitUntil { self.allDone() }
+        XCTAssertEqual(state.transfers.first?.state, .done)
+        XCTAssertEqual(try? Data(contentsOf: state.macURL.appendingPathComponent(vid.name)), mock.nodes[vid.id]?.data)
+    }
+
     func testDropRouting() async {
         await make(.console)
         let d = tempDir()
@@ -174,9 +190,10 @@ final class AppStateTests: XCTestCase {
     }
 
     func testNewPhotosAndImport() async {
-        await make(.phone)
         AppSettings.shared.photosFolder = tempDir("photos")
+        await make(.phone)
         ImportLedger.shared.reset(device: state.deviceKey)
+        await state.refreshPhotosIndexNow()
         await state.refreshNewPhotos()
         XCTAssertEqual(state.newPhotos.count, 20, "18 jpg + heic + mp4")
         let first = Array(state.newPhotos.prefix(3))

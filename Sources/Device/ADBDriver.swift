@@ -192,9 +192,13 @@ final class ADBDriver: DeviceDriver {
         let old = try path(id)
         let new = ((old as NSString).deletingLastPathComponent as NSString).appendingPathComponent(name)
         _ = try shell("mv \(ADBDriver.quote(old)) \(ADBDriver.quote(new))")
-        pathByID[id] = new
-        idByPath[old] = nil
-        idByPath[new] = id
+        // Переносим и пути вложенных объектов, которые уже видели.
+        for (cid, p) in pathByID where p == old || p.hasPrefix(old + "/") {
+            let moved = new + p.dropFirst(old.count)
+            pathByID[cid] = moved
+            idByPath[p] = nil
+            idByPath[moved] = cid
+        }
     }
 
     // MARK: Только ADB

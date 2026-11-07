@@ -15,6 +15,11 @@ struct RenameRequest: Identifiable {
     }
 }
 
+/// Куда легли файлы (узнаём на очереди устройства, читаем после передачи).
+final class DestinationBox: @unchecked Sendable {
+    var folder: UInt32?
+}
+
 /// Игры, которые просят установить, и куда.
 struct PendingInstall: Identifiable {
     let id = UUID()
@@ -108,16 +113,18 @@ extension AppState {
         guard let st = storage ?? currentStorage else { return }
         guard checkSpace(urls, storage: st.id) else { return }
         var left = urls.count
+        let dest = DestinationBox()
         for url in urls {
             let t = Transfer(name: url.lastPathComponent, direction: .toAndroid, label: label, deviceKey: deviceKey)
             run(t, completion: { [weak self] _ in
                 left -= 1
                 Task {
-                    await self?.refreshAfterUpload(storage: st.id)
-                    if left == 0 { completion?() }
+                    if let id = dest.folder { await self?.invalidate(FolderKey(storage: st.id, folder: id)) }
+                    if left == 0 { await self?.refreshDevice(); completion?() }
                 }
             }) { svc, t in
                 let parent = try svc.ensureFolder(path: path, storage: st.id)
+                dest.folder = parent
                 try svc.uploadTree([url], parent: parent, storage: st.id, token: t.token,
                                    conflict: conflict) { t.report($0, $1) }
                 return nil
@@ -125,9 +132,10 @@ extension AppState {
         }
     }
 
+    /// После раскладки по нескольким папкам (homebrew, Atmosphère): корень и то, что открыто.
     private func refreshAfterUpload(storage: UInt32) async {
-        for k in cache.keys where k.storage == storage { await invalidate(k) }
-        if let k = currentKey { await invalidate(k) }
+        await invalidate(FolderKey(storage: storage, folder: mtpRoot))
+        if let k = currentKey, k.storage == storage, k.folder != mtpRoot { await invalidate(k) }
         await refreshDevice()
     }
 

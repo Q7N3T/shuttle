@@ -147,6 +147,8 @@ final class AppState: ObservableObject {
     init(preview: Bool = false, service: DeviceService = .shared) {
         svc = service
         if preview || AppFolders.testing { return }
+        // Превью ждут, пока идут передачи; при уходе из папки очередь превью сбрасывается.
+        Thumbnails.shared.isBusy = { [weak self] in self?.hasActiveTransfers ?? false }
         loadMac()
         monitor = Task { [weak self] in
             while !Task.isCancelled {
@@ -238,25 +240,40 @@ final class AppState: ObservableObject {
         let wasConnected = device != nil
         do {
             let info = try await svc.run { try $0.connectIfNeeded() }
-            connection = .connected(info)
-            nintendoWithoutMTP = false
+            setConnection(.connected(info))
+            if nintendoWithoutMTP { nintendoWithoutMTP = false }
             if !wasConnected || !info.storages.contains(where: { $0.id == storageID }) {
                 cache = [:]
                 expanded = []
                 selectStorage(info.storages[0].id)
-                deviceConnected(info, sameAsBefore: lastDeviceKey == info.key)
+                deviceConnected(info)
                 lastDeviceKey = info.key
             }
+            // Кабель могли переподключить быстрее, чем прошёл один опрос, — продолжаем оборванное всегда.
+            resumeWaiting(for: info.key)
         } catch let e as MTPError {
             switch e {
-            case .busy: connection = .busy
-            case .locked: connection = .locked
-            default: connection = .searching
+            case .busy: setConnection(.busy)
+            case .locked: setConnection(.locked)
+            default: setConnection(.searching)
             }
             if wasConnected { resetDevice() }
-            if connection == .searching { nintendoWithoutMTP = USBProbe.nintendoPresent() }
+            let nintendo = connection == .searching && USBProbe.nintendoPresent()
+            if nintendo != nintendoWithoutMTP { nintendoWithoutMTP = nintendo }
         } catch {
-            connection = .searching
+            setConnection(.searching)
+        }
+    }
+
+    /// Не публиковать одно и то же каждые 2 секунды — иначе всё окно перерисовывается без нужды.
+    private func setConnection(_ c: Connection) {
+        if connection != c { connection = c }
+    }
+
+    private func resumeWaiting(for key: String) {
+        for t in transfers where t.state == .waiting && t.deviceKey == key {
+            t.prepareRetry()
+            t.restart?()
         }
     }
 
@@ -271,14 +288,13 @@ final class AppState: ObservableObject {
     }
 
     /// Устройство подключилось: продолжить оборванные передачи, проверить новые фото, синхронизировать.
-    private func deviceConnected(_ info: DeviceInfo, sameAsBefore: Bool) {
-        for t in transfers where t.state == .waiting && t.deviceKey == info.key {
-            t.prepareRetry()
-            t.restart?()
-        }
+    private func deviceConnected(_ info: DeviceInfo) {
         if info.kind == .phone {
-            refreshPhotosIndex()
-            Task { await refreshNewPhotos() }
+            // Сначала индекс папки фото, потом подсчёт новых — иначе уже скачанное посчитается новым.
+            Task {
+                await refreshPhotosIndexNow()
+                await refreshNewPhotos()
+            }
             if AppSettings.shared.autoSync { runSyncs(SyncStore.shared.rules(for: info.key).filter(\.enabled)) }
         }
     }
@@ -344,6 +360,7 @@ final class AppState: ObservableObject {
         androidPath.append(Crumb(id: item.id, name: item.name))
         activeQuick = nil
         searchText = ""
+        Thumbnails.shared.cancelQueued()
         Task { await loadAndroid(force: false) }
     }
 
@@ -458,14 +475,14 @@ final class AppState: ObservableObject {
 
     /// Индекс папки фото (рекурсивно, в фоне).
     func refreshPhotosIndex() {
+        Task { await refreshPhotosIndexNow() }
+    }
+
+    func refreshPhotosIndexNow() async {
         let dir = photosDestination
-        Task.detached(priority: .utility) {
-            let idx = Duplicates.localIndex(dir, recursive: true)
-            await MainActor.run {
-                self.photosIndex = idx
-                self.macIndex = self.macIndex.union(idx)
-            }
-        }
+        let idx = await Task.detached(priority: .utility) { Duplicates.localIndex(dir, recursive: true) }.value
+        photosIndex = idx
+        macIndex = macIndex.union(idx)
     }
 
     func openMac(_ item: LocalItem) {
@@ -544,6 +561,7 @@ final class AppState: ObservableObject {
             bytes: t.total, device: device?.name ?? "", macPath: t.resultURL?.path,
             ok: t.state == .done, note: { if case .failed(let m) = t.state { return m }; return nil }()))
         if t.state == .done { batchCount += 1; batchBytes += t.total }
+        if !hasActiveTransfers { Thumbnails.shared.resume() }
         if !transfers.contains(where: { $0.state.isActive }), batchCount > 0 {
             Notifier.post(L("Shuttle: готово"), L("Передано: %d · %@", batchCount, formatBytes(batchBytes)))
             batchCount = 0

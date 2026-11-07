@@ -82,6 +82,18 @@ final class DeviceServiceTests: XCTestCase {
         XCTAssertEqual(mock.find(["Download", "Мой", "вложенная", "b.txt"], storage: 1)?.data, Data("two".utf8))
     }
 
+    func testUploadManyFilesListsFolderOnce() throws {
+        let src = tempDir()
+        let files = (0..<20).map { i -> URL in
+            let u = src.appendingPathComponent("f\(i).txt"); write("\(i)", u); return u
+        }
+        let dl = mock.find(["Download"], storage: 1)!.id
+        let before = mock.listCalls
+        try svc.sync { try $0.uploadTree(files, parent: dl, storage: 1, token: CancelToken()) { _, _ in } }
+        XCTAssertEqual(mock.listCalls - before, 1, "папка назначения читается один раз")
+        XCTAssertEqual(mock.children(of: dl).filter { $0.name.hasPrefix("f") }.count, 20)
+    }
+
     func testUploadReplace() throws {
         let src = tempDir()
         let f = src.appendingPathComponent("boot.ini")

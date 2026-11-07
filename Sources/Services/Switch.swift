@@ -64,6 +64,9 @@ enum HomebrewLayout {
             let lower = name.lowercased()
             if isDir(u), rootFolders.contains(lower) {
                 out.append(Placement(local: u, remoteFolder: []))
+            } else if !isDir(u), lower == "hbmenu.nro" {
+                // Меню homebrew загружается только из корня SD (так его кладёт и Atmosphère).
+                out.append(Placement(local: u, remoteFolder: []))
             } else if !isDir(u) {
                 switch u.pathExtension.lowercased() {
                 case "nro":

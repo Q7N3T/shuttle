@@ -184,7 +184,7 @@ func formatBytes(_ bytes: UInt64) -> String {
     var v = Double(bytes)
     var i = 0
     while v >= 1000, i < units.count - 1 { v /= 1000; i += 1 }
-    let digits = i == 0 || v >= 100 ? 0 : (v >= 10 ? 1 : 1)
+    let digits = i == 0 || v >= 100 ? 0 : 1
     let f = NumberFormatter()
     f.locale = Locale(identifier: en ? "en_US" : "ru_RU")
     f.minimumFractionDigits = 0
