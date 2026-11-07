@@ -250,7 +250,7 @@ h2.glitch:hover{animation:jit .32s steps(2) 1}
 
 /* Заголовок: каждая буква отдельно; при наведении — пиксельная тема */
 h1 .ln{display:block;white-space:nowrap}
-h1 .l2{-webkit-mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;-webkit-mask-composite:source-in;mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;mask-composite:intersect;font-family:var(--tech);font-weight:800;font-size:.78em;line-height:1;letter-spacing:.01em;color:var(--accent);text-shadow:0 0 30px rgba(233,185,73,.35);margin:.08em 0 .06em}
+h1 .l2{-webkit-mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;-webkit-mask-composite:source-in;mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;mask-composite:intersect;font-family:var(--tech);font-weight:800;font-size:.78em;line-height:1;letter-spacing:.01em;color:var(--accent);margin:0}
 h1 .ch-w{display:inline-block;white-space:nowrap}
 h1 .ch{display:inline-block;white-space:pre;transition:transform .14s ease-out,color .14s}
 h1.intro .ch{animation:chin .6s cubic-bezier(.16,1.4,.3,1) backwards;animation-delay:calc(var(--c) * 18ms)}
@@ -258,7 +258,7 @@ h1.intro .ch{animation:chin .6s cubic-bezier(.16,1.4,.3,1) backwards;animation-d
 h1.px .ln{font-family:var(--tech);font-weight:700;letter-spacing:.02em}
 h1.px .l1,h1.px .l3{text-shadow:3px 0 0 rgba(139,92,246,.55),-3px 0 0 rgba(233,185,73,.45)}
 h1.px .ln{-webkit-mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;-webkit-mask-composite:source-in;mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;mask-composite:intersect}
-h1.px .l2{font-weight:800;color:var(--g2);text-shadow:0 0 26px rgba(139,92,246,.6)}
+h1.px .l2{font-weight:800;color:var(--g2)}
 h1.swap{animation:pxswap .34s steps(3) 1}
 @keyframes pxswap{0%{clip-path:inset(0 0 62% 0);transform:translateX(-5px)}34%{clip-path:inset(38% 0 20% 0);transform:translateX(5px)}67%{clip-path:inset(70% 0 0 0);transform:translateX(-3px)}100%{clip-path:none;transform:none}}
 .hero .pixels{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
@@ -738,13 +738,21 @@ function scramble(el, text, delay = 0){
 let letters = [], centers = null;
 // Ровные просветы между строками: считаем по самим буквам, а не по строкам —
 // у «в пути» нет высоких букв, и без этого нижний просвет выглядит дырой.
-const inkCv = document.createElement('canvas').getContext('2d');
+const inkCv = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+// Верх букв ищем по настоящим пикселям: метрики шрифта врут, особенно у Handjet.
 function inkOf(l){
   const cs = getComputedStyle(l), pr = document.createElement('span');
   pr.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
   l.appendChild(pr); const base = pr.getBoundingClientRect().top; pr.remove();
+  const fs = parseFloat(cs.fontSize), cv = inkCv.canvas, by = Math.ceil(fs * 1.5);
+  cv.width = Math.ceil(l.scrollWidth + fs); cv.height = Math.ceil(fs * 2);
   inkCv.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  return { base, top: base - inkCv.measureText(l.textContent).actualBoundingBoxAscent };
+  inkCv.textBaseline = 'alphabetic'; inkCv.fillStyle = '#000';
+  inkCv.fillText(l.textContent, fs / 2, by);
+  const d = inkCv.getImageData(0, 0, cv.width, by).data;
+  let row = by;
+  outer: for (let y = 0; y < by; y++) for (let x = 0; x < cv.width; x++) if (d[(y * cv.width + x) * 4 + 3] > 60) { row = y; break outer; }
+  return { base, top: base - (by - row) };
 }
 function balanceTitle(){
   const [a, b, c] = $$('#title .ln'); if (!c) return;
