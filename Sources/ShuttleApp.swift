@@ -43,6 +43,10 @@ struct ThemedRoot<Content: View>: View {
         let scheme = theme.scheme ?? system
         content
             .environment(\.palette, Palette.of(scheme))
+            // Плавный переход: цвета фона, панелей и текста перетекают,
+            // а не переключаются рывком. Срабатывает и на кнопки, и на смену
+            // темы системы в режиме «Авто».
+            .animation(.easeInOut(duration: 0.4), value: scheme)
             .preferredColorScheme(theme.scheme)
             .tint(Palette.of(scheme).accent)
     }
