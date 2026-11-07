@@ -52,7 +52,9 @@ struct JSONFile<T: Codable> {
 @MainActor
 final class AppSettings: ObservableObject {
     static let shared = AppSettings()
-    private let d = UserDefaults.standard
+    /// Автотесты пишут в свои настройки, а не в настоящие настройки пользователя.
+    static let defaults: UserDefaults = AppFolders.testing ? UserDefaults(suiteName: "com.vadimgrekov.shuttle.tests")! : .standard
+    private let d = AppSettings.defaults
 
     @Published var notifications: Bool { didSet { d.set(notifications, forKey: "notifications") } }
     @Published var heicToJPEG: Bool { didSet { d.set(heicToJPEG, forKey: "heicToJPEG") } }

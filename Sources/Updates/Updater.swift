@@ -48,6 +48,9 @@ final class UpdateModel: ObservableObject {
         didSet { updater?.automaticallyDownloadsUpdates = automaticallyInstalls }
     }
     @Published private(set) var hasSkippedVersion = false
+    /// Итог последней проверки — показываем в настройках (карточка в окне исчезает сама).
+    @Published var lastResult: String?
+    @Published var lastResultIsError = false
 
     var currentVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
@@ -95,6 +98,7 @@ final class UpdateModel: ObservableObject {
     #endif
 
     var canCheck: Bool { updater?.canCheckForUpdates ?? false }
+    var lastCheck: Date? { updater?.lastUpdateCheckDate }
 
     func checkNow() {
         userInitiated = true
@@ -182,6 +186,8 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
         ui { m in
             m.pending = info
             m.choiceReply = reply
+            m.lastResult = L("Доступна версия %@", info.version)
+            m.lastResultIsError = false
             // Уже скачано в фоне — сразу предлагаем установить.
             m.phase = state.stage == .notDownloaded ? .found(info) : .ready(info)
             if UpdateModel.autoAccept {
@@ -196,6 +202,8 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
 
     func showUpdateNotFoundWithError(_ error: any Error, acknowledgement: @escaping () -> Void) {
         ui { m in
+            m.lastResult = L("У вас последняя версия — %@", m.currentVersion)
+            m.lastResultIsError = false
             guard m.userInitiated else { acknowledgement(); return }
             m.userInitiated = false
             m.acknowledgement = acknowledgement
@@ -207,6 +215,10 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
     func showUpdaterError(_ error: any Error, acknowledgement: @escaping () -> Void) {
         if UpdateModel.autoAccept { NSLog("Shuttle test: ошибка обновления: \(error.localizedDescription)") }
         ui { m in
+            if m.userInitiated {
+                m.lastResult = error.localizedDescription
+                m.lastResultIsError = true
+            }
             // Фоновые проверки не беспокоят: например, без интернета.
             guard m.userInitiated || m.phase != .hidden else { acknowledgement(); return }
             m.userInitiated = false

@@ -25,6 +25,7 @@ struct SettingsView: View {
                     tabChip(2, L("Обновления"), "arrow.triangle.2.circlepath")
                 }
             }
+            UpdateCheckRow()
             Group {
                 switch tab {
                 case 1: devices
@@ -226,5 +227,81 @@ struct SettingToggle: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// Проверка обновлений прямо в настройках: кнопка и итог, видны с любой вкладки.
+struct UpdateCheckRow: View {
+    @EnvironmentObject private var updates: UpdateModel
+    @Environment(\.palette) private var p
+
+    var body: some View {
+        HStack(spacing: 12) {
+            icon.frame(width: 22)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(AppFont.body(13, .medium))
+                    .foregroundStyle(updates.lastResultIsError && !busy ? p.danger : p.text)
+                if let sub = subtitle {
+                    Text(sub).font(AppFont.body(11)).foregroundStyle(p.muted)
+                }
+            }
+            .animation(.easeOut(duration: 0.2), value: title)
+            Spacer()
+            switch updates.phase {
+            case .found, .ready:
+                AccentButton(title: L("Установить обновление")) { updates.install() }
+            default:
+                AccentButton(title: busy ? L("Проверяем…") : L("Проверить обновления")) { updates.checkNow() }
+                    .disabled(busy)
+                    .opacity(busy ? 0.6 : 1)
+            }
+        }
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(p.surface))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(p.line, lineWidth: 1))
+    }
+
+    private var busy: Bool {
+        switch updates.phase {
+        case .checking, .downloading, .extracting, .installing: true
+        default: false
+        }
+    }
+
+    @ViewBuilder
+    private var icon: some View {
+        switch updates.phase {
+        case .checking, .downloading, .extracting, .installing:
+            ProgressView().controlSize(.small)
+        case .found, .ready:
+            Image(systemName: "arrow.down.circle.fill").font(.system(size: 18)).foregroundStyle(p.accent)
+        default:
+            if updates.lastResultIsError {
+                Image(systemName: "exclamationmark.triangle").font(.system(size: 16)).foregroundStyle(p.danger)
+            } else if updates.lastResult != nil {
+                DrawnCheck(size: 18, color: p.ok)
+            } else {
+                Image(systemName: "arrow.triangle.2.circlepath").font(.system(size: 16)).foregroundStyle(p.muted)
+            }
+        }
+    }
+
+    private var title: String {
+        switch updates.phase {
+        case .checking: return L("Проверяем обновления…")
+        case .found(let i), .ready(let i): return L("Доступна версия %@", i.version)
+        case .downloading, .extracting: return L("Скачиваем обновление")
+        case .installing: return L("Устанавливаем и перезапускаем…")
+        default: return updates.lastResult ?? L("Shuttle %@", updates.currentVersion)
+        }
+    }
+
+    private var subtitle: String? {
+        if case .downloading(let r, let t) = updates.phase, t > 0 {
+            return L("%@ из %@", formatBytes(r), formatBytes(t))
+        }
+        if busy { return nil }
+        guard let d = updates.lastCheck else { return L("Ещё не проверяли") }
+        return L("Последняя проверка: %@", d.formatted(date: .abbreviated, time: .shortened))
     }
 }

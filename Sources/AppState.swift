@@ -91,8 +91,8 @@ final class AppState: ObservableObject {
 
     // Вид
     @Published var sort = SortOrder()
-    @Published var showHidden: Bool = UserDefaults.standard.bool(forKey: "showHidden") {
-        didSet { UserDefaults.standard.set(showHidden, forKey: "showHidden") }
+    @Published var showHidden: Bool = AppSettings.defaults.bool(forKey: "showHidden") {
+        didSet { AppSettings.defaults.set(showHidden, forKey: "showHidden") }
     }
     @Published var viewMode: ViewMode = .list
 
