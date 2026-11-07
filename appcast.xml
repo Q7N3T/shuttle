@@ -5,5 +5,15 @@
     <link>https://github.com/Q7N3T/shuttle</link>
     <description>Обновления Shuttle</description>
     <language>ru</language>
+    <item>
+      <title>Shuttle 0.3.0</title>
+      <pubDate>Sat, 07 Nov 2026 14:51:19 +0300</pubDate>
+      <sparkle:version>4</sparkle:version>
+      <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.3.0</link>
+      <description><![CDATA[<ul><li>Автообновления: Shuttle сам находит новую версию и предлагает обновиться</li><li>В окне обновления: «Обновить сейчас», «Позже» или «Пропустить эту версию»</li><li>Настройки (⌘,): автопроверка, автоустановка, возврат пропущенных версий</li><li>Оформленный DMG: перетащите Shuttle в «Программы»</li></ul>]]></description>
+      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.3.0/Shuttle-0.3.0.dmg" sparkle:edSignature="Y2jk+PRcyBAdVv92slN7UO+leT4vFEywbECBucMQNWcJNdk3cFNXd4rOdpaZ8rqRMAdPTDoAVPw/O2sY5QRmAw==" length="4286874" type="application/octet-stream"/>
+    </item>
   </channel>
 </rss>
