@@ -328,14 +328,14 @@ struct MacPane: View {
         .focused($focused)
         .focusEffectDisabled()
         .onKeyPress(.space) { state.activeSide = .mac; state.quickLook(); return .handled }
-        .onDrop(of: [.plainText], isTargeted: $targeted) { _ in
+        .modifier(DropTarget(types: [.plainText], targeted: $targeted) { _ in
             // Принимаем только то, что тащат из панели устройства.
             guard !state.draggingRemote.isEmpty else { return false }
             let items = state.draggingRemote
             state.draggingRemote = []
             state.download(items)
             return true
-        }
+        })
     }
 
     @ViewBuilder
@@ -404,11 +404,11 @@ struct DevicePane: View {
             state.quickLook()
             return .handled
         }
-        .onDrop(of: [.fileURL], isTargeted: $targeted) { providers in
+        .modifier(DropTarget(types: [.fileURL], targeted: $targeted) { providers in
             guard state.device != nil else { return false }
             loadURLs(providers) { state.handleDrop($0) }
             return true
-        }
+        })
         .alert(L("Новая папка"), isPresented: $state.askNewFolder) {
             TextField(L("Название"), text: $state.dialogText)
             Button(L("Создать")) { state.createAndroidFolder(state.dialogText.trimmingCharacters(in: .whitespaces)) }
@@ -473,6 +473,11 @@ struct DevicePane: View {
     private var searchField: some View {
         HStack(spacing: 4) {
             Image(systemName: "magnifyingglass").font(.system(size: 10)).foregroundStyle(p.muted)
+            if snap {
+                // Снимок окна не рисует поле ввода — показываем подсказку как текст.
+                Text(L("Поиск")).font(AppFont.body(12)).foregroundStyle(p.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
             TextField(L("Поиск"), text: $state.searchText)
                 .textFieldStyle(.plain)
                 .font(AppFont.body(12))
@@ -481,6 +486,7 @@ struct DevicePane: View {
                 .onChange(of: state.searchText) { _, v in
                     if v.isEmpty, state.deepResults != nil { state.clearSearch() }
                 }
+            }
             if !state.searchText.isEmpty {
                 Button { state.clearSearch() } label: {
                     Image(systemName: "xmark.circle.fill").font(.system(size: 10)).foregroundStyle(p.muted)
@@ -749,6 +755,18 @@ struct GridCell: View {
         }
         .modifier(FolderDrop(enabled: item.isFolder, targeted: $dropTarget) { urls in state.handleDrop(urls, into: item) })
         .contextMenu { RemoteMenu(item: item) }
+    }
+}
+
+/// Зона перетаскивания панели. В снимке окна не нужна: ImageRenderer рисует её жёлтыми уголками.
+struct DropTarget: ViewModifier {
+    @Environment(\.isSnapshot) private var snap
+    let types: [UTType]
+    @Binding var targeted: Bool
+    let perform: ([NSItemProvider]) -> Bool
+
+    func body(content: Content) -> some View {
+        if snap { content } else { content.onDrop(of: types, isTargeted: $targeted, perform: perform) }
     }
 }
 

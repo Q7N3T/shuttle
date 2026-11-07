@@ -16,7 +16,7 @@
 :root{
   --bg:#17121A;--bg2:#1C1520;--surface:#221A26;--hover:#2B2130;--line:#3A2E3F;
   --text:#F2EAE0;--muted:#A3959F;--dim:#6E6170;--accent:#E9B949;--accent2:#F7D27A;--ink:#2A1E05;--ok:#7FC79A;--plum:#8B5CF6;
-  --grid:rgba(242,234,224,.045);
+  --grid:rgba(242,234,224,.05);
   --display:"Unbounded","Arial Black",system-ui,sans-serif;
   --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -25,7 +25,7 @@
 :root[data-theme="light"]{
   --bg:#F6F1EA;--bg2:#EFE7DC;--surface:#FFFFFF;--hover:#F1E9DE;--line:#E3D8CB;
   --text:#1F1822;--muted:#7A6C76;--dim:#A99CA4;--accent:#D9A42E;--accent2:#E9B949;--ink:#2A1E05;--ok:#3E8E5E;
-  --grid:rgba(31,24,34,.06);color-scheme:light;
+  --grid:rgba(31,24,34,.066);color-scheme:light;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:70px}
@@ -41,10 +41,14 @@ img{max-width:100%;display:block}
   background-size:1px 9px,9px 1px;background-position:36px 32px,32px 36px;
   -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 20%,#000 30%,transparent 85%);mask-image:radial-gradient(ellipse 80% 70% at 50% 20%,#000 30%,transparent 85%)}
 .bg{background-size:72px 72px;background-repeat:repeat}
+/* Едва заметная «развёртка» экрана */
+.scan{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
+:root[data-theme="light"] .scan{background:repeating-linear-gradient(0deg,rgba(0,0,0,.02) 0 1px,transparent 1px 3px)}
 .bg::before{content:"";position:absolute;width:900px;height:900px;left:-300px;top:-260px;border-radius:50%;
-  background:radial-gradient(closest-side,rgba(233,185,73,.11),transparent);filter:blur(10px);animation:drift 18s ease-in-out infinite alternate}
+  background:radial-gradient(closest-side,rgba(233,185,73,.13),transparent);filter:blur(10px);animation:drift 18s ease-in-out infinite alternate}
 .bg::after{content:"";position:absolute;width:800px;height:800px;right:-260px;top:30vh;border-radius:50%;
-  background:radial-gradient(closest-side,rgba(139,92,246,.08),transparent);animation:drift 22s ease-in-out infinite alternate-reverse}
+  background:radial-gradient(closest-side,rgba(139,92,246,.095),transparent);animation:drift 22s ease-in-out infinite alternate-reverse}
 :root[data-theme="light"] .bg::before{background:radial-gradient(closest-side,rgba(233,185,73,.25),transparent)}
 @keyframes drift{to{transform:translate(120px,80px) scale(1.1)}}
 
@@ -52,6 +56,8 @@ img{max-width:100%;display:block}
 .mono{font-family:var(--mono)}
 .code{font-family:var(--mono);font-size:13px;color:var(--muted)}
 .code b{color:var(--accent);font-weight:500}
+.num{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin-bottom:6px}
+.num::after{content:"";width:46px;height:1px;background:linear-gradient(90deg,var(--accent),transparent)}
 .code i{font-style:normal;color:var(--plum)}
 :root[data-theme="light"] .code i{color:#7C4DDB}
 
@@ -70,8 +76,8 @@ nav a:hover{color:var(--text);background:var(--hover)}
 .gh{display:inline-flex;gap:6px;align-items:center}
 
 /* Кнопки со срезанным углом */
-.btn{--cut:12px;position:relative;display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:500;font-size:14px;
-  padding:14px 22px;text-decoration:none;cursor:pointer;border:0;color:var(--text);background:transparent;transition:transform .2s}
+.btn{--cut:12px;position:relative;display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-weight:500;font-size:13.5px;white-space:nowrap;
+  padding:13px 18px;text-decoration:none;cursor:pointer;border:0;color:var(--text);background:transparent;transition:transform .2s}
 .btn.primary{background:var(--accent);color:var(--ink);clip-path:polygon(0 0,calc(100% - var(--cut)) 0,100% var(--cut),100% 100%,var(--cut) 100%,0 calc(100% - var(--cut)));overflow:hidden}
 .btn.primary::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:sheen 6s ease-in-out infinite}
 @keyframes sheen{60%,100%{transform:translateX(120%)}}
@@ -82,7 +88,7 @@ nav a:hover{color:var(--text);background:var(--hover)}
 .btn:active{transform:translateY(0) scale(.98)}
 
 /* Первый экран */
-.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:center;padding:70px 0 40px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:52px;align-items:center;padding:70px 0 40px}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,6.4vw,80px);line-height:1.02;letter-spacing:-.02em;margin:18px 0 22px;min-height:2.1em}
 h1 .gold{color:var(--accent);text-shadow:0 0 40px rgba(233,185,73,.35)}
 h1 .scr{color:var(--dim)}
@@ -93,7 +99,7 @@ h1 .scr{color:var(--dim)}
 @keyframes blink{50%{opacity:0}}
 .lead{font-size:19px;color:var(--muted);max-width:46ch;margin:0 0 30px}
 .lead b{color:var(--text);font-weight:600}
-.btns{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .meta{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:16px;display:flex;gap:14px;flex-wrap:wrap}
 .meta span::before{content:"● ";color:var(--ok)}
 
@@ -117,7 +123,7 @@ h1 .scr{color:var(--dim)}
 
 /* Бегущая строка */
 .ticker{border-block:1px solid var(--line);overflow:hidden;white-space:nowrap;margin:40px 0}
-.ticker div{display:inline-flex;gap:40px;padding:12px 0;animation:tick 70s linear infinite;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--dim)}
+.ticker div{display:inline-flex;gap:40px;padding:12px 0;animation:tick 62s linear infinite;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--dim)}
 .ticker span::before{content:"· ";color:var(--accent)}
 @keyframes tick{to{transform:translateX(-50%)}}
 
@@ -134,7 +140,9 @@ section{margin:0 0 100px}
 .sec-head{margin-bottom:28px}
 h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,44px);line-height:1.1;margin:10px 0 10px;letter-spacing:-.01em}
 .sub{color:var(--muted);max-width:60ch;margin:0}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:1060px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.grid{grid-template-columns:1fr}}
 .card{position:relative;background:var(--surface);border:1px solid var(--line);padding:22px;border-radius:14px;transition:transform .3s,border-color .3s;overflow:hidden}
 .card::after{content:"";position:absolute;inset:-1px;border-radius:14px;padding:1px;pointer-events:none;
   background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%),var(--accent),transparent 60%);
@@ -144,14 +152,16 @@ h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,44px);l
 .card .k{font-family:var(--mono);font-size:11px;color:var(--accent)}
 .card h3{font-size:17px;font-weight:600;margin:6px 0 6px}
 .card p{margin:0;color:var(--muted);font-size:15px}
-.card .ico{font-size:22px;margin-bottom:8px;display:inline-block;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+.card .ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;margin-bottom:14px;color:var(--accent);
+  background:rgba(233,185,73,.12);border:1px solid rgba(233,185,73,.25);transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+.card .ico svg{width:20px;height:20px}
 .card:hover .ico{transform:scale(1.2) rotate(-6deg)}
 
 .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:44px;align-items:center}
 .split.rev{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
 .list{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}
 .list li{display:flex;gap:12px;align-items:flex-start}
-.list li::before{content:"→";font-family:var(--mono);color:var(--accent);flex:none}
+.list li::before{content:"";flex:none;width:18px;height:18px;margin-top:3px;border-radius:6px;background:rgba(233,185,73,.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E9B949' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/12px no-repeat}
 .list b{font-weight:600}
 .flat .shot{transform:none}
 
@@ -233,7 +243,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 </style>
 </head>
 <body>
-<div class="bg" aria-hidden="true"></div>
+<div class="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 
 <header class="top">
@@ -291,6 +301,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
   <section id="features">
     <div class="sec-head rv">
+      <div class="num">01 / <span data-i18n="n.f">возможности</span></div>
       <div class="code">features { <i>every</i>-device {</div>
       <h2 data-i18n="f.title">Просто работает</h2>
       <p class="sub" data-i18n="f.sub">Подключили кабель — и тащите файлы туда-обратно. Всё остальное Shuttle сделает сам.</p>
@@ -300,6 +311,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
   <section id="switch" class="split">
     <div class="rv">
+      <div class="num">02 / nintendo switch</div>
       <div class="code">switch { <i>dbi</i> --mtp {</div>
       <h2 data-i18n="sw.title">Для Switch с DBI</h2>
       <p class="sub" data-i18n="sw.sub">Все разделы DBI — вкладками. Игры, homebrew и сейвы без ручной раскладки по папкам.</p>
@@ -311,6 +323,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   <section id="android" class="split rev">
     <div class="frame rv flat"><i class="c1"></i><i class="c2"></i><div class="shot"><img src="screenshot-dark.png" class="on" alt="Камера телефона в Shuttle" loading="lazy"></div></div>
     <div class="rv">
+      <div class="num">03 / android</div>
       <div class="code">android { <i>camera</i> → mac {</div>
       <h2 data-i18n="an.title">Фото — одной кнопкой</h2>
       <p class="sub" data-i18n="an.sub">Shuttle помнит, что уже скачано, и предлагает только новое.</p>
@@ -320,6 +333,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
   <section id="download">
     <div class="dl rv" id="dl">
+      <div class="num" style="justify-content:center">04 / <span data-i18n="n.d">скачать</span></div>
       <div class="code">install { <i>drag</i> → /Applications }</div>
       <h2 data-i18n="dl.title">Перетащите Shuttle в «Программы»</h2>
       <p class="sub" style="margin:0 auto" data-i18n="dl.sub">Прямо здесь, как в DMG. Или нажмите кнопку — скачивание начнётся сразу.</p>
@@ -344,6 +358,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
   <section id="changes">
     <div class="sec-head rv">
+      <div class="num">05 / <span data-i18n="n.c">версии</span></div>
       <div class="code">changelog { <i>releases</i> --all {</div>
       <h2 data-i18n="ch.title">Что нового</h2>
       <p class="sub" data-i18n="ch.sub">Каждая версия — с описанием и своим DMG. Старые тоже можно скачать.</p>
@@ -355,7 +370,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 <footer>
   <div class="wrap">
-    <span>Shuttle — <a href="https://github.com/Q7N3T">Q7N3T</a></span>
+    <span style="display:flex;align-items:center;gap:10px"><img src="icon-256.png" alt="" width="26" height="26" style="border-radius:7px"><b style="font-family:var(--display)">Shuttle</b> — <a href="https://github.com/Q7N3T">Q7N3T</a></span>
     <span><a href="https://github.com/Q7N3T/shuttle/releases" data-i18n="ft.all">Все версии</a> · <a href="https://github.com/Q7N3T/shuttle/blob/main/CHANGELOG.md">CHANGELOG</a> · <a href="https://github.com/Q7N3T/shuttle/issues" data-i18n="ft.issue">Сообщить о проблеме</a></span>
   </div>
 </footer>
@@ -390,6 +405,7 @@ const EN = {
   'st2':'<b>First launch:</b> Settings → Privacy & Security → “Open Anyway”.',
   'st3':'<b>Plug in the cable.</b> Android: “File transfer”. Switch: DBI → “Run MTP responder”.',
   'ch.title':'What’s new','ch.sub':'Every version with notes and its own DMG. Older ones stay downloadable.',
+  'n.f':'features','n.d':'download','n.c':'releases',
   'ft.all':'All releases','ft.issue':'Report an issue','sb.palette':'palette','sb.theme':'theme'
 };
 const RU = {};
@@ -398,6 +414,17 @@ $$('[data-i18n-html]').forEach(e => RU[e.dataset.i18nHtml] = e.innerHTML);
 let lang = (localStorage.getItem('lang') || (navigator.language.startsWith('ru') ? 'ru' : 'en'));
 const T = (ru, en) => lang === 'en' ? en : ru;
 
+const I = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ICONS = {
+  drag: I('<path d="M7 7h11l-3-3M17 17H6l3 3"/>'),
+  resume: I('<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/><path d="M10 9v6M14 9v6"/>'),
+  quicklook: I('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+  find: I('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>'),
+  rename: I('<path d="M4 7h10M4 12h7M4 17h9"/><path d="M18 5v14M16 5h4M16 19h4"/>'),
+  updates: I('<path d="M4 12a8 8 0 0 1 13.7-5.7L20 8.5"/><path d="M20 4v4.5h-4.5"/><path d="M20 12a8 8 0 0 1-13.7 5.7L4 15.5"/><path d="M4 20v-4.5h4.5"/>'),
+  history: I('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+  themes: I('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 0 0 17z" fill="currentColor"/>'),
+};
 const FEATURES = [
   ['⇄','drag','Перетаскивание','Между панелями, из Finder и в Finder. Файлы можно бросить прямо на папку.','Drag & drop','Between panes, from Finder and back. Drop files right onto a folder.'],
   ['⏸','resume','Продолжение после обрыва','Кабель отошёл — Shuttle дождётся устройства и докачает с того же места.','Resumes after a drop','Cable came out? Shuttle waits for the device and continues where it stopped.'],
@@ -428,7 +455,7 @@ const CMDS_RU = ['shuttle --device switch  → 9 разделов','shuttle inst
 const CMDS_EN = ['shuttle --device switch  → 9 storages','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle new-photos  → 12 new → ~/Pictures','shuttle resume  → continuing from 61%','shuttle sync DCIM/Camera ~/Pictures  → new only'];
 
 function renderLists(){
-  $('#feat-grid').innerHTML = FEATURES.map((f,i) => `<div class="card rv in" style="transition-delay:${i*50}ms"><span class="ico">${f[0]}</span><div class="k">--${f[1]}</div><h3>${T(f[2],f[4])}</h3><p>${T(f[3],f[5])}</p></div>`).join('');
+  $('#feat-grid').innerHTML = FEATURES.map((f,i) => `<div class="card rv in" style="transition-delay:${i*50}ms"><span class="ico">${ICONS[f[1]] || f[0]}</span><div class="k">--${f[1]}</div><h3>${T(f[2],f[4])}</h3><p>${T(f[3],f[5])}</p></div>`).join('');
   $('#sw-list').innerHTML = SWITCH.map(s => `<li><span><b>${T(s[0],s[2])}.</b> ${T(s[1],s[3])}</span></li>`).join('');
   $('#an-list').innerHTML = ANDROID.map(s => `<li><span><b>${T(s[0],s[2])}</b> — ${T(s[1],s[3])}</span></li>`).join('');
   const items = (lang === 'en' ? TICKER_EN : TICKER_RU).map(t => `<span>${t}</span>`).join('');
