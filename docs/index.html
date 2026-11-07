@@ -169,14 +169,14 @@ h2{font-family:var(--display);font-weight:700;font-size:clamp(28px,3.6vw,44px);l
 .dl{border:1px solid var(--line);background:linear-gradient(180deg,var(--surface),var(--bg2));border-radius:20px;padding:44px;text-align:center;position:relative;overflow:hidden}
 .dl h2{margin-top:0}
 .dropzone{display:flex;align-items:center;justify-content:center;gap:min(10vw,110px);margin:34px auto 26px;user-select:none}
-.app-icon{width:120px;height:120px;cursor:grab;touch-action:none;position:relative;z-index:3;filter:drop-shadow(0 18px 30px rgba(0,0,0,.4));transition:transform .2s}
+.app-icon{width:120px;height:120px;flex:none;aspect-ratio:1;cursor:grab;touch-action:none;position:relative;z-index:3;filter:drop-shadow(0 18px 30px rgba(0,0,0,.4));transition:transform .2s}
 .app-icon:active{cursor:grabbing}
 .app-icon.dragging{transition:none;transform:scale(1.08) rotate(-4deg)}
 .app-icon img{width:100%;height:100%;pointer-events:none;animation:bob 3s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-6px)}}
-.arrow{font-family:var(--mono);color:var(--accent);letter-spacing:6px;font-size:22px;animation:flow 1.4s linear infinite}
+.arrow{white-space:nowrap;flex:none;font-family:var(--mono);color:var(--accent);letter-spacing:6px;font-size:22px;animation:flow 1.4s linear infinite}
 @keyframes flow{0%{opacity:.3}50%{opacity:1}100%{opacity:.3}}
-.apps{width:120px;height:120px;border-radius:26px;border:2px dashed var(--line);display:grid;place-items:center;transition:all .25s;position:relative}
+.apps{width:120px;height:120px;flex:none;border-radius:26px;border:2px dashed var(--line);display:grid;place-items:center;transition:all .25s;position:relative}
 .apps svg{width:56px;height:56px;color:var(--muted);transition:color .25s}
 .apps.hot{border-color:var(--accent);background:rgba(233,185,73,.08);transform:scale(1.08)}
 .apps.hot svg{color:var(--accent)}
@@ -203,6 +203,32 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
 /* Появление при прокрутке */
 .rv{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
 .rv.in{opacity:1;transform:none}
+
+/* Обрывки «конфига» по краям */
+.frag{position:absolute;font-family:var(--mono);font-size:11.5px;color:var(--muted);opacity:.0;white-space:nowrap;pointer-events:none;user-select:none;z-index:0}
+.frag b{color:var(--accent);font-weight:500}
+.frag.on{animation:fragIn 9s ease-in-out forwards}
+@keyframes fragIn{0%{opacity:0;transform:translateY(8px)}12%{opacity:.42}50%{opacity:.3}52%{opacity:.08}54%{opacity:.34}88%{opacity:.3}100%{opacity:0;transform:translateY(-14px)}}
+.hero{position:relative}
+/* Кольцо и дуга вокруг скриншота */
+.orbit{position:absolute;inset:-46px -30px;pointer-events:none;z-index:-1}
+.orbit svg{width:100%;height:100%;overflow:visible}
+.orbit .ring{transform-origin:50% 50%;animation:spin 60s linear infinite}
+.orbit .arc{transform-origin:50% 50%;animation:spin 24s linear infinite reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Наклейка-скотч */
+.tape{position:absolute;right:-8px;bottom:26px;z-index:3;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+  background:#7FC79A;color:#0F2A1A;padding:4px 10px;transform:rotate(4deg);box-shadow:0 6px 14px rgba(0,0,0,.3)}
+/* Закрывающие скобки секций */
+.close{display:flex;align-items:center;gap:12px;font-family:var(--mono);color:var(--dim);margin:-56px 0 70px;font-size:14px}
+.close::after{content:"";flex:1;border-top:1px dashed var(--line)}
+/* Вторая строка: предупреждения, в обратную сторону */
+.ticker.warn div{animation-direction:reverse;animation-duration:75s;color:var(--accent);opacity:.75}
+.ticker.warn span::before{content:"! ";color:var(--accent)}
+/* Глитч заголовков при наведении */
+h2.glitch{position:relative}
+h2.glitch:hover{animation:jit .32s steps(2) 1}
+@keyframes jit{0%{transform:translate(0)}25%{transform:translate(-2px,1px);text-shadow:2px 0 var(--plum)}50%{transform:translate(2px,-1px);text-shadow:-2px 0 var(--accent)}100%{transform:none;text-shadow:none}}
 
 /* Строка состояния */
 .status{position:fixed;left:0;right:0;bottom:0;z-index:30;height:30px;display:flex;align-items:center;gap:16px;padding:0 14px;
@@ -239,7 +265,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .shot{transform:none}
   .dl{padding:30px 18px}
 }
-@media (max-width:560px){nav a:not(.gh){display:none}.status .hide-m{display:none}h1{min-height:auto}}
+@media (max-width:560px){.dropzone{gap:18px}.app-icon,.apps{width:84px;height:84px}.apps{border-radius:20px}.apps svg{width:40px;height:40px}.arrow{font-size:16px;letter-spacing:3px}nav a:not(.gh){display:none}.status .hide-m{display:none}h1{min-height:auto}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
 </style>
 </head>
@@ -278,6 +304,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <div class="meta"><span class="m-ver">—</span><span class="m-size">DMG</span><span>Apple Silicon · Intel</span></div>
     </div>
     <div class="frame"><i class="c1"></i><i class="c2"></i>
+      <div class="orbit" aria-hidden="true"><svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <ellipse class="ring" cx="50" cy="50" rx="49" ry="48" fill="none" stroke="var(--muted)" stroke-opacity=".45" stroke-width=".3" stroke-dasharray="1 2"/>
+        <path class="arc" d="M 50 2 A 48 48 0 0 1 96 38" fill="none" stroke="var(--accent)" stroke-width=".35" stroke-linecap="round" opacity=".6"/>
+      </svg></div>
+      <div class="tape" data-i18n="tape">НЕ СВЯЗАНО С NINTENDO И GOOGLE</div>
       <div class="tag">shuttle --device switch</div>
       <div class="shot" id="hero-shot">
         <img src="screenshot-switch.png" alt="Shuttle с подключённой Nintendo Switch" class="on">
@@ -292,7 +323,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   <div class="stats">
     <div class="stat rv"><b data-count="30" data-suffix=" МБ/с">0</b><span data-i18n="st.speed">скорость по USB</span></div>
     <div class="stat rv"><b data-count="9">0</b><span data-i18n="st.parts">разделов Switch во вкладках</span></div>
-    <div class="stat rv"><b data-count="0">0</b><span data-i18n="st.setup">настроек на телефоне</span></div>
+    <div class="stat rv"><b data-count="1">0</b><span data-i18n="st.setup">кабель — и всё</span></div>
     <div class="stat rv"><b data-count="2">0</b><span data-i18n="st.langs">языка: русский и английский</span></div>
   </div>
 
@@ -300,39 +331,45 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     <div class="sec-head rv">
       <div class="num">01 / <span data-i18n="n.f">возможности</span></div>
       <div class="code">features { <i>every</i>-device {</div>
-      <h2 data-i18n="f.title">Просто работает</h2>
+      <h2 class="glitch" data-i18n="f.title">Просто работает</h2>
       <p class="sub" data-i18n="f.sub">Подключили кабель — и тащите файлы туда-обратно. Всё остальное Shuttle сделает сам.</p>
     </div>
     <div class="grid" id="feat-grid"></div>
   </section>
+  <div class="close" aria-hidden="true">} }</div>
 
   <section id="switch" class="split">
     <div class="rv">
       <div class="num">02 / nintendo switch</div>
       <div class="code">switch { <i>dbi</i> --mtp {</div>
-      <h2 data-i18n="sw.title">Для Switch с DBI</h2>
+      <h2 class="glitch" data-i18n="sw.title">Для Switch с DBI</h2>
       <p class="sub" data-i18n="sw.sub">Все разделы DBI — вкладками. Игры, homebrew и сейвы без ручной раскладки по папкам.</p>
       <ul class="list" id="sw-list"></ul>
     </div>
     <div class="frame rv flat"><i class="c1"></i><i class="c2"></i><div class="shot"><img src="screenshot-switch-light.png" class="on" alt="Разделы Switch в Shuttle" loading="lazy"></div></div>
   </section>
+  <div class="close" aria-hidden="true">} }</div>
 
   <section id="android" class="split rev">
     <div class="frame rv flat"><i class="c1"></i><i class="c2"></i><div class="shot"><img src="screenshot-dark.png" class="on" alt="Камера телефона в Shuttle" loading="lazy"></div></div>
     <div class="rv">
       <div class="num">03 / android</div>
       <div class="code">android { <i>camera</i> → mac {</div>
-      <h2 data-i18n="an.title">Фото — одной кнопкой</h2>
-      <p class="sub" data-i18n="an.sub">Shuttle помнит, что уже скачано, и предлагает только новое.</p>
+      <h2 class="glitch" data-i18n="an.title">Камера — одной кнопкой</h2>
+      <p class="sub" data-i18n="an.sub">Shuttle помнит, что уже скачано, и забирает только новые фото и видео.</p>
       <ul class="list" id="an-list"></ul>
     </div>
   </section>
+  <div class="close" aria-hidden="true">} }</div>
+</div>
+<div class="ticker warn" aria-hidden="true"><div id="ticker2"></div></div>
+<div class="wrap">
 
   <section id="download">
     <div class="dl rv" id="dl">
       <div class="num" style="justify-content:center">04 / <span data-i18n="n.d">скачать</span></div>
       <div class="code">install { <i>drag</i> → /Applications }</div>
-      <h2 data-i18n="dl.title">Перетащите Shuttle в «Программы»</h2>
+      <h2 class="glitch" data-i18n="dl.title">Перетащите Shuttle в «Программы»</h2>
       <p class="sub" style="margin:0 auto" data-i18n="dl.sub">Прямо здесь, как в DMG. Или нажмите кнопку — скачивание начнётся сразу.</p>
       <div class="dropzone">
         <div class="app-icon" id="drag-icon" tabindex="0" role="button" aria-label="Скачать Shuttle"><img src="icon-256.png" alt=""></div>
@@ -357,7 +394,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     <div class="sec-head rv">
       <div class="num">05 / <span data-i18n="n.c">версии</span></div>
       <div class="code">changelog { <i>releases</i> --all {</div>
-      <h2 data-i18n="ch.title">Что нового</h2>
+      <h2 class="glitch" data-i18n="ch.title">Что нового</h2>
       <p class="sub" data-i18n="ch.sub">Каждая версия — с описанием и своим DMG. Старые тоже можно скачать.</p>
     </div>
     <div class="changes" id="changes-list"><div class="ver"><span class="code">загружаем с GitHub…</span></div></div>
@@ -374,7 +411,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 <div class="status" aria-hidden="true">
   <span class="ok">● shuttle</span><span id="st-theme">dark</span><span class="hide-m"><kbd>⌘K</kbd> <span data-i18n="sb.palette">палитра</span></span><span class="hide-m"><kbd>T</kbd> <span data-i18n="sb.theme">тема</span></span>
-  <span class="sp"></span><span class="bar"><i id="st-bar"></i></span><span id="st-pct">0%</span><span id="st-clock">--:--</span>
+  <span class="sp"></span><span class="hide-m" id="st-xy">x:0 y:0</span><span class="bar"><i id="st-bar"></i></span><span id="st-pct">0%</span><span id="st-clock">--:--</span>
 </div>
 
 <div class="palette" id="palette" role="dialog" aria-label="Палитра команд">
@@ -392,10 +429,10 @@ const EN = {
   'nav.features':'Features','nav.changes':'Releases','hero.code':'// free · macOS 14+',
   'hero.lead':'Files between your Mac, <b>Android</b> and a <b>Nintendo&nbsp;Switch</b> — over a cable, by drag and drop. No debugging, no setup, no Android File Transfer.',
   'btn.download':'Download for Mac','btn.more':'Features','btn.source':'Source',
-  'st.speed':'over USB','st.parts':'Switch storages as tabs','st.setup':'settings on the phone','st.langs':'languages: Russian & English',
+  'st.speed':'over USB','st.parts':'Switch storages as tabs','st.setup':'cable, that’s it','st.langs':'languages: Russian & English',
   'f.title':'It just works','f.sub':'Plug in the cable and drag files back and forth. Shuttle handles the rest.',
   'sw.title':'For a Switch with DBI','sw.sub':'Every DBI storage as a tab. Games, homebrew and saves without sorting folders by hand.',
-  'an.title':'Photos in one click','an.sub':'Shuttle remembers what you already have and offers only what’s new.',
+  'an.title':'Your camera in one click','an.sub':'Shuttle remembers what you already have and fetches only new photos and videos.',
   'dl.title':'Drag Shuttle to Applications','dl.sub':'Right here, like in a DMG. Or press the button — the download starts right away.',
   'dl.apps':'Applications','dl.hint':'free · macOS 14+ · updates itself',
   'st1':'<b>Open the DMG</b> and drag Shuttle to Applications.',
@@ -403,6 +440,7 @@ const EN = {
   'st3':'<b>Plug in the cable.</b> Android: “File transfer”. Switch: DBI → “Run MTP responder”.',
   'ch.title':'What’s new','ch.sub':'Every version with notes and its own DMG. Older ones stay downloadable.',
   'n.f':'features','n.d':'download','n.c':'releases',
+  'tape':'NOT NINTENDO · NOT GOOGLE',
   'ft.all':'All releases','ft.issue':'Report an issue','sb.palette':'palette','sb.theme':'theme'
 };
 const RU = {};
@@ -441,15 +479,32 @@ const SWITCH = [
   ['Понятные имена','«Mario Kart 8 Deluxe», а не 0100152000022000.','Readable names','“Mario Kart 8 Deluxe”, not 0100152000022000.'],
 ];
 const ANDROID = [
-  ['«Новые фото»','снимки камеры, которых ещё нет на Mac. HEIC сразу в JPG.','“New photos”','camera shots that aren’t on your Mac yet. HEIC straight to JPG.'],
+  ['«С камеры»','фото и видео, которых ещё нет на Mac. HEIC по желанию сразу в JPG.','“From camera”','photos and videos that aren’t on your Mac yet. HEIC to JPG on the fly, if you want.'],
   ['Синхронизация папок','только новое, ничего не удаляется. Можно при каждом подключении.','Folder sync','only new files, nothing deleted. Can run on every connect.'],
   ['Превью и дубли','миниатюры, сетка с фото и пометка «уже на Mac».','Previews & duplicates','thumbnails, a photo grid and an “already on Mac” badge.'],
   ['ADB по желанию','быстрее, по Wi‑Fi, установка APK и снимок экрана телефона.','ADB if you want','faster, over Wi‑Fi, installs APKs and takes phone screenshots.'],
 ];
 const TICKER_RU = ['БЕЗ ОТЛАДКИ','ANDROID','NINTENDO SWITCH','DBI','~30 МБ/С ПО USB','ПРОДОЛЖЕНИЕ ПОСЛЕ ОБРЫВА','АВТООБНОВЛЕНИЯ','БЕСПЛАТНО','APPLE SILICON И INTEL','ОТКРЫТЫЙ КОД'];
 const TICKER_EN = ['NO DEBUGGING','ANDROID','NINTENDO SWITCH','DBI','~30 MB/S OVER USB','RESUMES AFTER A DROP','AUTO UPDATES','FREE','APPLE SILICON & INTEL','OPEN SOURCE'];
-const CMDS_RU = ['shuttle --device switch  → 9 разделов','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle new-photos  → 12 новых → ~/Pictures','shuttle resume  → продолжаем с 61%','shuttle sync DCIM/Camera ~/Pictures  → только новое'];
-const CMDS_EN = ['shuttle --device switch  → 9 storages','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle new-photos  → 12 new → ~/Pictures','shuttle resume  → continuing from 61%','shuttle sync DCIM/Camera ~/Pictures  → new only'];
+const CMDS_RU = ['shuttle --device switch  → 9 разделов','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle camera  → 12 новых: фото и видео','shuttle resume  → продолжаем с 61%','shuttle sync DCIM/Camera ~/Pictures  → только новое'];
+const CMDS_EN = ['shuttle --device switch  → 9 storages','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle camera  → 12 new: photos and videos','shuttle resume  → continuing from 61%','shuttle sync DCIM/Camera ~/Pictures  → new only'];
+
+const WARN_RU = ['ДЛЯ SWITCH НУЖЕН DBI','MACOS 14 И НОВЕЕ','ПЕРВЫЙ ЗАПУСК — «ВСЁ РАВНО ОТКРЫТЬ»','ДЕЛАЙТЕ КОПИЮ СЕЙВОВ','НЕ ОТКЛЮЧАЙТЕ КАБЕЛЬ ПРИ УСТАНОВКЕ','ТОЛЬКО ВАШИ ФАЙЛЫ'];
+const WARN_EN = ['A SWITCH NEEDS DBI','MACOS 14 OR LATER','FIRST LAUNCH — “OPEN ANYWAY”','BACK UP YOUR SAVES','KEEP THE CABLE IN DURING INSTALLS','YOUR OWN FILES ONLY'];
+const FRAGS = ['device <b>kind</b>=switch storages=9','transfer <b>resume</b>=true from=61%','mtp <b>responder</b>=dbi','camera <b>new</b>=12 photos+videos','heic → <b>jpg</b>','sparkle <b>feed</b>=appcast.xml','queue <b>parallel</b>=1 speed=31MB/s','theme <b>palette</b>=plum accent=#E9B949','drop <b>target</b>=/Applications','sync DCIM/Camera → <b>~/Pictures</b>'];
+function spawnFrag(){
+  if (reduced || document.hidden) return;
+  const hero = document.querySelector('.hero'), r = hero.getBoundingClientRect();
+  const el = document.createElement('div'); el.className = 'frag';
+  el.innerHTML = FRAGS[Math.random() * FRAGS.length | 0];
+  const side = Math.random() < .5;
+  el.style.left = (side ? Math.random() * 18 : 40 + Math.random() * 30) + '%';
+  el.style.top = (side ? 78 + Math.random() * 18 : Math.random() < .5 ? -2 + Math.random() * 6 : 92 + Math.random() * 6) + '%';
+  hero.appendChild(el); requestAnimationFrame(() => el.classList.add('on'));
+  setTimeout(() => el.remove(), 9200);
+}
+setInterval(spawnFrag, 2600); spawnFrag();
+addEventListener('mousemove', e => { const xy = document.getElementById('st-xy'); if (xy) xy.textContent = `x:${e.clientX} y:${e.clientY}`; }, { passive: true });
 
 function renderLists(){
   $('#feat-grid').innerHTML = FEATURES.map((f,i) => `<div class="card rv in" style="transition-delay:${i*50}ms"><span class="ico">${ICONS[f[1]] || f[0]}</span><div class="k">--${f[1]}</div><h3>${T(f[2],f[4])}</h3><p>${T(f[3],f[5])}</p></div>`).join('');
@@ -457,10 +512,21 @@ function renderLists(){
   $('#an-list').innerHTML = ANDROID.map(s => `<li><span><b>${T(s[0],s[2])}</b> — ${T(s[1],s[3])}</span></li>`).join('');
   const items = (lang === 'en' ? TICKER_EN : TICKER_RU).map(t => `<span>${t}</span>`).join('');
   $('#ticker').innerHTML = items + items;
+  const warn = (lang === 'en' ? WARN_EN : WARN_RU).map(t => `<span>${t}</span>`).join('');
+  $('#ticker2').innerHTML = warn + warn;
   bindCards();
 }
+const ATTRS = [
+  ['#theme', 'aria-label', 'Тема', 'Theme'],
+  ['#hero-shot img', 'alt', 'Shuttle с подключённой Nintendo Switch', 'Shuttle with a Nintendo Switch connected'],
+  ['#switch .shot img', 'alt', 'Разделы Switch в Shuttle', 'Switch storages in Shuttle'],
+  ['#android .shot img', 'alt', 'Камера телефона в Shuttle', 'Phone camera in Shuttle'],
+  ['#drag-icon', 'aria-label', 'Скачать Shuttle', 'Download Shuttle'],
+  ['#palette', 'aria-label', 'Палитра команд', 'Command palette'],
+];
 function applyLang(){
   document.documentElement.lang = lang;
+  ATTRS.forEach(([sel, attr, ru, en]) => document.querySelectorAll(sel).forEach(e => e.setAttribute(attr, T(ru, en))));
   $$('[data-i18n]').forEach(e => e.textContent = lang === 'en' ? (EN[e.dataset.i18n] ?? RU[e.dataset.i18n]) : RU[e.dataset.i18n]);
   $$('[data-i18n-html]').forEach(e => e.innerHTML = lang === 'en' ? (EN[e.dataset.i18nHtml] ?? RU[e.dataset.i18nHtml]) : RU[e.dataset.i18nHtml]);
   $('#lang').textContent = lang === 'en' ? 'RU' : 'EN';
@@ -481,19 +547,21 @@ $('#theme').onclick = () => setTheme(document.documentElement.dataset.theme === 
 
 /* ---------- Заголовок: расшифровка ---------- */
 const GLYPHS = '⇄↔▒░█<>/\\#*+=АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ';
+const GLYPHS_EN = '⇄↔▒░█<>/\\#*+=ABCDEFGHJKLMNPQRSTUVWXYZ';
 function scramble(el, text, delay = 0){
+  const G = lang === 'en' ? GLYPHS_EN : GLYPHS;
   if (reduced) { el.textContent = text; return; }
   let frame = 0; const total = text.length * 3 + 10;
   setTimeout(function step(){
     el.innerHTML = [...text].map((ch, i) => {
       if (ch === ' ' || frame >= i * 3 + 8) return ch;
       if (frame < i * 3) return '&nbsp;';
-      return `<span class="scr">${GLYPHS[Math.random() * GLYPHS.length | 0]}</span>`;
+      return `<span class="scr">${G[Math.random() * G.length | 0]}</span>`;
     }).join('');
-    if (++frame <= total) requestAnimationFrame(step); else el.textContent = text;
+    if (++frame <= total) setTimeout(step, 22); else el.textContent = text;
   }, delay);
 }
-function playTitle(){ scramble($('.t1'), T('Перетащи.','Drag it.')); scramble($('.t2'), T('Готово.','Done.'), 380); }
+function playTitle(){ $('#title').setAttribute('aria-label', T('Перетащи. Готово.', 'Drag it. Done.')); scramble($('.t1'), T('Перетащи.','Drag it.')); scramble($('.t2'), T('Готово.','Done.'), 380); }
 
 /* ---------- Терминал ---------- */
 let cmdIdx = 0, cmdTimer;
@@ -534,7 +602,8 @@ const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting
 $$('.rv').forEach(el => io.observe(el));
 
 /* ---------- Свежий выпуск с GitHub ---------- */
-let release = null, releases = [];
+let release = null, releases = [], notesEN = {};
+fetch('changelog.en.json').then(r => r.ok ? r.json() : {}).then(j => { notesEN = j; renderChanges(); }).catch(() => {});
 function renderRelease(){
   if (!release) return;
   const asset = (release.assets || []).find(a => a.name.endsWith('.dmg'));
@@ -551,7 +620,9 @@ function md(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\
 function renderChanges(){
   if (!releases.length) return;
   $('#changes-list').innerHTML = releases.slice(0, 6).map((r, i) => {
-    const items = (r.body || '').split('\n---')[0].split('\n').filter(l => l.startsWith('- ')).map(l => `<li>${md(l.slice(2))}</li>`).join('');
+    const v = r.tag_name.replace(/^v/, '');
+    const list = lang === 'en' && notesEN[v] ? notesEN[v] : (r.body || '').split('\n---')[0].split('\n').filter(l => l.startsWith('- ')).map(l => l.slice(2));
+    const items = list.map(l => `<li>${md(l)}</li>`).join('');
     const dmg = (r.assets || []).find(a => a.name.endsWith('.dmg'));
     const date = new Date(r.published_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     return `<div class="ver rv in ${i === 0 ? 'latest' : ''}"><div><b>${r.tag_name.replace(/^v/,'')}</b><span class="d">${date}</span></div><ul>${items}</ul>${dmg ? `<a href="${dmg.browser_download_url}">DMG ↓</a>` : ''}</div>`;

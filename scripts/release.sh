@@ -15,6 +15,7 @@ URL=https://github.com/Q7N3T/shuttle/releases/download/v$VERSION/Shuttle-$VERSIO
 SPARKLE=build/Debug.noindex/SourcePackages/artifacts/sparkle/Sparkle/bin
 
 grep -q "^## \[$VERSION\]" CHANGELOG.md || { echo "✗ Нет раздела [$VERSION] в CHANGELOG.md"; exit 1; }
+grep -q "\"$VERSION\"" docs/changelog.en.json || echo "⚠ Нет английского описания $VERSION в docs/changelog.en.json — на английском сайте будет русский текст"
 if gh release view "v$VERSION" >/dev/null 2>&1; then echo "✗ Релиз v$VERSION уже есть"; exit 1; fi
 [[ -z $(git status --porcelain -- Sources project.yml) ]] || { echo "✗ Есть незакоммиченные изменения в коде"; exit 1; }
 
