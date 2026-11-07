@@ -34,8 +34,8 @@ targets:
         CFBundleLocalizations: [ru, en]
         NSPhotoLibraryAddUsageDescription: Shuttle добавляет фото и видео с телефона или Switch в «Фото».
         CFBundleAllowMixedLocalizations: true
-        CFBundleShortVersionString: "0.3.1"
-        CFBundleVersion: "5"
+        CFBundleShortVersionString: "0.4.0"
+        CFBundleVersion: "6"
         ATSApplicationFontsPath: Fonts
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "14.0"
