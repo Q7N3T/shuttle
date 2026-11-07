@@ -18,6 +18,17 @@ enum Snapshot {
             }
             exit(0)
         }
+        if let j = args.firstIndex(of: "--dmg-background"), j + 1 < args.count {
+            // --dmg-background out.png [scale]
+            let r = ImageRenderer(content: DMGBackground())
+            r.scale = args.count > j + 2 ? CGFloat(Double(args[j + 2]) ?? 1) : 1
+            if let cg = r.cgImage {
+                let rep = NSBitmapImageRep(cgImage: cg)
+                rep.size = DMGBackground.size // 72 dpi-размер в точках, чтобы @2x был ретиной
+                try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: args[j + 1]))
+            }
+            exit(0)
+        }
         guard let i = args.firstIndex(of: "--snapshot"), i + 1 < args.count else { return }
         let out = URL(fileURLWithPath: args[i + 1])
         let dark = !args.contains("light")
