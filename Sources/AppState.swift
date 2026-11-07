@@ -23,10 +23,11 @@ struct FolderKey: Hashable {
     let folder: UInt32
 }
 
-/// Строка дерева: элемент и глубина вложенности.
+/// Строка дерева: элемент, глубина вложенности и (для поиска) путь.
 struct RemoteRow: Identifiable {
     let item: RemoteItem
     let depth: Int
+    var path: String? = nil
     var id: UInt32 { item.id }
 }
 
@@ -52,25 +53,27 @@ struct SortOrder: Equatable {
 /// Панель, где последний раз кликали: к ней относятся команды меню.
 enum Side { case mac, device }
 
+enum ViewMode: String { case list, grid }
+
 struct QuickFolder: Identifiable {
     let id: String
     let title: String
     let icon: String
     let path: [String]
 
-    static let android: [QuickFolder] = [
-        .init(id: "camera", title: "Камера", icon: "camera", path: ["DCIM", "Camera"]),
-        .init(id: "download", title: "Загрузки", icon: "arrow.down.circle", path: ["Download"]),
-        .init(id: "pictures", title: "Фото", icon: "photo", path: ["Pictures"]),
-        .init(id: "movies", title: "Видео", icon: "film", path: ["Movies"]),
-        .init(id: "music", title: "Музыка", icon: "music.note", path: ["Music"]),
-        .init(id: "docs", title: "Документы", icon: "doc.text", path: ["Documents"]),
-    ]
+    static var android: [QuickFolder] { [
+        .init(id: "camera", title: L("Камера"), icon: "camera", path: ["DCIM", "Camera"]),
+        .init(id: "download", title: L("Загрузки"), icon: "arrow.down.circle", path: ["Download"]),
+        .init(id: "pictures", title: L("Фото"), icon: "photo", path: ["Pictures"]),
+        .init(id: "movies", title: L("Видео"), icon: "film", path: ["Movies"]),
+        .init(id: "music", title: L("Музыка"), icon: "music.note", path: ["Music"]),
+        .init(id: "docs", title: L("Документы"), icon: "doc.text", path: ["Documents"]),
+    ] }
 }
 
 @MainActor
 final class AppState: ObservableObject {
-    private let mtp = DeviceService.shared
+    let svc: DeviceService
 
     // Устройство
     @Published var connection: Connection = .searching
@@ -82,22 +85,40 @@ final class AppState: ObservableObject {
     @Published private(set) var loadingKeys: Set<FolderKey> = []
     /// Кэш списков папок: большие папки MTP отдаёт секундами
     /// (Камера с 600+ фото — около 16 с на Huawei), поэтому повторно не перечитываем.
-    @Published private(set) var cache: [FolderKey: [RemoteItem]] = [:]
+    @Published var cache: [FolderKey: [RemoteItem]] = [:]
+    /// Switch подключена по USB, но DBI не включил MTP.
+    @Published var nintendoWithoutMTP = false
 
     // Вид
     @Published var sort = SortOrder()
     @Published var showHidden: Bool = UserDefaults.standard.bool(forKey: "showHidden") {
         didSet { UserDefaults.standard.set(showHidden, forKey: "showHidden") }
     }
+    @Published var viewMode: ViewMode = .list
+
+    // Поиск
+    @Published var searchText = ""
+    @Published var deepResults: [RemoteRow]?
+    @Published var deepSearching = false
+    @Published var deepScanned = 0
+    var searchToken: CancelToken?
 
     // Mac
     @Published var macURL: URL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0]
     @Published var macItems: [LocalItem] = []
     @Published var macSelection: Set<URL> = []
+    /// «имя|размер» файлов в текущей папке Mac и в папке фото — для пометки «уже на Mac».
+    @Published var macIndex: Set<String> = []
+    var photosIndex: Set<String> = []
 
     // Очередь
     @Published var transfers: [Transfer] = []
     @Published var errorMessage: String?
+    @Published var toast: String?
+    private var toastTask: Task<Void, Never>?
+    private var reservedTargets: Set<String> = []
+    private var batchCount = 0
+    private var batchBytes: UInt64 = 0
 
     // Диалоги (открываются и из панели, и из строки меню)
     @Published var activeSide: Side = .device
@@ -105,14 +126,27 @@ final class AppState: ObservableObject {
     @Published var renaming: RemoteItem?
     @Published var toDelete: [RemoteItem] = []
     @Published var dialogText = ""
+    @Published var renameRequest: RenameRequest?
+    @Published var pendingInstall: PendingInstall?
+    @Published var pendingHomebrew: URL?
+    @Published var pendingAPK: [URL]?
+    @Published var atmosphere: AtmosphereRelease?
+    @Published var atmosphereChecking = false
+    @Published var showHistory = false
+    @Published var showSync = false
+    @Published var showDuplicates = false
+    @Published var duplicates: [RemoteItem] = []
+    @Published var newPhotos: [RemoteItem] = []
 
     /// Что сейчас тащим из панели устройства внутри приложения.
     var draggingRemote: [RemoteItem] = []
 
     private var monitor: Task<Void, Never>?
+    private var lastDeviceKey: String?
 
-    init(preview: Bool = false) {
-        if preview { return }
+    init(preview: Bool = false, service: DeviceService = .shared) {
+        svc = service
+        if preview || AppFolders.testing { return }
         loadMac()
         monitor = Task { [weak self] in
             while !Task.isCancelled {
@@ -125,29 +159,39 @@ final class AppState: ObservableObject {
     // MARK: Производные
 
     var device: DeviceInfo? { connection.info }
+    var deviceKey: String { device?.key ?? "" }
     var currentStorage: StorageInfo? { device?.storages.first { $0.id == storageID } }
     var currentAndroidFolder: UInt32 { androidPath.last?.id ?? mtpRoot }
     var currentKey: FolderKey? { storageID.map { FolderKey(storage: $0, folder: currentAndroidFolder) } }
     var androidLoading: Bool { currentKey.map(loadingKeys.contains) ?? false }
-    var hasActiveTransfers: Bool { transfers.contains { !$0.state.isFinished } }
+    var hasActiveTransfers: Bool { transfers.contains { $0.state.isActive } }
+    var isConsole: Bool { device?.kind == .console }
 
     /// На телефоне служебные папки с точкой прячем; на Switch они нужны (.overlays).
     var hidesDotFiles: Bool { !showHidden && device?.kind == .phone }
+
+    /// Путь текущей папки из имён (без раздела).
+    var currentPathNames: [String] { androidPath.dropFirst().map(\.name) }
 
     var androidItems: [RemoteItem] {
         guard let k = currentKey else { return [] }
         return arranged(cache[k] ?? [])
     }
 
-    /// Текущая папка с раскрытыми подпапками, развёрнутая в плоский список.
+    /// Текущая папка с раскрытыми подпапками, развёрнутая в плоский список (и отфильтрованная поиском).
     var androidRows: [RemoteRow] {
+        if let deepResults { return deepResults }
         guard let k = currentKey else { return [] }
         var rows: [RemoteRow] = []
+        let q = searchText.trimmingCharacters(in: .whitespaces).lowercased()
         func add(_ key: FolderKey, depth: Int) {
             for item in arranged(cache[key] ?? []) {
-                rows.append(RemoteRow(item: item, depth: depth))
                 let child = FolderKey(storage: item.storageID, folder: item.id)
-                if item.isFolder, expanded.contains(child), depth < 12 { add(child, depth: depth + 1) }
+                let open = item.isFolder && expanded.contains(child) && depth < 12
+                if q.isEmpty || item.name.lowercased().contains(q) || open {
+                    rows.append(RemoteRow(item: item, depth: depth))
+                }
+                if open { add(child, depth: depth + 1) }
             }
         }
         add(k, depth: 0)
@@ -162,7 +206,12 @@ final class AppState: ObservableObject {
         loadingKeys.contains(FolderKey(storage: item.storageID, folder: item.id))
     }
 
-    private func arranged(_ items: [RemoteItem]) -> [RemoteItem] {
+    func isOnMac(_ item: RemoteItem) -> Bool {
+        guard !item.isFolder else { return false }
+        return Duplicates.isOnMac(item, index: macIndex) || ImportLedger.shared.contains(item, device: deviceKey)
+    }
+
+    func arranged(_ items: [RemoteItem]) -> [RemoteItem] {
         let visible = hidesDotFiles ? items.filter { !$0.name.hasPrefix(".") } : items
         return visible.sorted { a, b in
             if a.isFolder != b.isFolder { return a.isFolder }
@@ -183,25 +232,30 @@ final class AppState: ObservableObject {
 
     // MARK: Подключение
 
-    private func tick() async {
-        // Во время передачи очередь MTP занята, лишние запросы не шлём.
+    func tick() async {
+        // Во время передачи очередь занята, лишние запросы не шлём.
         if hasActiveTransfers || !loadingKeys.isEmpty { return }
         let wasConnected = device != nil
         do {
-            let info = try await mtp.run { try $0.connectIfNeeded() }
+            let info = try await svc.run { try $0.connectIfNeeded() }
             connection = .connected(info)
+            nintendoWithoutMTP = false
             if !wasConnected || !info.storages.contains(where: { $0.id == storageID }) {
                 cache = [:]
                 expanded = []
                 selectStorage(info.storages[0].id)
+                deviceConnected(info, sameAsBefore: lastDeviceKey == info.key)
+                lastDeviceKey = info.key
             }
         } catch let e as MTPError {
             switch e {
             case .busy: connection = .busy
             case .locked: connection = .locked
+            case .failed(let m) where m.contains("отладку"): connection = .locked
             default: connection = .searching
             }
             if wasConnected { resetDevice() }
+            if connection == .searching { nintendoWithoutMTP = USBProbe.nintendoPresent() }
         } catch {
             connection = .searching
         }
@@ -213,6 +267,21 @@ final class AppState: ObservableObject {
         storageID = nil
         androidPath = []
         androidSelection = []
+        newPhotos = []
+        clearSearch()
+    }
+
+    /// Устройство подключилось: продолжить оборванные передачи, проверить новые фото, синхронизировать.
+    private func deviceConnected(_ info: DeviceInfo, sameAsBefore: Bool) {
+        for t in transfers where t.state == .waiting && t.deviceKey == info.key {
+            t.prepareRetry()
+            t.restart?()
+        }
+        if info.kind == .phone {
+            refreshPhotosIndex()
+            Task { await refreshNewPhotos() }
+            if AppSettings.shared.autoSync { runSyncs(SyncStore.shared.rules(for: info.key).filter(\.enabled)) }
+        }
     }
 
     // MARK: Навигация по устройству
@@ -223,16 +292,18 @@ final class AppState: ObservableObject {
         androidPath = [Crumb(id: mtpRoot, name: s.name)]
         androidSelection = []
         activeQuick = nil
+        clearSearch()
+        viewMode = s.isAlbum ? .grid : .list
         Task { await loadAndroid(force: false) }
     }
 
-    private func fetch(_ key: FolderKey, force: Bool) async {
+    func fetch(_ key: FolderKey, force: Bool) async {
         if !force, cache[key] != nil { return }
         if loadingKeys.contains(key) { return }
         loadingKeys.insert(key)
         defer { loadingKeys.remove(key) }
         do {
-            cache[key] = try await mtp.run { try $0.list(storage: key.storage, parent: key.folder) }
+            cache[key] = try await svc.run { try $0.list(storage: key.storage, parent: key.folder) }
         } catch {
             show(error)
         }
@@ -265,8 +336,15 @@ final class AppState: ObservableObject {
 
     func openAndroid(_ item: RemoteItem) {
         guard item.isFolder else { return }
+        if deepResults != nil, let row = deepResults?.first(where: { $0.item.id == item.id }), let path = row.path {
+            // Из результатов поиска: открыть папку по её пути.
+            clearSearch()
+            open(path: path.split(separator: "/").map(String.init) + [item.name])
+            return
+        }
         androidPath.append(Crumb(id: item.id, name: item.name))
         activeQuick = nil
+        searchText = ""
         Task { await loadAndroid(force: false) }
     }
 
@@ -278,16 +356,19 @@ final class AppState: ObservableObject {
     }
 
     func androidUp() {
+        if deepResults != nil { clearSearch(); return }
         if androidPath.count > 1 { goToCrumb(androidPath.count - 2) }
     }
 
-    func openQuick(_ q: QuickFolder) {
-        guard let storage = currentStorage else { return }
-        activeQuick = q.id
+    /// Открыть папку по пути из имён в текущем разделе.
+    func open(path: [String], storage: StorageInfo? = nil, quick: String? = nil) {
+        guard let st = storage ?? currentStorage else { return }
+        if st.id != storageID { selectStorage(st.id) }
+        activeQuick = quick
         Task {
             do {
-                let crumbs = try await mtp.run { try $0.resolve(path: q.path, storage: storage.id) }
-                androidPath = [Crumb(id: mtpRoot, name: storage.name)] + crumbs.map { Crumb(id: $0.id, name: $0.name) }
+                let crumbs = try await svc.run { try $0.resolve(path: path, storage: st.id) }
+                androidPath = [Crumb(id: mtpRoot, name: st.name)] + crumbs.map { Crumb(id: $0.id, name: $0.name) }
                 await loadAndroid(force: false)
             } catch {
                 activeQuick = nil
@@ -296,12 +377,14 @@ final class AppState: ObservableObject {
         }
     }
 
-    private func parentKey(_ item: RemoteItem) -> FolderKey {
+    func openQuick(_ q: QuickFolder) { open(path: q.path, quick: q.id) }
+
+    func parentKey(_ item: RemoteItem) -> FolderKey {
         FolderKey(storage: item.storageID, folder: item.parentID == 0 ? mtpRoot : item.parentID)
     }
 
     /// Перечитать папку после изменения: текущую — всегда, остальные — если уже в кэше.
-    private func invalidate(_ key: FolderKey) async {
+    func invalidate(_ key: FolderKey) async {
         if key == currentKey || cache[key] != nil { await fetch(key, force: true) }
     }
 
@@ -309,7 +392,7 @@ final class AppState: ObservableObject {
         guard let k = currentKey, !name.isEmpty else { return }
         Task {
             do {
-                _ = try await mtp.run { try $0.createFolder(name, parent: k.folder, storage: k.storage) }
+                _ = try await svc.run { try $0.createFolder(name, parent: k.folder, storage: k.storage) }
             } catch { show(error) }
             await invalidate(k)
         }
@@ -319,11 +402,13 @@ final class AppState: ObservableObject {
         let parents = Set(items.map(parentKey))
         Task {
             do {
-                try await mtp.run { svc in
+                try await svc.run { svc in
                     for i in items { try svc.deleteTree(i) }
                 }
+                toast(L("Удалено: %d", items.count))
             } catch { show(error) }
             for p in parents { await invalidate(p) }
+            if deepResults != nil { deepResults?.removeAll { r in items.contains { $0.id == r.item.id } } }
             await refreshDevice()
         }
     }
@@ -331,7 +416,7 @@ final class AppState: ObservableObject {
     func renameAndroid(_ item: RemoteItem, to name: String) {
         guard !name.isEmpty, name != item.name else { return }
         Task {
-            do { try await mtp.run { try $0.rename(item.id, to: name) } } catch { show(error) }
+            do { try await svc.run { try $0.rename(item.id, to: name) } } catch { show(error) }
             await invalidate(parentKey(item))
         }
     }
@@ -341,8 +426,8 @@ final class AppState: ObservableObject {
         return androidRows.map(\.item).filter { androidSelection.contains($0.id) }
     }
 
-    private func refreshDevice() async {
-        if let info = try? await mtp.run({ try $0.heartbeat() }) { connection = .connected(info) }
+    func refreshDevice() async {
+        if let info = try? await svc.run({ try $0.heartbeat() }) { connection = .connected(info) }
     }
 
     // MARK: Mac
@@ -369,6 +454,19 @@ final class AppState: ObservableObject {
             return sort.ascending ? r : !r
         }
         macSelection = macSelection.filter { s in macItems.contains { $0.url == s } }
+        macIndex = Duplicates.localIndex(macURL, recursive: false).union(photosIndex)
+    }
+
+    /// Индекс папки фото (рекурсивно, в фоне).
+    func refreshPhotosIndex() {
+        let dir = photosDestination
+        Task.detached(priority: .utility) {
+            let idx = Duplicates.localIndex(dir, recursive: true)
+            await MainActor.run {
+                self.photosIndex = idx
+                self.macIndex = self.macIndex.union(idx)
+            }
+        }
     }
 
     func openMac(_ item: LocalItem) {
@@ -396,7 +494,7 @@ final class AppState: ObservableObject {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.directoryURL = macURL
-        panel.prompt = "Выбрать"
+        panel.prompt = L("Выбрать")
         if panel.runModal() == .OK, let u = panel.url { setMac(u) }
     }
 
@@ -404,162 +502,69 @@ final class AppState: ObservableObject {
         macSelection.contains(item.url) ? macItems.filter { macSelection.contains($0.url) } : [item]
     }
 
-    // MARK: Передачи
+    // MARK: Механизм передач
 
-    func download(_ items: [RemoteItem], to dir: URL? = nil) {
-        let dir = dir ?? macURL
-        for item in items {
-            let t = Transfer(name: item.name, direction: .toMac)
-            transfers.insert(t, at: 0)
-            Task {
-                do {
-                    let url = try await mtp.run { svc in
-                        t.began()
-                        return try svc.downloadTree(item, into: dir, token: t.token) { t.report($0, $1) }
-                    }
-                    t.resultURL = url
-                    t.finish(nil)
-                } catch { t.finish(error) }
-                if dir == macURL { loadMac() }
-            }
+    /// Запустить передачу. `work` выполняется на очереди устройства и возвращает результат на Mac (если есть).
+    /// При обрыве связи передача ждёт то же устройство и продолжается сама.
+    func run(_ t: Transfer, completion: (@MainActor (Transfer) -> Void)? = nil,
+             work: @escaping (DeviceService, Transfer) throws -> URL?) {
+        transfers.insert(t, at: 0)
+        Notifier.prepare()
+        t.restart = { [weak self, weak t] in
+            guard let self, let t else { return }
+            self.execute(t, completion: completion, work: work)
         }
+        execute(t, completion: completion, work: work)
     }
 
-    /// Загрузить на устройство: в текущую папку или в папку, на которую бросили файлы.
-    func upload(_ urls: [URL], into folder: RemoteItem? = nil) {
-        guard let current = currentKey, !urls.isEmpty else { return }
-        let key = folder.map { FolderKey(storage: $0.storageID, folder: $0.id) } ?? current
-        for url in urls {
-            let t = Transfer(name: url.lastPathComponent, direction: .toAndroid)
-            transfers.insert(t, at: 0)
-            Task {
-                do {
-                    try await mtp.run { svc in
-                        t.began()
-                        try svc.uploadTree([url], parent: key.folder, storage: key.storage, token: t.token) {
-                            t.report($0, $1)
-                        }
-                    }
-                    t.finish(nil)
-                } catch { t.finish(error) }
-                await invalidate(key)
-                await refreshDevice()
-            }
-        }
-    }
-
-    /// Перетаскивание файла с устройства прямо в Finder:
-    /// Finder просит файл, мы скачиваем его во временную папку и отдаём.
-    nonisolated func itemProvider(for item: RemoteItem, state: AppState) -> NSItemProvider {
-        let provider = NSItemProvider()
-        provider.suggestedName = item.name
-        // Для перетаскивания внутри приложения.
-        provider.registerObject("shuttle-remote:\(item.id)" as NSString, visibility: .ownProcess)
-
-        guard !item.isFolder else { return provider }
-        let type = UTType(filenameExtension: (item.name as NSString).pathExtension) ?? .data
-        provider.registerFileRepresentation(forTypeIdentifier: type.identifier, fileOptions: [],
-                                            visibility: .all) { completion in
-            let t = Transfer(name: item.name, direction: .toMac)
-            Task { @MainActor in state.transfers.insert(t, at: 0) }
-            let dir = FileManager.default.temporaryDirectory
-                .appendingPathComponent("Shuttle-\(UUID().uuidString)", isDirectory: true)
-            DeviceService.shared.runDetached { svc in
-                t.began()
-                do {
-                    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-                    let url = try svc.downloadTree(item, into: dir, token: t.token) { t.report($0, $1) }
-                    Task { @MainActor in t.finish(nil) }
-                    completion(url, false, nil)
-                } catch {
-                    Task { @MainActor in t.finish(error) }
-                    completion(nil, false, error)
+    private func execute(_ t: Transfer, completion: (@MainActor (Transfer) -> Void)?,
+                         work: @escaping (DeviceService, Transfer) throws -> URL?) {
+        Task {
+            do {
+                let url = try await svc.run { svc -> URL? in
+                    if t.token.isCancelled { throw MTPError.cancelled }
+                    t.began()
+                    return try work(svc, t)
                 }
+                if let url { t.resultURL = url }
+                t.finish(nil)
+            } catch {
+                t.finish(error)
             }
-            return nil
-        }
-        return provider
-    }
-
-    // MARK: Команды меню
-
-    var selectedRemoteItems: [RemoteItem] { androidRows.map(\.item).filter { androidSelection.contains($0.id) } }
-    var selectedLocalItems: [LocalItem] { macItems.filter { macSelection.contains($0.url) } }
-
-    var hasSelection: Bool {
-        activeSide == .device ? !androidSelection.isEmpty : !macSelection.isEmpty
-    }
-
-    func beginNewFolder() {
-        guard device != nil else { return }
-        dialogText = ""
-        askNewFolder = true
-    }
-
-    func beginRename(_ item: RemoteItem) {
-        dialogText = item.name
-        renaming = item
-    }
-
-    func selectAll() {
-        switch activeSide {
-        case .device: androidSelection = Set(androidRows.map(\.id))
-        case .mac: macSelection = Set(macItems.map(\.url))
+            if t.state == .waiting { return }
+            finished(t)
+            completion?(t)
         }
     }
 
-    func deleteSelected() {
-        switch activeSide {
-        case .device: if !selectedRemoteItems.isEmpty { toDelete = selectedRemoteItems }
-        case .mac: trashMac(selectedLocalItems)
+    private func finished(_ t: Transfer) {
+        if let path = t.resultURL?.path { reservedTargets.remove(path) }
+        guard t.state != .cancelled else { return }
+        HistoryStore.shared.add(HistoryEntry(
+            date: Date(), name: (t.label.map { $0 + ": " } ?? "") + t.name, toMac: t.direction == .toMac,
+            bytes: t.total, device: device?.name ?? "", macPath: t.resultURL?.path,
+            ok: t.state == .done, note: { if case .failed(let m) = t.state { return m }; return nil }()))
+        if t.state == .done { batchCount += 1; batchBytes += t.total }
+        if !transfers.contains(where: { $0.state.isActive }), batchCount > 0 {
+            Notifier.post(L("Shuttle: готово"), L("Передано: %d · %@", batchCount, formatBytes(batchBytes)))
+            batchCount = 0
+            batchBytes = 0
         }
     }
 
-    func renameSelected() {
-        guard activeSide == .device, selectedRemoteItems.count == 1 else { return }
-        beginRename(selectedRemoteItems[0])
-    }
-
-    func openSelected() {
-        switch activeSide {
-        case .device:
-            if let f = selectedRemoteItems.first(where: \.isFolder), selectedRemoteItems.count == 1 { openAndroid(f) }
-        case .mac:
-            if let f = selectedLocalItems.first, selectedLocalItems.count == 1 { openMac(f) }
+    /// Свободное имя в папке Mac с учётом передач, которые ещё не начались.
+    func reserveTarget(_ dir: URL, _ name: String) -> URL {
+        var u = uniqueURL(dir.appendingPathComponent(name))
+        var n = 2
+        let ext = (name as NSString).pathExtension
+        let base = (name as NSString).deletingPathExtension
+        while reservedTargets.contains(u.path) {
+            u = dir.appendingPathComponent(ext.isEmpty ? "\(name) \(n)" : "\(base) \(n).\(ext)")
+            u = uniqueURL(u)
+            n += 1
         }
-    }
-
-    func goUp() {
-        activeSide == .device ? androidUp() : macUp()
-    }
-
-    func refreshAll() {
-        loadMac()
-        refreshAndroid()
-    }
-
-    func downloadSelected() {
-        if !selectedRemoteItems.isEmpty { download(selectedRemoteItems) }
-    }
-
-    func uploadSelected() {
-        if !selectedLocalItems.isEmpty { upload(selectedLocalItems.map(\.url)) }
-    }
-
-    func selectStorage(at index: Int) {
-        guard let storages = device?.storages, index < storages.count else { return }
-        selectStorage(storages[index].id)
-    }
-
-    /// На Mac удаляем только в Корзину — это можно отменить.
-    func trashMac(_ items: [LocalItem]) {
-        guard !items.isEmpty else { return }
-        NSWorkspace.shared.recycle(items.map(\.url)) { _, error in
-            Task { @MainActor in
-                if let error { self.show(error) }
-                self.loadMac()
-            }
-        }
+        reservedTargets.insert(u.path)
+        return u
     }
 
     func clearFinished() {
@@ -567,7 +572,17 @@ final class AppState: ObservableObject {
     }
 
     func show(_ error: Error) {
+        if let e = error as? MTPError, e == .cancelled { return }
         errorMessage = error.localizedDescription
+    }
+
+    func toast(_ text: String) {
+        toast = text
+        toastTask?.cancel()
+        toastTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(3))
+            if !Task.isCancelled { self.toast = nil }
+        }
     }
 
     #if DEBUG

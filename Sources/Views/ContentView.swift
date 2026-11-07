@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var state: AppState
+    @ObservedObject private var favorites = FavoritesStore.shared
     @Environment(\.palette) private var p
     @AppStorage("theme") private var theme: ThemeMode = .system
     @AppStorage("showMacPane") private var showMac = true
@@ -36,6 +37,7 @@ struct ContentView: View {
         .background(p.bg.ignoresSafeArea())
         .foregroundStyle(p.text)
         .font(AppFont.body())
+        .overlay(alignment: .bottom) { ToastView().padding(.bottom, 150) }
         .toolbar {
             ToolbarItem(placement: .navigation) { brand }.withoutGlass()
             if #available(macOS 26.0, *) { ToolbarSpacer(.flexible) }
@@ -43,10 +45,11 @@ struct ContentView: View {
         }
         .transparentToolbar()
         .background(WindowChrome())
-        .alert("Что-то пошло не так", isPresented: Binding(
+        .modifier(AppSheets())
+        .alert(L("Что-то пошло не так"), isPresented: Binding(
             get: { state.errorMessage != nil },
             set: { if !$0 { state.errorMessage = nil } })) {
-            Button("Понятно", role: .cancel) {}
+            Button(L("Понятно"), role: .cancel) {}
         } message: {
             Text(state.errorMessage ?? "")
         }
@@ -65,7 +68,7 @@ struct ContentView: View {
     /// Справа в шапке: панель Mac и тема.
     private var controls: some View {
         HStack(spacing: 10) {
-            IconButton(systemName: "sidebar.left", help: showMac ? "Скрыть панель Mac" : "Показать панель Mac",
+            IconButton(systemName: "sidebar.left", help: showMac ? L("Скрыть панель Mac") : L("Показать панель Mac"),
                        size: 30) {
                 withAnimation(.easeOut(duration: 0.18)) { showMac.toggle() }
             }
@@ -82,22 +85,35 @@ struct ContentView: View {
         .fixedSize()
     }
 
-    /// Вкладки разделов (SD Card, Nand USER…) и быстрые папки телефона.
+    /// Вкладки разделов (SD Card, Nand USER…), избранное и быстрые папки телефона.
     private func tabs(_ device: DeviceInfo) -> some View {
         Scrollable(axis: .horizontal) {
             HStack(spacing: 6) {
                 if device.storages.count > 1 || device.kind == .console {
                     ForEach(device.storages) { s in
-                        Chip(title: s.name, icon: s.icon, isOn: state.storageID == s.id) {
+                        Chip(title: s.name, icon: s.icon, isOn: state.storageID == s.id && state.activeQuick == nil
+                             && state.androidPath.count <= 1) {
                             state.selectStorage(s.id)
                         }
-                        .help(s.capacity > 0 ? "\(formatBytes(s.free)) свободно из \(formatBytes(s.capacity))" : s.name)
+                        .help(s.capacity > 0 ? L("%@ свободно из %@", formatBytes(s.free), formatBytes(s.capacity)) : s.name)
+                    }
+                }
+                let favs = favorites.list(device.key)
+                if !favs.isEmpty {
+                    divider
+                    ForEach(favs) { f in
+                        Chip(title: f.title, icon: "star.fill", isOn: state.activeQuick == "fav:" + f.id) {
+                            state.openFavorite(f)
+                        }
+                        .help(f.storage + " / " + f.path.joined(separator: "/"))
+                        .contextMenu {
+                            Button(L("Убрать из избранного")) { state.toggleFavorite(f) }
+                        }
+                        .transition(.scale.combined(with: .opacity))
                     }
                 }
                 if device.kind == .phone {
-                    if device.storages.count > 1 {
-                        Rectangle().fill(p.line).frame(width: 1, height: 18).padding(.horizontal, 4)
-                    }
+                    if device.storages.count > 1 || !favs.isEmpty { divider }
                     ForEach(QuickFolder.android) { q in
                         Chip(title: q.title, icon: q.icon, isOn: state.activeQuick == q.id) {
                             state.openQuick(q)
@@ -105,7 +121,38 @@ struct ContentView: View {
                     }
                 }
             }
+            .animation(.spring(response: 0.3), value: favorites.list(device.key))
         }
+    }
+
+    private var divider: some View {
+        Rectangle().fill(p.line).frame(width: 1, height: 18).padding(.horizontal, 4)
+    }
+}
+
+/// Короткое сообщение внизу окна.
+struct ToastView: View {
+    @EnvironmentObject private var state: AppState
+    @Environment(\.palette) private var p
+
+    var body: some View {
+        ZStack {
+            if let t = state.toast {
+                HStack(spacing: 8) {
+                    DrawnCheck(size: 14, color: p.accent)
+                    Text(t).font(AppFont.body(12, .medium))
+                }
+                .padding(.horizontal, 16).padding(.vertical, 9)
+                .background(Capsule().fill(p.surface))
+                .overlay(Capsule().stroke(p.line, lineWidth: 1))
+                .shadow(color: .black.opacity(0.3), radius: 18, y: 8)
+                .foregroundStyle(p.text)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .id(t)
+            }
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: state.toast)
+        .allowsHitTesting(false)
     }
 }
 
@@ -118,7 +165,7 @@ struct DeviceCard: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 10).fill(p.surface)
                 RoundedRectangle(cornerRadius: 10).stroke(p.line, lineWidth: 1)
-                if state.device?.kind == .console {
+                if state.device?.kind == .console || state.nintendoWithoutMTP {
                     JoyConMark(size: 20)
                 } else {
                     Image(systemName: "iphone.gen3")
@@ -134,6 +181,8 @@ struct DeviceCard: View {
             }
             Spacer(minLength: 12)
 
+            if let info = state.device { actions(info) }
+
             if let info = state.device {
                 VStack(alignment: .trailing, spacing: 5) {
                     if let s = state.currentStorage, s.capacity > 0 {
@@ -146,7 +195,7 @@ struct DeviceCard: View {
                                 .font(AppFont.body(11)).foregroundStyle(p.muted)
                         }
                         if let s = state.currentStorage, s.capacity > 0 {
-                            Text("\(formatBytes(s.free)) свободно")
+                            Text(L("%@ свободно", formatBytes(s.free)))
                                 .font(AppFont.body(11)).foregroundStyle(p.muted)
                         }
                     }
@@ -154,19 +203,51 @@ struct DeviceCard: View {
             }
             statusPill
         }
+        .animation(.spring(response: 0.35), value: state.newPhotos.count)
+    }
+
+    /// Быстрые действия для подключённого устройства.
+    @ViewBuilder
+    private func actions(_ info: DeviceInfo) -> some View {
+        HStack(spacing: 6) {
+            if info.kind == .phone {
+                if !state.newPhotos.isEmpty {
+                    Chip(title: L("Новые фото: %d", state.newPhotos.count), icon: "photo.badge.arrow.down", isOn: true) {
+                        state.importNewPhotos()
+                    }
+                    .help(L("Скачать снимки, которых ещё нет на Mac, в %@",
+                            state.photosDestination.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")))
+                    .transition(.scale.combined(with: .opacity))
+                }
+                if info.transport == .adb {
+                    Chip(title: L("Снимок экрана"), icon: "camera.viewfinder") { state.takeScreenshot() }
+                }
+                Chip(title: L("Синхронизация"), icon: "arrow.triangle.2.circlepath") { state.showSync = true }
+            } else {
+                if info.storage(where: \.isSaves) != nil {
+                    Chip(title: L("Сохранить сейвы"), icon: "tray.and.arrow.down") { state.backupSaves() }
+                }
+                Chip(title: state.atmosphereChecking ? L("Проверяем…") : "Atmosphère", icon: "sparkles") {
+                    state.checkAtmosphere()
+                }
+                .disabled(state.atmosphereChecking)
+            }
+        }
     }
 
     private var title: String {
-        state.device?.name ?? "Устройство не подключено"
+        if state.device == nil && state.nintendoWithoutMTP { return "Nintendo Switch" }
+        return state.device?.name ?? L("Устройство не подключено")
     }
 
     private var subtitle: String {
         switch state.connection {
         case .connected(let i):
             i.kind == .console
-                ? "USB · MTP · разделов: \(i.storages.count)"
-                : "USB · \(state.currentStorage?.name ?? i.storageName) · \(formatBytes(state.currentStorage?.capacity ?? i.capacity))"
-        case .searching: "Android или Switch с DBI по кабелю USB"
+                ? L("%@ · MTP · разделов: %d", i.transport == .mock ? L("Тест") : "USB", i.storages.count)
+                : "\(i.transport == .adb ? "ADB" : (i.transport == .mock ? L("Тест") : "USB")) · \(state.currentStorage?.name ?? i.storageName) · \(formatBytes(state.currentStorage?.capacity ?? i.capacity))"
+        case .searching:
+            state.nintendoWithoutMTP ? L("Подключена, но DBI не в режиме MTP") : L("Android или Switch с DBI по кабелю USB")
         case .busy: MTPError.busy.localizedDescription
         case .locked: MTPError.locked.localizedDescription
         }
@@ -174,10 +255,10 @@ struct DeviceCard: View {
 
     private var statusPill: some View {
         let (text, color): (String, Color) = switch state.connection {
-        case .connected: ("Подключён", p.ok)
-        case .searching: ("Ищем…", p.muted)
-        case .busy: ("Занят", p.danger)
-        case .locked: ("Заблокирован", p.accent)
+        case .connected: (L("Подключён"), p.ok)
+        case .searching: (state.nintendoWithoutMTP ? L("Нужен DBI") : L("Ищем…"), state.nintendoWithoutMTP ? p.accent : p.muted)
+        case .busy: (L("Занят"), p.danger)
+        case .locked: (L("Заблокирован"), p.accent)
         }
         return HStack(spacing: 6) {
             Circle().fill(color).frame(width: 6, height: 6)

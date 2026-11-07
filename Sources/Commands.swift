@@ -1,6 +1,11 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
-/// Строка меню macOS: Файл, Правка, Вид, Переход, Справка.
+extension Notification.Name {
+    static let focusSearch = Notification.Name("ShuttleFocusSearch")
+}
+
+/// Строка меню macOS: Файл, Правка, Вид, Переход, Устройство, Справка.
 /// Команды относятся к панели, где последний раз кликали (Mac или устройство).
 struct ShuttleCommands: Commands {
     @ObservedObject var state: AppState
@@ -9,80 +14,105 @@ struct ShuttleCommands: Commands {
 
     private var connected: Bool { state.device != nil }
     private var onDevice: Bool { state.activeSide == .device }
+    private var phone: Bool { state.device?.kind == .phone }
+    private var console: Bool { state.device?.kind == .console }
 
     var body: some Commands {
         // MARK: Файл
         CommandGroup(replacing: .newItem) {
-            Button("Новая папка на устройстве") { state.beginNewFolder() }
+            Button(L("Новая папка на устройстве")) { state.beginNewFolder() }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
                 .disabled(!connected)
         }
         CommandGroup(after: .newItem) {
             Divider()
-            Button("Скачать на Mac") { state.downloadSelected() }
+            Button(L("Скачать на Mac")) { state.downloadSelected() }
                 .keyboardShortcut("d")
                 .disabled(state.androidSelection.isEmpty)
-            Button("Отправить на устройство") { state.uploadSelected() }
+            Button(L("Отправить на устройство")) { state.uploadSelected() }
                 .keyboardShortcut("u")
                 .disabled(!connected || state.macSelection.isEmpty)
+            Button(L("Отправить файлы…")) { pickAndUpload() }
+                .keyboardShortcut("u", modifiers: [.command, .shift])
+                .disabled(!connected)
             Divider()
-            Button("Выбрать папку на Mac…") { state.chooseMacFolder() }
+            Button(L("Выбрать папку на Mac…")) { state.chooseMacFolder() }
                 .keyboardShortcut("o")
-            Button("Показать в Finder") {
+            Button(L("Показать в Finder")) {
                 let urls = state.selectedLocalItems.map(\.url)
                 NSWorkspace.shared.activateFileViewerSelecting(urls.isEmpty ? [state.macURL] : urls)
             }
             .keyboardShortcut("r", modifiers: [.command, .option])
             Divider()
-            Button("Обновить") { state.refreshAll() }
+            Button(L("Обновить")) { state.refreshAll() }
                 .keyboardShortcut("r")
         }
 
         // MARK: Правка
         CommandGroup(replacing: .pasteboard) {
-            Button("Выделить всё") { state.selectAll() }
+            Button(L("Выделить всё")) { state.selectAll() }
                 .keyboardShortcut("a")
             Divider()
-            Button("Переименовать") { state.renameSelected() }
+            Button(L("Переименовать")) { state.renameSelected() }
                 .keyboardShortcut(.return, modifiers: [])
-                .disabled(!onDevice || state.selectedRemoteItems.count != 1)
-            Button(onDevice ? "Удалить с устройства…" : "Переместить в Корзину") { state.deleteSelected() }
+                .disabled(!state.hasSelection)
+            Button(L("Переименовать по шаблону…")) { state.beginBatchRename() }
+                .keyboardShortcut(.return, modifiers: [.command, .shift])
+                .disabled(!state.hasSelection)
+            Button(onDevice ? L("Удалить с устройства…") : L("Переместить в Корзину")) { state.deleteSelected() }
                 .keyboardShortcut(.delete)
                 .disabled(!state.hasSelection)
+            Divider()
+            Button(L("Найти")) { NotificationCenter.default.post(name: .focusSearch, object: nil) }
+                .keyboardShortcut("f")
+                .disabled(!connected)
+            Button(L("Найти дубли на Mac…")) { state.findDuplicates() }
+                .disabled(!connected)
         }
 
         // MARK: Вид
         CommandGroup(before: .toolbar) {
-            Picker("Тема", selection: $theme) {
+            Button(L("Быстрый просмотр")) { state.quickLook() }
+                .keyboardShortcut("y")
+                .disabled(!state.hasSelection)
+            Button(state.viewMode == .grid ? L("Списком") : L("Сеткой с превью")) {
+                state.viewMode = state.viewMode == .grid ? .list : .grid
+            }
+            .keyboardShortcut("g", modifiers: [.command, .control])
+            Divider()
+            Picker(L("Тема"), selection: $theme) {
                 ForEach(ThemeMode.allCases) { Text($0.title).tag($0) }
             }
             Divider()
-            Toggle("Панель Mac", isOn: $showMac)
+            Toggle(L("Панель Mac"), isOn: $showMac)
                 .keyboardShortcut("s", modifiers: [.command, .option])
-            Toggle("Служебные файлы", isOn: $state.showHidden)
+            Toggle(L("Служебные файлы"), isOn: $state.showHidden)
                 .keyboardShortcut(".", modifiers: [.command, .shift])
             Divider()
-            Picker("Сортировка", selection: Binding(
+            Picker(L("Сортировка"), selection: Binding(
                 get: { state.sort.key },
                 set: { state.toggleSort($0) })) {
-                Text("По имени").tag(SortKey.name)
-                Text("По дате").tag(SortKey.date)
-                Text("По размеру").tag(SortKey.size)
+                Text(L("По имени")).tag(SortKey.name)
+                Text(L("По дате")).tag(SortKey.date)
+                Text(L("По размеру")).tag(SortKey.size)
             }
-            Toggle("По возрастанию", isOn: Binding(
+            Toggle(L("По возрастанию"), isOn: Binding(
                 get: { state.sort.ascending },
                 set: { state.sort.ascending = $0; state.loadMac() }))
+            Divider()
+            Button(L("История передач")) { state.showHistory = true }
+                .keyboardShortcut("h", modifiers: [.command, .shift])
             Divider()
         }
 
         // MARK: Переход
-        CommandMenu("Переход") {
-            Button("Наверх") { state.goUp() }
+        CommandMenu(L("Переход")) {
+            Button(L("Наверх")) { state.goUp() }
                 .keyboardShortcut(.upArrow)
-            Button("Открыть") { state.openSelected() }
+            Button(L("Открыть")) { state.openSelected() }
                 .keyboardShortcut(.downArrow)
             Divider()
-            Button("Загрузки на Mac") {
+            Button(L("Загрузки на Mac")) {
                 state.setMac(FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0])
             }
             .keyboardShortcut("l", modifiers: [.command, .option])
@@ -93,12 +123,87 @@ struct ShuttleCommands: Commands {
                         .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")))
                 }
             }
+            let favs = FavoritesStore.shared.list(state.deviceKey)
+            if !favs.isEmpty {
+                Divider()
+                Menu(L("Избранное")) {
+                    ForEach(favs) { f in Button(f.title) { state.openFavorite(f) } }
+                }
+            }
+            if let fav = state.currentFavorite, state.androidPath.count > 1 {
+                Button(FavoritesStore.shared.contains(fav, device: state.deviceKey)
+                       ? L("Убрать папку из избранного") : L("Добавить папку в избранное")) { state.toggleFavorite(fav) }
+                    .keyboardShortcut("d", modifiers: [.command, .option])
+            }
+        }
+
+        // MARK: Устройство
+        CommandMenu(L("Устройство")) {
+            if phone {
+                Button(L("Скачать новые фото (%d)", state.newPhotos.count)) { state.importNewPhotos() }
+                    .keyboardShortcut("i", modifiers: [.command, .shift])
+                    .disabled(state.newPhotos.isEmpty)
+                Button(L("Синхронизация папок…")) { state.showSync = true }
+                Button(L("Добавить текущую папку в синхронизацию…")) { state.addSyncRuleForCurrentFolder() }
+                if state.device?.transport == .adb {
+                    Divider()
+                    Button(L("Снимок экрана телефона")) { state.takeScreenshot() }
+                        .keyboardShortcut("s", modifiers: [.command, .shift])
+                    Button(L("Установить APK…")) { pickAPK() }
+                }
+            }
+            if console {
+                Button(L("Установить игру…")) { pickGames() }
+                    .keyboardShortcut("i", modifiers: [.command, .shift])
+                Button(L("Установить homebrew из архива…")) { pickHomebrew() }
+                Divider()
+                Button(L("Сохранить все сейвы на Mac")) { state.backupSaves() }
+                Button(L("Обновить Atmosphère…")) { state.checkAtmosphere() }
+            }
+            if !connected {
+                Text(L("Устройство не подключено"))
+            }
         }
 
         // MARK: Справка
         CommandGroup(replacing: .help) {
-            Link("Справка Shuttle", destination: URL(string: "https://github.com/Q7N3T/shuttle#readme")!)
-            Link("Как подключить Switch", destination: URL(string: "https://github.com/Q7N3T/shuttle#подключение")!)
+            Link(L("Справка Shuttle"), destination: URL(string: "https://github.com/Q7N3T/shuttle#readme")!)
+            Link(L("Как подключить Switch"), destination: URL(string: "https://github.com/Q7N3T/shuttle#подключение")!)
+            Link(L("История версий"), destination: URL(string: "https://github.com/Q7N3T/shuttle/blob/main/CHANGELOG.md")!)
         }
+    }
+
+    // MARK: Выбор файлов
+
+    private func pick(_ types: [UTType], multiple: Bool = true, prompt: String) -> [URL] {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = multiple
+        panel.canChooseDirectories = types.isEmpty
+        panel.canChooseFiles = true
+        if !types.isEmpty { panel.allowedContentTypes = types }
+        panel.prompt = prompt
+        return panel.runModal() == .OK ? panel.urls : []
+    }
+
+    private func pickAndUpload() {
+        let urls = pick([], prompt: L("Отправить"))
+        if !urls.isEmpty { state.handleDrop(urls) }
+    }
+
+    private func pickGames() {
+        let types = GameFiles.installable.compactMap { UTType(filenameExtension: $0) }
+        let urls = pick(types, prompt: L("Установить"))
+        if !urls.isEmpty { state.pendingInstall = PendingInstall(files: urls) }
+    }
+
+    private func pickHomebrew() {
+        let urls = pick([.zip], multiple: false, prompt: L("Установить"))
+        if let u = urls.first { state.pendingHomebrew = u }
+    }
+
+    private func pickAPK() {
+        let types = [UTType(filenameExtension: "apk") ?? .data]
+        let urls = pick(types, prompt: L("Установить"))
+        if !urls.isEmpty { state.pendingAPK = urls }
     }
 }

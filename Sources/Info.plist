@@ -19,6 +19,7 @@
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>ru</string>
+		<string>en</string>
 	</array>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
@@ -32,6 +33,8 @@
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Shuttle добавляет фото и видео с телефона или Switch в «Фото».</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>

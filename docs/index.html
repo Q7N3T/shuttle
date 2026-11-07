@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shuttle — файлы между Mac, Android и Switch</title>
+<meta name="description" content="Shuttle — бесплатное приложение для macOS: перетаскивайте файлы между Mac, Android и Nintendo Switch (DBI) по кабелю.">
+<link rel="icon" href="icon-1024.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#17121A;--surface:#221A26;--line:#3A2E3F;--text:#F2EAE0;--muted:#A3959F;--accent:#E9B949;--ink:#2A1E05;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#F6F1EA;--surface:#FFFFFF;--line:#E3D8CB;--text:#1F1822;--muted:#7A6C76;color-scheme:light}}
+:root[data-theme="dark"]{--bg:#17121A;--surface:#221A26;--line:#3A2E3F;--text:#F2EAE0;--muted:#A3959F}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+img{max-width:100%;display:block}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+.logo{display:flex;gap:10px;align-items:center;font-family:var(--display);font-weight:700;text-decoration:none}
+.logo img{width:30px;height:30px;border-radius:8px}
+nav a{color:var(--muted);text-decoration:none;margin-left:22px;font-size:15px}
+nav a:hover{color:var(--text)}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:48px;align-items:center;padding:56px 0 40px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5.4vw,62px);line-height:1.08;letter-spacing:-.01em;margin:0 0 18px}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{font-size:19px;color:var(--muted);max-width:44ch;margin:0 0 30px}
+.btns{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:14px 24px;font-weight:500;text-decoration:none;font-size:16px;transition:transform .15s,filter .15s}
+.btn.primary{background:var(--accent);color:var(--ink)}
+.btn.ghost{border:1px solid var(--line)}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.small{color:var(--muted);font-size:14px;margin-top:14px}
+.icon-hero{width:min(360px,80%);margin:0 auto;filter:drop-shadow(0 30px 60px rgba(233,185,73,.25));animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+.shot{border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.35);margin:24px 0 80px}
+h2{font-family:var(--display);font-weight:500;font-size:clamp(24px,3vw,34px);margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:72px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card b{display:block;font-weight:600;margin-bottom:4px}
+.card span{color:var(--muted);font-size:15px}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;color:var(--muted);margin-bottom:14px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0 0 72px;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 20px 64px;position:relative}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:20px;top:18px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--ink);font-weight:600;display:grid;place-items:center}
+footer{color:var(--muted);font-size:14px;padding:30px 0 50px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+@media (max-width:820px){.hero{grid-template-columns:1fr;padding-top:24px}.icon-hero{width:200px;order:-1}nav a:not(:last-child){display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="logo" href="#"><img src="icon-1024.png" alt="">Shuttle</a>
+    <nav>
+      <a href="#features">Возможности</a>
+      <a href="#switch">Switch</a>
+      <a href="https://github.com/Q7N3T/shuttle/blob/main/CHANGELOG.md">История версий</a>
+      <a href="https://github.com/Q7N3T/shuttle">GitHub</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Файлы между Mac, <em>Android</em> и <em>Switch</em> — перетаскиванием</h1>
+      <p class="lead">Подключите кабель и тащите файлы туда-обратно. Фото с камеры, игры и homebrew для Switch, сейвы, синхронизация папок — в одном аккуратном окне.</p>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/Q7N3T/shuttle/releases/latest">Скачать для Mac</a>
+        <a class="btn ghost" href="https://github.com/Q7N3T/shuttle">Исходный код</a>
+      </div>
+      <p class="small">Бесплатно · macOS 14+ · Apple Silicon и Intel · обновляется само</p>
+    </div>
+    <img class="icon-hero" src="icon-1024.png" alt="Иконка Shuttle">
+  </section>
+
+  <div class="shot"><img src="screenshot-switch.png" alt="Shuttle с подключённой Nintendo Switch"></div>
+
+  <section id="features">
+    <span class="tag">Для всех</span>
+    <h2>Просто работает</h2>
+    <p class="sub">Без отладки, без настроек, без Android File Transfer.</p>
+    <div class="grid">
+      <div class="card"><b>Перетаскивание</b><span>Между панелями, из Finder и обратно в Finder. Файлы можно бросить прямо на папку.</span></div>
+      <div class="card"><b>Продолжение после обрыва</b><span>Кабель отошёл — Shuttle дождётся устройства и докачает с того же места.</span></div>
+      <div class="card"><b>Быстрый просмотр</b><span>Пробел — и файл с устройства открывается, как в Finder.</span></div>
+      <div class="card"><b>Поиск и избранное</b><span>Ищите по всем папкам, закрепляйте нужные звёздочкой.</span></div>
+      <div class="card"><b>Пакетное переименование</b><span>Шаблон с датой и номером: «2026-11-07 Отпуск 01».</span></div>
+      <div class="card"><b>История и уведомления</b><span>Что, куда и когда копировалось. Баннер, когда всё готово.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="tag">Android</span>
+    <h2>Фото — за одну кнопку</h2>
+    <p class="sub">Shuttle помнит, что уже скачано, и предлагает только новое.</p>
+    <div class="grid">
+      <div class="card"><b>«Новые фото»</b><span>Снимки камеры, которых ещё нет на Mac. HEIC сразу в JPG, если хотите.</span></div>
+      <div class="card"><b>Синхронизация папок</b><span>«Камера → ~/Pictures» — только новое, ничего не удаляется. Можно автоматически при подключении.</span></div>
+      <div class="card"><b>Превью и дубли</b><span>Миниатюры, сетка с фото и пометка «уже на Mac».</span></div>
+      <div class="card"><b>ADB по желанию</b><span>Быстрее, по Wi‑Fi, установка APK и снимок экрана телефона.</span></div>
+    </div>
+  </section>
+
+  <section id="switch">
+    <span class="tag">Nintendo Switch</span>
+    <h2>Для Switch с DBI</h2>
+    <p class="sub">Все разделы DBI — вкладками. Игры, homebrew и сейвы — без ручной раскладки.</p>
+    <div class="grid">
+      <div class="card"><b>Установка игр</b><span>Бросьте .nsp/.nsz/.xci — Shuttle передаст их в DBI на SD или NAND и проверит место.</span></div>
+      <div class="card"><b>Homebrew из архива</b><span>.zip раскладывается по папкам SD-карты: atmosphere, switch, оверлеи.</span></div>
+      <div class="card"><b>Сейвы на Mac</b><span>Одна кнопка — все сохранения в папку с датой.</span></div>
+      <div class="card"><b>Обновление Atmosphère</b><span>Скачает свежую версию с GitHub и сделает копию старой.</span></div>
+      <div class="card"><b>Альбом</b><span>Скриншоты и ролики сеткой, выгрузка в «Фото».</span></div>
+      <div class="card"><b>Понятные имена</b><span>«Mario Kart 8 Deluxe», а не 0100152000022000.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Как начать</h2>
+    <p class="sub">Минута — и готово.</p>
+    <ol class="steps">
+      <li>Скачайте DMG и перетащите Shuttle в «Программы».</li>
+      <li>Android: кабель → уведомление USB → «Передача файлов». Switch: DBI → «Run MTP responder».</li>
+      <li>Тащите файлы. Новые версии Shuttle придут сами.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <span>Shuttle — Q7N3T</span>
+    <span><a href="https://github.com/Q7N3T/shuttle/releases">Все версии</a> · <a href="https://github.com/Q7N3T/shuttle/blob/main/CHANGELOG.md">Что нового</a></span>
+  </footer>
+</div>
+</body>
+</html>

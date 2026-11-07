@@ -7,17 +7,24 @@ struct TransferPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text("Передачи").font(AppFont.display(13))
+                Text(L("Передачи")).font(AppFont.display(13))
                 Text(summary).font(AppFont.body(12)).foregroundStyle(p.muted)
                 Spacer()
+                Button { state.showHistory = true } label: {
+                    Label(L("История"), systemImage: "clock.arrow.circlepath").font(AppFont.body(12))
+                }
+                .buttonStyle(.plain).foregroundStyle(p.muted)
                 if state.transfers.contains(where: { $0.state.isFinished }) {
-                    Chip(title: "Очистить") { state.clearFinished() }
+                    Chip(title: L("Очистить")) { withAnimation { state.clearFinished() } }
                 }
             }
             if !state.transfers.isEmpty {
                 Scrollable {
                     LazyVStack(spacing: 6) {
-                        ForEach(state.transfers) { TransferRow(transfer: $0) }
+                        ForEach(state.transfers) {
+                            TransferRow(transfer: $0)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        }
                     }
                 }
                 .frame(maxHeight: min(CGFloat(state.transfers.count) * 40, 124))
@@ -25,12 +32,15 @@ struct TransferPanel: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
         .overlay(alignment: .top) { Rectangle().fill(p.line).frame(height: 1) }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.transfers.count)
     }
 
     private var summary: String {
-        let active = state.transfers.filter { !$0.state.isFinished }.count
-        if active > 0 { return "В работе: \(active)" }
-        return state.transfers.isEmpty ? "Перетащите файл между панелями" : "Всё готово"
+        let active = state.transfers.filter { $0.state.isActive }.count
+        let waiting = state.transfers.filter { $0.state == .waiting }.count
+        if active > 0 { return L("В работе: %d", active) }
+        if waiting > 0 { return L("Ждём устройство: %d", waiting) }
+        return state.transfers.isEmpty ? L("Перетащите файл между панелями") : L("Всё готово")
     }
 }
 
@@ -44,11 +54,18 @@ struct TransferRow: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(p.accent)
                 .frame(width: 14)
-            Text(transfer.name).lineLimit(1).truncationMode(.middle)
-                .frame(width: 180, alignment: .leading)
+            HStack(spacing: 6) {
+                if let label = transfer.label {
+                    Text(label).font(AppFont.body(10, .medium)).foregroundStyle(p.ink)
+                        .padding(.horizontal, 6).padding(.vertical, 1)
+                        .background(Capsule().fill(p.accent.opacity(0.85)))
+                }
+                Text(transfer.name).lineLimit(1).truncationMode(.middle)
+            }
+            .frame(width: 220, alignment: .leading)
             ProgressTrack(value: transfer.fraction,
-                          color: transfer.state == .done ? p.ok : nil)
-            status.frame(width: 120, alignment: .trailing)
+                          color: transfer.state == .done ? p.ok : (transfer.state == .waiting ? p.muted : nil))
+            status.frame(width: 140, alignment: .trailing)
             trailing
         }
         .font(AppFont.body(12))
@@ -61,31 +78,43 @@ struct TransferRow: View {
     private var status: some View {
         switch transfer.state {
         case .queued:
-            Text("В очереди").foregroundStyle(p.muted)
+            Text(L("В очереди")).foregroundStyle(p.muted)
         case .running:
-            Text("\(Int(transfer.fraction * 100))% · \(speed)")
+            Text(transfer.total == 0 ? L("Готовим…") : "\(Int(transfer.fraction * 100))% · \(speed)")
                 .monospacedDigit().foregroundStyle(p.muted)
+        case .waiting:
+            Label(L("Ждём устройство"), systemImage: "pause.circle").foregroundStyle(p.accent)
+                .help(L("Связь прервалась. Подключите то же устройство — передача продолжится сама."))
         case .done:
             Text(formatBytes(transfer.total)).foregroundStyle(p.muted)
         case .cancelled:
-            Text("Отменено").foregroundStyle(p.muted)
+            Text(L("Отменено")).foregroundStyle(p.muted)
         case .failed(let m):
-            Text("Ошибка").foregroundStyle(p.danger).help(m)
+            Text(L("Ошибка")).foregroundStyle(p.danger).help(m)
         }
     }
 
     @ViewBuilder
     private var trailing: some View {
         switch transfer.state {
-        case .queued, .running:
-            IconButton(systemName: "xmark", help: "Отменить") { transfer.cancel() }
+        case .queued, .running, .waiting:
+            IconButton(systemName: "xmark", help: L("Отменить")) { transfer.cancel() }
         case .done:
             if let url = transfer.resultURL {
-                IconButton(systemName: "magnifyingglass", help: "Показать в Finder") {
+                IconButton(systemName: "magnifyingglass", help: L("Показать в Finder")) {
                     NSWorkspace.shared.activateFileViewerSelecting([url])
                 }
             } else {
                 Image(systemName: "checkmark").foregroundStyle(p.ok).frame(width: 26)
+            }
+        case .failed:
+            if transfer.restart != nil {
+                IconButton(systemName: "arrow.clockwise", help: L("Повторить")) {
+                    transfer.prepareRetry()
+                    transfer.restart?()
+                }
+            } else {
+                Color.clear.frame(width: 26, height: 26)
             }
         default:
             Color.clear.frame(width: 26, height: 26)
@@ -93,8 +122,6 @@ struct TransferRow: View {
     }
 
     private var speed: String {
-        transfer.bytesPerSecond > 0 ? "\(formatBytes(UInt64(transfer.bytesPerSecond)))/с" : "…"
+        transfer.bytesPerSecond > 0 ? "\(formatBytes(UInt64(transfer.bytesPerSecond)))/\(L("с"))" : "…"
     }
-
-    private var font: Font { AppFont.body(12) }
 }

@@ -17,7 +17,7 @@ targets:
       - path: Resources/Fonts
         type: folder
         buildPhase: resources
-      - path: Resources/ru.lproj
+      - path: Resources/Localized
     dependencies:
       - package: Sparkle
     preBuildScripts:
@@ -29,7 +29,8 @@ targets:
       properties:
         CFBundleDisplayName: Shuttle
         CFBundleDevelopmentRegion: ru
-        CFBundleLocalizations: [ru]
+        CFBundleLocalizations: [ru, en]
+        NSPhotoLibraryAddUsageDescription: Shuttle добавляет фото и видео с телефона или Switch в «Фото».
         CFBundleAllowMixedLocalizations: true
         CFBundleShortVersionString: "0.3.1"
         CFBundleVersion: "5"

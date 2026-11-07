@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "Shuttle";
+"CFBundleName" = "Shuttle";
+"NSPhotoLibraryAddUsageDescription" = "Shuttle добавляет фото и видео с телефона или Switch в «Фото».";

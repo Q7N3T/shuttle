@@ -3,7 +3,8 @@ import SwiftUI
 @main
 struct ShuttleApp: App {
     @StateObject private var state = AppState()
-    @StateObject private var updates = UpdateModel()
+    @StateObject private var updates = UpdateModel(start: !AppFolders.testing)
+    @ObservedObject private var settings = AppSettings.shared
     @AppStorage("theme") private var theme: ThemeMode = .system
 
     init() {
@@ -14,27 +15,36 @@ struct ShuttleApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             ThemedRoot(theme: theme) {
                 ContentView()
                     .overlay { UpdateOverlay() }
             }
             .environmentObject(state)
             .environmentObject(updates)
-            .frame(minWidth: 820, minHeight: 560)
+            .frame(minWidth: 860, minHeight: 580)
+            // Смена языка — пересобираем интерфейс.
+            .id(settings.language)
         }
         .windowToolbarStyle(.unified(showsTitle: false))
-        .defaultSize(width: 1040, height: 700)
+        .defaultSize(width: 1100, height: 720)
         .commands {
             ShuttleCommands(state: state, theme: $theme)
             CommandGroup(after: .appInfo) {
-                Button("Проверить обновления…") { updates.checkNow() }
+                Button(L("Проверить обновления…")) { updates.checkNow() }
             }
         }
 
         Settings {
             ThemedRoot(theme: theme) { SettingsView() }
                 .environmentObject(updates)
+                .id(settings.language)
+        }
+
+        MenuBarExtra(isInserted: $settings.menuBarIcon) {
+            MenuBarView().environmentObject(state)
+        } label: {
+            Image(nsImage: MenuBarIcon.image)
         }
     }
 }
