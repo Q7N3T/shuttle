@@ -6,6 +6,16 @@
     <description>Обновления Shuttle</description>
     <language>ru</language>
     <item>
+      <title>Shuttle 0.3.1</title>
+      <pubDate>Sat, 07 Nov 2026 15:04:36 +0300</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>0.3.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.3.1</link>
+      <description><![CDATA[<ul><li>Новая шапка окна: выше, логотип и кнопки на одной линии с кнопками закрытия и сворачивания</li><li>Логотип и название крупнее, переключатели темы в аккуратной капсуле</li></ul>]]></description>
+      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.3.1/Shuttle-0.3.1.dmg" sparkle:edSignature="Rn7wRddBKa/qIS+uliYE11gFsi6pJ5ijIbVACOxtZW6rgu0mMKni/XiUO1VD5ewbrR5DlEOBOS4jp13+78qWBQ==" length="4328050" type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Shuttle 0.3.0</title>
       <pubDate>Sat, 07 Nov 2026 14:51:19 +0300</pubDate>
       <sparkle:version>4</sparkle:version>
