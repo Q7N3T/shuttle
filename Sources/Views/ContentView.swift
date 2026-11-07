@@ -4,21 +4,26 @@ struct ContentView: View {
     @EnvironmentObject private var state: AppState
     @Environment(\.palette) private var p
     @AppStorage("theme") private var theme: ThemeMode = .system
+    @AppStorage("showMacPane") private var showMac = true
 
     var body: some View {
         VStack(spacing: 0) {
             topBar
             DeviceCard()
-                .padding(.horizontal, 18).padding(.top, 4).padding(.bottom, 12)
-            if state.connection.info != nil {
-                quickFolders.padding(.horizontal, 18).padding(.bottom, 12)
+                .padding(.horizontal, 16).padding(.bottom, 10)
+            if let device = state.device {
+                tabs(device).padding(.horizontal, 16).padding(.bottom, 10)
             }
-            HStack(spacing: 12) {
-                MacPane()
-                AndroidPane()
+            HStack(spacing: 10) {
+                if showMac {
+                    MacPane(snapshotWidth: 470)
+                        .transition(.move(edge: .leading).combined(with: .opacity))
+                }
+                DevicePane(snapshotWidth: showMac ? 470 : 1000)
             }
-            .padding(.horizontal, 18)
-            .padding(.bottom, 14)
+            .animation(.easeOut(duration: 0.18), value: showMac)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
             TransferPanel()
         }
         .background(p.bg)
@@ -35,30 +40,49 @@ struct ContentView: View {
     }
 
     private var topBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             // Место под «светофор» окна.
-            Color.clear.frame(width: 66, height: 1)
-            DroidMark(size: 20)
-            Text("Shuttle").font(AppFont.display(14, .bold))
+            Color.clear.frame(width: 62, height: 1)
+            DroidMark(size: 18)
+            Text("Shuttle").font(AppFont.display(13, .bold))
             Spacer()
-            HStack(spacing: 6) {
+            IconButton(systemName: "sidebar.left", help: showMac ? "Скрыть панель Mac" : "Показать панель Mac") {
+                showMac.toggle()
+            }
+            HStack(spacing: 2) {
                 ForEach(ThemeMode.allCases) { m in
-                    Chip(title: m.title, isOn: theme == m) { theme = m }
+                    IconChip(systemName: m.icon, isOn: theme == m, help: m.title) { theme = m }
                 }
             }
+            .padding(2)
+            .overlay(Capsule().stroke(p.line, lineWidth: 1))
         }
-        .padding(.horizontal, 18)
-        .frame(height: 52)
+        .padding(.horizontal, 16)
+        .frame(height: 44)
         .overlay(alignment: .bottom) { Rectangle().fill(p.line).frame(height: 1) }
-        .padding(.bottom, 12)
+        .padding(.bottom, 10)
     }
 
-    private var quickFolders: some View {
+    /// Вкладки разделов (SD Card, Nand USER…) и быстрые папки телефона.
+    private func tabs(_ device: DeviceInfo) -> some View {
         Scrollable(axis: .horizontal) {
             HStack(spacing: 6) {
-                ForEach(QuickFolder.android) { q in
-                    Chip(title: q.title, icon: q.icon, isOn: state.activeQuick == q.id) {
-                        state.openQuick(q)
+                if device.storages.count > 1 || device.kind == .console {
+                    ForEach(device.storages) { s in
+                        Chip(title: s.name, icon: s.icon, isOn: state.storageID == s.id) {
+                            state.selectStorage(s.id)
+                        }
+                        .help(s.capacity > 0 ? "\(formatBytes(s.free)) свободно из \(formatBytes(s.capacity))" : s.name)
+                    }
+                }
+                if device.kind == .phone {
+                    if device.storages.count > 1 {
+                        Rectangle().fill(p.line).frame(width: 1, height: 18).padding(.horizontal, 4)
+                    }
+                    ForEach(QuickFolder.android) { q in
+                        Chip(title: q.title, icon: q.icon, isOn: state.activeQuick == q.id) {
+                            state.openQuick(q)
+                        }
                     }
                 }
             }
@@ -71,34 +95,41 @@ struct DeviceCard: View {
     @Environment(\.palette) private var p
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12).fill(p.surface)
-                RoundedRectangle(cornerRadius: 12).stroke(p.line, lineWidth: 1)
-                Image(systemName: "iphone.gen3")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(state.connection.info != nil ? p.accent : p.muted)
+                RoundedRectangle(cornerRadius: 10).fill(p.surface)
+                RoundedRectangle(cornerRadius: 10).stroke(p.line, lineWidth: 1)
+                if state.device?.kind == .console {
+                    JoyConMark(size: 20)
+                } else {
+                    Image(systemName: "iphone.gen3")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(state.device != nil ? p.accent : p.muted)
+                }
             }
-            .frame(width: 40, height: 40)
+            .frame(width: 34, height: 34)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(AppFont.display(14))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(AppFont.display(13))
                 Text(subtitle).font(AppFont.body(12)).foregroundStyle(p.muted).lineLimit(2)
             }
             Spacer(minLength: 12)
 
-            if let info = state.connection.info {
-                VStack(alignment: .trailing, spacing: 6) {
-                    ProgressTrack(value: info.capacity == 0 ? 0 : 1 - Double(info.free) / Double(info.capacity),
-                                  color: p.muted)
-                        .frame(width: 140)
+            if let info = state.device {
+                VStack(alignment: .trailing, spacing: 5) {
+                    if let s = state.currentStorage, s.capacity > 0 {
+                        ProgressTrack(value: 1 - Double(s.free) / Double(s.capacity), color: p.muted, height: 5)
+                            .frame(width: 130)
+                    }
                     HStack(spacing: 10) {
                         if let b = info.battery {
                             Label("\(b)%", systemImage: batteryIcon(b))
                                 .font(AppFont.body(11)).foregroundStyle(p.muted)
                         }
-                        Text("\(formatBytes(info.free)) свободно")
-                            .font(AppFont.body(11)).foregroundStyle(p.muted)
+                        if let s = state.currentStorage, s.capacity > 0 {
+                            Text("\(formatBytes(s.free)) свободно")
+                                .font(AppFont.body(11)).foregroundStyle(p.muted)
+                        }
                     }
                 }
             }
@@ -107,13 +138,16 @@ struct DeviceCard: View {
     }
 
     private var title: String {
-        state.connection.info?.name ?? "Телефон не подключён"
+        state.device?.name ?? "Устройство не подключено"
     }
 
     private var subtitle: String {
         switch state.connection {
-        case .connected(let i): "USB · \(i.storageName) · \(formatBytes(i.capacity))"
-        case .searching: "Подключите Android кабелем и выберите «Передача файлов»"
+        case .connected(let i):
+            i.kind == .console
+                ? "USB · MTP · разделов: \(i.storages.count)"
+                : "USB · \(state.currentStorage?.name ?? i.storageName) · \(formatBytes(state.currentStorage?.capacity ?? i.capacity))"
+        case .searching: "Android или Switch с DBI по кабелю USB"
         case .busy: MTPError.busy.localizedDescription
         case .locked: MTPError.locked.localizedDescription
         }

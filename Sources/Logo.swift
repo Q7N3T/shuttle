@@ -85,3 +85,36 @@ struct AppIconView: View {
         .frame(width: 1024, height: 1024)
     }
 }
+
+/// Значок Switch: две половинки Joy-Con в золотом цвете, тёмные стики.
+struct JoyConMark: View {
+    var size: CGFloat = 18
+    var color: Color = Color(hex: 0xE9B949)
+    var dot: Color = Color(hex: 0x2A1E05)
+
+    var body: some View {
+        Canvas { ctx, s in
+            let w = s.width, h = s.height
+            let top = h * 0.06, bottom = h * 0.94, gap = w * 0.06
+            let half = (w * 0.76 - gap) / 2
+            let outer = half * 0.95, inner = w * 0.04
+            let left = CGRect(x: w * 0.12, y: top, width: half, height: bottom - top)
+            let right = CGRect(x: left.maxX + gap, y: top, width: half, height: bottom - top)
+            let l = UnevenRoundedRectangle(topLeadingRadius: outer, bottomLeadingRadius: outer,
+                                           bottomTrailingRadius: inner, topTrailingRadius: inner,
+                                           style: .continuous).path(in: left)
+            let r = UnevenRoundedRectangle(topLeadingRadius: inner, bottomLeadingRadius: inner,
+                                           bottomTrailingRadius: outer, topTrailingRadius: outer,
+                                           style: .continuous).path(in: right)
+            ctx.fill(l, with: .color(color))
+            ctx.fill(r, with: .color(color))
+            let rad = half * 0.26
+            for c in [CGPoint(x: left.midX + half * 0.06, y: top + (bottom - top) * 0.30),
+                      CGPoint(x: right.midX - half * 0.06, y: top + (bottom - top) * 0.58)] {
+                ctx.fill(Path(ellipseIn: CGRect(x: c.x - rad, y: c.y - rad, width: rad * 2, height: rad * 2)),
+                         with: .color(dot))
+            }
+        }
+        .frame(width: size, height: size)
+    }
+}

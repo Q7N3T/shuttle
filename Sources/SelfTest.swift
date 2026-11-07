@@ -48,13 +48,18 @@ enum SelfTest {
         print("— Подключение")
         guard let info = step("Подключение к телефону", { try svc.connectIfNeeded() }) else { return 1 }
         print("   \(info.name) · \(info.storageName) · свободно \(formatBytes(info.free)) из \(formatBytes(info.capacity)) · заряд \(info.battery.map { "\($0)%" } ?? "—")")
-        check("Память видна", info.capacity > 0)
+        print("   Разделов: \(info.storages.count), тип: \(info.kind == .console ? "консоль" : "телефон")")
+        for st in info.storages {
+            let n = (try? svc.list(storage: st.id, parent: mtpRoot).count).map(String.init) ?? "ошибка"
+            print("   • \(st.name): \(n) объектов в корне, свободно \(formatBytes(st.free)) из \(formatBytes(st.capacity))")
+        }
+        check("Разделы видны", !info.storages.isEmpty)
         _ = step("Повторный опрос (heartbeat)") { try svc.heartbeat() }
 
         print("— Чтение")
         let root = step("Список корня") { try svc.list(storage: info.storageID, parent: mtpRoot) } ?? []
         print("   В корне \(root.count): \(root.prefix(8).map { $0.isFolder ? $0.name + "/" : $0.name }.joined(separator: ", "))")
-        for q in QuickFolder.android where !q.path.isEmpty {
+        for q in QuickFolder.android where info.kind == .phone {
             let t0 = Date()
             do {
                 let c = try svc.resolve(path: q.path, storage: info.storageID)
@@ -67,7 +72,7 @@ enum SelfTest {
 
         print("— Запись (папка ShuttleSelfTest)")
         // Убираем хвосты от прошлого прогона.
-        for old in root where old.isFolder && old.name == "ShuttleSelfTest" { try? deleteTree(svc, old) }
+        for old in root where old.isFolder && old.name == "ShuttleSelfTest" { try? svc.deleteTree(old) }
 
         guard let folder = step("Создание папки", {
             try svc.createFolder("ShuttleSelfTest", parent: mtpRoot, storage: info.storageID)
@@ -167,7 +172,7 @@ enum SelfTest {
         }
         let current = (try? svc.list(storage: info.storageID, parent: mtpRoot)) ?? []
         if let f = current.first(where: { $0.id == folder }) {
-            _ = step("Удаление ShuttleSelfTest целиком") { try deleteTree(svc, f) }
+            _ = step("Удаление ShuttleSelfTest целиком") { try svc.deleteTree(f) }
         }
         let rootAfter = (try? svc.list(storage: info.storageID, parent: mtpRoot)) ?? []
         check("Папка удалена с телефона", !rootAfter.contains { $0.name == "ShuttleSelfTest" })
@@ -177,12 +182,5 @@ enum SelfTest {
         return failures == 0 ? 0 : 1
     }
 
-    /// MTP не всегда удаляет непустые папки, поэтому идём снизу вверх.
-    static func deleteTree(_ svc: MTPService, _ item: RemoteItem) throws {
-        if item.isFolder {
-            for c in try svc.list(storage: item.storageID, parent: item.id) { try deleteTree(svc, c) }
-        }
-        try svc.delete(item.id)
-    }
 }
 #endif

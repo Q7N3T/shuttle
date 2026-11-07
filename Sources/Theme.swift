@@ -65,6 +65,13 @@ enum ThemeMode: String, CaseIterable, Identifiable {
         case .light: "Светлая"
         }
     }
+    var icon: String {
+        switch self {
+        case .system: "circle.lefthalf.filled"
+        case .dark: "moon"
+        case .light: "sun.max"
+        }
+    }
     var scheme: ColorScheme? {
         switch self {
         case .system: nil
@@ -91,7 +98,7 @@ struct Chip: View {
                 if let icon { Image(systemName: icon).font(.system(size: 11, weight: .medium)) }
                 Text(title).font(AppFont.body(12, isOn ? .medium : .regular))
             }
-            .padding(.horizontal, 12).padding(.vertical, 5)
+            .padding(.horizontal, 10).padding(.vertical, 4)
             .foregroundStyle(isOn ? p.ink : p.text)
             .background(Capsule().fill(isOn ? p.accent : .clear))
             .overlay(Capsule().stroke(isOn ? p.accent : (hover ? p.muted : p.line), lineWidth: 1))
@@ -99,6 +106,28 @@ struct Chip: View {
         }
         .buttonStyle(.plain)
         .onHover { hover = $0 }
+    }
+}
+
+/// Маленький переключатель-иконка (тема).
+struct IconChip: View {
+    @Environment(\.palette) private var p
+    let systemName: String
+    let isOn: Bool
+    let help: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 11, weight: .medium))
+                .frame(width: 26, height: 22)
+                .foregroundStyle(isOn ? p.ink : p.muted)
+                .background(Capsule().fill(isOn ? p.accent : .clear))
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .help(help)
     }
 }
 
@@ -167,7 +196,7 @@ struct Scrollable<Content: View>: View {
         if snap && axis == .horizontal {
             content.frame(maxWidth: .infinity, alignment: .leading)
         } else if snap {
-            content.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            content.frame(maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .topLeading).clipped()
         } else {
             ScrollView(axis, showsIndicators: axis == .vertical) { content }
         }

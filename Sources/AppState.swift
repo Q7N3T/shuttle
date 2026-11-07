@@ -13,7 +13,21 @@ struct LocalItem: Identifiable, Hashable {
     let url: URL
     let name: String
     let size: UInt64
+    let modified: Date
     let isFolder: Bool
+}
+
+/// Папка на устройстве: раздел + id папки.
+struct FolderKey: Hashable {
+    let storage: UInt32
+    let folder: UInt32
+}
+
+/// Строка дерева: элемент и глубина вложенности.
+struct RemoteRow: Identifiable {
+    let item: RemoteItem
+    let depth: Int
+    var id: UInt32 { item.id }
 }
 
 enum Connection: Equatable {
@@ -28,6 +42,13 @@ enum Connection: Equatable {
     }
 }
 
+enum SortKey: String { case name, date, size }
+
+struct SortOrder: Equatable {
+    var key: SortKey = .name
+    var ascending = true
+}
+
 struct QuickFolder: Identifiable {
     let id: String
     let title: String
@@ -35,7 +56,6 @@ struct QuickFolder: Identifiable {
     let path: [String]
 
     static let android: [QuickFolder] = [
-        .init(id: "root", title: "Вся память", icon: "internaldrive", path: []),
         .init(id: "camera", title: "Камера", icon: "camera", path: ["DCIM", "Camera"]),
         .init(id: "download", title: "Загрузки", icon: "arrow.down.circle", path: ["Download"]),
         .init(id: "pictures", title: "Фото", icon: "photo", path: ["Pictures"]),
@@ -49,13 +69,23 @@ struct QuickFolder: Identifiable {
 final class AppState: ObservableObject {
     private let mtp = MTPService.shared
 
-    // Телефон
+    // Устройство
     @Published var connection: Connection = .searching
+    @Published var storageID: UInt32?
     @Published var androidPath: [Crumb] = []
-    @Published var androidItems: [RemoteItem] = []
-    @Published var androidLoading = false
     @Published var androidSelection: Set<UInt32> = []
-    @Published var activeQuick: String? = "root"
+    @Published var activeQuick: String?
+    @Published var expanded: Set<FolderKey> = []
+    @Published private(set) var loadingKeys: Set<FolderKey> = []
+    /// Кэш списков папок: большие папки MTP отдаёт секундами
+    /// (Камера с 600+ фото — около 16 с на Huawei), поэтому повторно не перечитываем.
+    @Published private(set) var cache: [FolderKey: [RemoteItem]] = [:]
+
+    // Вид
+    @Published var sort = SortOrder()
+    @Published var showHidden: Bool = UserDefaults.standard.bool(forKey: "showHidden") {
+        didSet { UserDefaults.standard.set(showHidden, forKey: "showHidden") }
+    }
 
     // Mac
     @Published var macURL: URL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0]
@@ -66,7 +96,7 @@ final class AppState: ObservableObject {
     @Published var transfers: [Transfer] = []
     @Published var errorMessage: String?
 
-    /// Что сейчас тащим из панели Android внутри приложения.
+    /// Что сейчас тащим из панели устройства внутри приложения.
     var draggingRemote: [RemoteItem] = []
 
     private var monitor: Task<Void, Never>?
@@ -82,24 +112,78 @@ final class AppState: ObservableObject {
         }
     }
 
-    var hasActiveTransfers: Bool { transfers.contains { !$0.state.isFinished } }
-    var storageID: UInt32? { connection.info?.storageID }
+    // MARK: Производные
+
+    var device: DeviceInfo? { connection.info }
+    var currentStorage: StorageInfo? { device?.storages.first { $0.id == storageID } }
     var currentAndroidFolder: UInt32 { androidPath.last?.id ?? mtpRoot }
+    var currentKey: FolderKey? { storageID.map { FolderKey(storage: $0, folder: currentAndroidFolder) } }
+    var androidLoading: Bool { currentKey.map(loadingKeys.contains) ?? false }
+    var hasActiveTransfers: Bool { transfers.contains { !$0.state.isFinished } }
+
+    /// На телефоне служебные папки с точкой прячем; на Switch они нужны (.overlays).
+    var hidesDotFiles: Bool { !showHidden && device?.kind == .phone }
+
+    var androidItems: [RemoteItem] {
+        guard let k = currentKey else { return [] }
+        return arranged(cache[k] ?? [])
+    }
+
+    /// Текущая папка с раскрытыми подпапками, развёрнутая в плоский список.
+    var androidRows: [RemoteRow] {
+        guard let k = currentKey else { return [] }
+        var rows: [RemoteRow] = []
+        func add(_ key: FolderKey, depth: Int) {
+            for item in arranged(cache[key] ?? []) {
+                rows.append(RemoteRow(item: item, depth: depth))
+                let child = FolderKey(storage: item.storageID, folder: item.id)
+                if item.isFolder, expanded.contains(child), depth < 12 { add(child, depth: depth + 1) }
+            }
+        }
+        add(k, depth: 0)
+        return rows
+    }
+
+    func isExpanded(_ item: RemoteItem) -> Bool {
+        expanded.contains(FolderKey(storage: item.storageID, folder: item.id))
+    }
+
+    func isLoading(_ item: RemoteItem) -> Bool {
+        loadingKeys.contains(FolderKey(storage: item.storageID, folder: item.id))
+    }
+
+    private func arranged(_ items: [RemoteItem]) -> [RemoteItem] {
+        let visible = hidesDotFiles ? items.filter { !$0.name.hasPrefix(".") } : items
+        return visible.sorted { a, b in
+            if a.isFolder != b.isFolder { return a.isFolder }
+            let r: Bool
+            switch sort.key {
+            case .name: r = a.name.localizedStandardCompare(b.name) == .orderedAscending
+            case .date: r = a.modified < b.modified
+            case .size: r = a.size < b.size
+            }
+            return sort.ascending ? r : !r
+        }
+    }
+
+    func toggleSort(_ key: SortKey) {
+        if sort.key == key { sort.ascending.toggle() } else { sort = SortOrder(key: key, ascending: key == .name) }
+        loadMac()
+    }
 
     // MARK: Подключение
 
     private func tick() async {
         // Во время передачи очередь MTP занята, лишние запросы не шлём.
-        if hasActiveTransfers || androidLoading { return }
-        let wasConnected = connection.info != nil
+        if hasActiveTransfers || !loadingKeys.isEmpty { return }
+        let wasConnected = device != nil
         do {
             let info = try await mtp.run { try $0.connectIfNeeded() }
             connection = .connected(info)
-            if !wasConnected {
-                androidCache = [:]
-                androidPath = [Crumb(id: mtpRoot, name: info.storageName)]
-                activeQuick = "root"
-                await loadAndroid()
+            if !wasConnected || !info.storages.contains(where: { $0.id == storageID }) {
+                cache = [:]
+                expanded = []
+                selectStorage(info.storages[0].id)
             }
         } catch let e as MTPError {
             switch e {
@@ -107,44 +191,65 @@ final class AppState: ObservableObject {
             case .locked: connection = .locked
             default: connection = .searching
             }
-            if wasConnected {
-                androidCache = [:]
-                androidItems = []
-                androidPath = []
-                androidSelection = []
-            }
+            if wasConnected { resetDevice() }
         } catch {
             connection = .searching
         }
     }
 
-    // MARK: Android
+    private func resetDevice() {
+        cache = [:]
+        expanded = []
+        storageID = nil
+        androidPath = []
+        androidSelection = []
+    }
 
-    /// Кэш списков папок: на больших папках MTP отвечает секундами
-    /// (Камера с 600+ фото — около 17 с на Huawei), поэтому повторно не перечитываем.
-    private var androidCache: [UInt32: [RemoteItem]] = [:]
+    // MARK: Навигация по устройству
+
+    func selectStorage(_ id: UInt32) {
+        guard let s = device?.storages.first(where: { $0.id == id }) else { return }
+        storageID = id
+        androidPath = [Crumb(id: mtpRoot, name: s.name)]
+        androidSelection = []
+        activeQuick = nil
+        Task { await loadAndroid(force: false) }
+    }
+
+    private func fetch(_ key: FolderKey, force: Bool) async {
+        if !force, cache[key] != nil { return }
+        if loadingKeys.contains(key) { return }
+        loadingKeys.insert(key)
+        defer { loadingKeys.remove(key) }
+        do {
+            cache[key] = try await mtp.run { try $0.list(storage: key.storage, parent: key.folder) }
+        } catch {
+            show(error)
+        }
+    }
 
     /// `force: false` — взять из кэша, если папка уже открывалась.
     func loadAndroid(force: Bool = true) async {
-        guard let storage = storageID else { return }
-        let folder = currentAndroidFolder
-        if !force, let cached = androidCache[folder] {
-            androidItems = cached
-            androidSelection = []
-            return
-        }
-        androidLoading = true
-        defer { androidLoading = false }
-        do {
-            let items = try await mtp.run { try $0.list(storage: storage, parent: folder) }
-                .filter { !$0.name.hasPrefix(".") } // служебные папки вроде .RecycleBinHW
-            androidCache[folder] = items
-            // Пока грузилось, могли уйти в другую папку.
-            guard currentAndroidFolder == folder else { return }
-            androidItems = items
-            androidSelection = []
-        } catch {
-            show(error)
+        guard let k = currentKey else { return }
+        await fetch(k, force: force)
+        androidSelection = []
+    }
+
+    /// Кнопка «Обновить»: текущая папка и все раскрытые в ней.
+    func refreshAndroid() {
+        guard let k = currentKey else { return }
+        let keys = [k] + expanded.filter { $0.storage == k.storage && cache[$0] != nil }
+        Task { for key in keys { await fetch(key, force: true) } }
+    }
+
+    func toggleExpand(_ item: RemoteItem) {
+        guard item.isFolder else { return }
+        let key = FolderKey(storage: item.storageID, folder: item.id)
+        if expanded.contains(key) {
+            expanded.remove(key)
+        } else {
+            expanded.insert(key)
+            Task { await fetch(key, force: false) }
         }
     }
 
@@ -158,7 +263,7 @@ final class AppState: ObservableObject {
     func goToCrumb(_ index: Int) {
         guard index < androidPath.count - 1 else { return }
         androidPath = Array(androidPath.prefix(index + 1))
-        activeQuick = index == 0 ? "root" : nil
+        activeQuick = nil
         Task { await loadAndroid(force: false) }
     }
 
@@ -167,38 +272,48 @@ final class AppState: ObservableObject {
     }
 
     func openQuick(_ q: QuickFolder) {
-        guard let info = connection.info else { return }
+        guard let storage = currentStorage else { return }
         activeQuick = q.id
         Task {
             do {
-                let crumbs = try await mtp.run { try $0.resolve(path: q.path, storage: info.storageID) }
-                androidPath = [Crumb(id: mtpRoot, name: info.storageName)] + crumbs.map { Crumb(id: $0.id, name: $0.name) }
+                let crumbs = try await mtp.run { try $0.resolve(path: q.path, storage: storage.id) }
+                androidPath = [Crumb(id: mtpRoot, name: storage.name)] + crumbs.map { Crumb(id: $0.id, name: $0.name) }
                 await loadAndroid(force: false)
             } catch {
+                activeQuick = nil
                 show(error)
             }
         }
     }
 
+    private func parentKey(_ item: RemoteItem) -> FolderKey {
+        FolderKey(storage: item.storageID, folder: item.parentID == 0 ? mtpRoot : item.parentID)
+    }
+
+    /// Перечитать папку после изменения: текущую — всегда, остальные — если уже в кэше.
+    private func invalidate(_ key: FolderKey) async {
+        if key == currentKey || cache[key] != nil { await fetch(key, force: true) }
+    }
+
     func createAndroidFolder(_ name: String) {
-        guard let storage = storageID, !name.isEmpty else { return }
-        let parent = currentAndroidFolder
+        guard let k = currentKey, !name.isEmpty else { return }
         Task {
             do {
-                _ = try await mtp.run { try $0.createFolder(name, parent: parent, storage: storage) }
-                await loadAndroid()
+                _ = try await mtp.run { try $0.createFolder(name, parent: k.folder, storage: k.storage) }
             } catch { show(error) }
+            await invalidate(k)
         }
     }
 
     func deleteAndroid(_ items: [RemoteItem]) {
+        let parents = Set(items.map(parentKey))
         Task {
             do {
                 try await mtp.run { svc in
-                    for i in items { try svc.delete(i.id) }
+                    for i in items { try svc.deleteTree(i) }
                 }
             } catch { show(error) }
-            await loadAndroid()
+            for p in parents { await invalidate(p) }
             await refreshDevice()
         }
     }
@@ -207,12 +322,13 @@ final class AppState: ObservableObject {
         guard !name.isEmpty, name != item.name else { return }
         Task {
             do { try await mtp.run { try $0.rename(item.id, to: name) } } catch { show(error) }
-            await loadAndroid()
+            await invalidate(parentKey(item))
         }
     }
 
     func selectedRemote(orItem item: RemoteItem) -> [RemoteItem] {
-        androidSelection.contains(item.id) ? androidItems.filter { androidSelection.contains($0.id) } : [item]
+        guard androidSelection.contains(item.id) else { return [item] }
+        return androidRows.map(\.item).filter { androidSelection.contains($0.id) }
     }
 
     private func refreshDevice() async {
@@ -223,26 +339,31 @@ final class AppState: ObservableObject {
 
     func loadMac() {
         let fm = FileManager.default
-        let keys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey]
+        let keys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey]
         let urls = (try? fm.contentsOfDirectory(at: macURL, includingPropertiesForKeys: keys,
                                                 options: [.skipsHiddenFiles])) ?? []
-        macItems = urls.map { u in
+        let items = urls.map { u in
             let v = try? u.resourceValues(forKeys: Set(keys))
-            return LocalItem(url: u, name: u.lastPathComponent,
-                             size: UInt64(v?.fileSize ?? 0), isFolder: v?.isDirectory ?? false)
+            return LocalItem(url: u, name: u.lastPathComponent, size: UInt64(v?.fileSize ?? 0),
+                             modified: v?.contentModificationDate ?? .distantPast,
+                             isFolder: v?.isDirectory ?? false)
         }
-        .sorted {
-            if $0.isFolder != $1.isFolder { return $0.isFolder }
-            return $0.name.localizedStandardCompare($1.name) == .orderedAscending
+        macItems = items.sorted { a, b in
+            if a.isFolder != b.isFolder { return a.isFolder }
+            let r: Bool
+            switch sort.key {
+            case .name: r = a.name.localizedStandardCompare(b.name) == .orderedAscending
+            case .date: r = a.modified < b.modified
+            case .size: r = a.size < b.size
+            }
+            return sort.ascending ? r : !r
         }
         macSelection = macSelection.filter { s in macItems.contains { $0.url == s } }
     }
 
     func openMac(_ item: LocalItem) {
         if item.isFolder {
-            macURL = item.url
-            macSelection = []
-            loadMac()
+            setMac(item.url)
         } else {
             NSWorkspace.shared.open(item.url)
         }
@@ -251,9 +372,7 @@ final class AppState: ObservableObject {
     func macUp() {
         let parent = macURL.deletingLastPathComponent()
         guard parent.path != macURL.path else { return }
-        macURL = parent
-        macSelection = []
-        loadMac()
+        setMac(parent)
     }
 
     func setMac(_ url: URL) {
@@ -296,10 +415,10 @@ final class AppState: ObservableObject {
         }
     }
 
-    func upload(_ urls: [URL]) {
-        guard let storage = storageID, !urls.isEmpty else { return }
-        let parent = currentAndroidFolder
-        let folderAtStart = androidPath
+    /// Загрузить на устройство: в текущую папку или в папку, на которую бросили файлы.
+    func upload(_ urls: [URL], into folder: RemoteItem? = nil) {
+        guard let current = currentKey, !urls.isEmpty else { return }
+        let key = folder.map { FolderKey(storage: $0.storageID, folder: $0.id) } ?? current
         for url in urls {
             let t = Transfer(name: url.lastPathComponent, direction: .toAndroid)
             transfers.insert(t, at: 0)
@@ -307,17 +426,19 @@ final class AppState: ObservableObject {
                 do {
                     try await mtp.run { svc in
                         t.began()
-                        try svc.uploadTree([url], parent: parent, storage: storage, token: t.token) { t.report($0, $1) }
+                        try svc.uploadTree([url], parent: key.folder, storage: key.storage, token: t.token) {
+                            t.report($0, $1)
+                        }
                     }
                     t.finish(nil)
                 } catch { t.finish(error) }
-                if androidPath == folderAtStart { await loadAndroid() }
+                await invalidate(key)
                 await refreshDevice()
             }
         }
     }
 
-    /// Перетаскивание файла с телефона прямо в Finder:
+    /// Перетаскивание файла с устройства прямо в Finder:
     /// Finder просит файл, мы скачиваем его во временную папку и отдаём.
     nonisolated func itemProvider(for item: RemoteItem, state: AppState) -> NSItemProvider {
         let provider = NSItemProvider()
@@ -357,4 +478,9 @@ final class AppState: ObservableObject {
     func show(_ error: Error) {
         errorMessage = error.localizedDescription
     }
+
+    #if DEBUG
+    /// Для снимков: подложить содержимое папки без устройства.
+    func previewSet(_ key: FolderKey, _ items: [RemoteItem]) { cache[key] = items }
+    #endif
 }

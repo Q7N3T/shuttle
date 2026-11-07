@@ -5,7 +5,7 @@ struct TransferPanel: View {
     @Environment(\.palette) private var p
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text("Передачи").font(AppFont.display(13))
                 Text(summary).font(AppFont.body(12)).foregroundStyle(p.muted)
@@ -16,14 +16,14 @@ struct TransferPanel: View {
             }
             if !state.transfers.isEmpty {
                 Scrollable {
-                    LazyVStack(spacing: 8) {
+                    LazyVStack(spacing: 6) {
                         ForEach(state.transfers) { TransferRow(transfer: $0) }
                     }
                 }
-                .frame(maxHeight: min(CGFloat(state.transfers.count) * 50, 160))
+                .frame(maxHeight: min(CGFloat(state.transfers.count) * 40, 124))
             }
         }
-        .padding(.horizontal, 18).padding(.vertical, 14)
+        .padding(.horizontal, 16).padding(.vertical, 10)
         .overlay(alignment: .top) { Rectangle().fill(p.line).frame(height: 1) }
     }
 
@@ -51,10 +51,10 @@ struct TransferRow: View {
             status.frame(width: 120, alignment: .trailing)
             trailing
         }
-        .font(AppFont.body(13))
-        .padding(.horizontal, 14).frame(height: 42)
-        .background(RoundedRectangle(cornerRadius: 12).fill(p.surface))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(p.line, lineWidth: 1))
+        .font(AppFont.body(12))
+        .padding(.horizontal, 12).frame(height: 34)
+        .background(RoundedRectangle(cornerRadius: 10).fill(p.surface))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(p.line, lineWidth: 1))
     }
 
     @ViewBuilder

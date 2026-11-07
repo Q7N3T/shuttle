@@ -12,13 +12,40 @@ struct RemoteItem: Identifiable, Hashable {
     let isFolder: Bool
 }
 
+struct StorageInfo: Equatable, Identifiable, Hashable {
+    let id: UInt32
+    let name: String
+    let capacity: UInt64
+    let free: UInt64
+
+    /// Иконка по названию раздела (DBI на Switch отдаёт 9 разделов).
+    var icon: String {
+        let n = name.lowercased()
+        if n.contains("installed") { return "gamecontroller" }
+        if n.contains("install") { return "square.and.arrow.down" }
+        if n.contains("save") { return "tray.full" }
+        if n.contains("album") { return "photo.on.rectangle" }
+        if n.contains("gamecard") || n.contains("cartridge") { return "memorychip" }
+        if n.contains("sd") { return "sdcard" }
+        return "internaldrive"
+    }
+}
+
+enum DeviceKind: Equatable {
+    case phone, console
+}
+
 struct DeviceInfo: Equatable {
     var name: String
-    var storageID: UInt32
-    var storageName: String
-    var capacity: UInt64
-    var free: UInt64
+    var kind: DeviceKind
+    var storages: [StorageInfo]
     var battery: Int?
+
+    // Первый раздел — для мест, где важна «основная» память.
+    var storageID: UInt32 { storages[0].id }
+    var storageName: String { storages[0].name }
+    var capacity: UInt64 { storages[0].capacity }
+    var free: UInt64 { storages[0].free }
 }
 
 enum MTPError: LocalizedError, Equatable {
@@ -69,6 +96,7 @@ final class MTPService: @unchecked Sendable {
 
     private let queue = DispatchQueue(label: "shuttle.mtp", qos: .userInitiated)
     private var device: UnsafeMutablePointer<LIBMTP_mtpdevice_t>?
+    private var vendorID: UInt16 = 0
 
     private init() { LIBMTP_Init() }
 
@@ -98,6 +126,7 @@ final class MTPService: @unchecked Sendable {
                 throw MTPError.notConnected
             }
             defer { free(raw) }
+            vendorID = raw.pointee.device_entry.vendor_id
             guard let dev = LIBMTP_Open_Raw_Device_Uncached(raw) else { throw MTPError.busy }
             device = dev
         }
@@ -120,10 +149,27 @@ final class MTPService: @unchecked Sendable {
             throw MTPError.notConnected
         }
         LIBMTP_Clear_Errorstack(dev)
-        guard let st = dev.pointee.storage else { throw MTPError.locked }
+
+        var storages: [StorageInfo] = []
+        var cur = dev.pointee.storage
+        while let st = cur {
+            let v = st.pointee
+            storages.append(StorageInfo(id: v.id,
+                                        name: cleanStorageName(v.StorageDescription.map { String(cString: $0) }),
+                                        capacity: v.MaxCapacity,
+                                        free: v.FreeSpaceInBytes))
+            cur = v.next
+        }
+        guard !storages.isEmpty else { throw MTPError.locked }
 
         var name = takeString(LIBMTP_Get_Friendlyname(dev)) ?? ""
-        if name.isEmpty { name = takeString(LIBMTP_Get_Modelname(dev)) ?? "Android" }
+        let model = takeString(LIBMTP_Get_Modelname(dev)) ?? ""
+        if name.isEmpty { name = model.isEmpty ? "Устройство" : model }
+
+        // Nintendo (0x057E) или DBI — это Switch, а не телефон.
+        let joined = (name + " " + model).lowercased()
+        let isConsole = vendorID == 0x057E || joined.contains("switch") || joined.contains("dbi")
+        if isConsole && (name.isEmpty || name.lowercased() == "dbi") { name = "Nintendo Switch" }
 
         var maxLevel: UInt8 = 0, level: UInt8 = 0
         var battery: Int?
@@ -133,14 +179,13 @@ final class MTPService: @unchecked Sendable {
             LIBMTP_Clear_Errorstack(dev)
         }
 
-        let s = st.pointee
-        return DeviceInfo(
-            name: name,
-            storageID: s.id,
-            storageName: s.StorageDescription.map { String(cString: $0) } ?? "Память",
-            capacity: s.MaxCapacity,
-            free: s.FreeSpaceInBytes,
-            battery: battery)
+        return DeviceInfo(name: name, kind: isConsole ? .console : .phone, storages: storages, battery: battery)
+    }
+
+    /// «1: SD Card» → «SD Card».
+    private func cleanStorageName(_ raw: String?) -> String {
+        guard let raw, !raw.isEmpty else { return "Память" }
+        return raw.replacingOccurrences(of: #"^\s*\d+\s*:\s*"#, with: "", options: .regularExpression)
     }
 
     // MARK: Файлы
@@ -239,6 +284,14 @@ final class MTPService: @unchecked Sendable {
         if LIBMTP_Delete_Object(dev, id) != 0 {
             throw MTPError.failed(lastError(dev, fallback: "Не удалось удалить"))
         }
+    }
+
+    /// MTP не всегда удаляет непустые папки, поэтому идём снизу вверх.
+    func deleteTree(_ item: RemoteItem) throws {
+        if item.isFolder {
+            for c in try list(storage: item.storageID, parent: item.id) { try deleteTree(c) }
+        }
+        try delete(item.id)
     }
 
     func rename(_ id: UInt32, to name: String) throws {
