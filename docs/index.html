@@ -19,7 +19,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Unbounded:wght@500;700;800&family=Pixelify+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#17121A;--bg2:#1C1520;--surface:#221A26;--hover:#2B2130;--line:#3A2E3F;
@@ -98,7 +98,7 @@ nav a:hover{color:var(--text);background:var(--hover)}
 
 /* Первый экран */
 .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:52px;align-items:center;padding:70px 0 40px}
-h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,6.4vw,80px);line-height:1.02;letter-spacing:-.02em;margin:18px 0 22px;min-height:2.1em}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(40px,6.4vw,80px);line-height:1.02;letter-spacing:-.02em;margin:18px 0 22px;position:relative;z-index:2;perspective:600px;cursor:default}
 h1 .gold{color:var(--accent);text-shadow:0 0 40px rgba(233,185,73,.35)}
 h1 .scr{color:var(--dim)}
 .term{font-family:var(--mono);font-size:14px;color:var(--muted);margin:0 0 22px;min-height:22px}
@@ -142,6 +142,7 @@ h1 .scr{color:var(--dim)}
 .stat::before{content:"";position:absolute;left:0;top:0;height:2px;width:0;background:var(--accent);transition:width 1.2s ease}
 .stat.in::before{width:100%}
 .stat b{display:block;font-family:var(--display);font-size:34px;font-weight:700;line-height:1.1;white-space:nowrap}
+.stat b small{font-size:.5em;font-weight:600;letter-spacing:0}
 .stat span{font-family:var(--mono);font-size:12px;color:var(--muted)}
 
 /* Секции */
@@ -239,6 +240,33 @@ h2.glitch{position:relative}
 h2.glitch:hover{animation:jit .32s steps(2) 1}
 @keyframes jit{0%{transform:translate(0)}25%{transform:translate(-2px,1px);text-shadow:2px 0 var(--plum)}50%{transform:translate(2px,-1px);text-shadow:-2px 0 var(--accent)}100%{transform:none;text-shadow:none}}
 
+/* Заголовок: каждая буква отдельно; при наведении — пиксельная тема */
+h1 .ln{display:block;white-space:nowrap}
+h1 .l2{font-family:"Pixelify Sans",var(--mono);font-weight:600;font-size:.56em;line-height:1.2;letter-spacing:0;color:var(--accent);text-shadow:0 0 30px rgba(233,185,73,.35);margin:.08em 0 .06em}
+h1 .ch-w{display:inline-block;white-space:nowrap}
+h1 .ch{display:inline-block;white-space:pre;transition:transform .14s ease-out,color .14s}
+h1.intro .ch{animation:chin .6s cubic-bezier(.16,1.4,.3,1) backwards;animation-delay:calc(var(--c) * 18ms)}
+@keyframes chin{from{opacity:0;transform:translateY(.5em) rotateX(-70deg) scale(.8)}}
+h1.px .ln{font-family:"Pixelify Sans",var(--mono);font-weight:700;letter-spacing:.01em}
+h1.px .l1,h1.px .l3{text-shadow:3px 0 0 rgba(139,92,246,.55),-3px 0 0 rgba(233,185,73,.45)}
+h1.px .l2{font-weight:500;text-shadow:0 0 26px rgba(139,92,246,.6)}
+h1.swap{animation:pxswap .34s steps(3) 1}
+@keyframes pxswap{0%{clip-path:inset(0 0 62% 0);transform:translateX(-5px)}34%{clip-path:inset(38% 0 20% 0);transform:translateX(5px)}67%{clip-path:inset(70% 0 0 0);transform:translateX(-3px)}100%{clip-path:none;transform:none}}
+.hero .pixels{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.hero>div:first-of-type{position:relative;z-index:1}
+/* Вопросы */
+.faq{display:grid;gap:10px}
+.faq details{border:1px solid var(--line);border-radius:12px;background:var(--surface);transition:border-color .2s}
+.faq details[open]{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.faq summary{list-style:none;cursor:pointer;display:flex;gap:14px;align-items:baseline;padding:16px 20px;font-weight:600;font-size:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary i{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--accent);flex:none}
+.faq summary::after{content:"+";margin-left:auto;font-family:var(--mono);color:var(--accent);font-size:18px;line-height:1;transition:transform .25s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{margin:0;padding:0 20px 18px 52px;color:var(--muted);max-width:72ch;animation:faqIn .3s ease}
+@keyframes faqIn{from{opacity:0;transform:translateY(-6px)}}
+@media (max-width:560px){.faq details p{padding-left:20px}}
+
 /* Перелив и гранж */
 header.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
   background:linear-gradient(90deg,transparent,var(--g1),var(--g2),transparent);opacity:.9}
@@ -334,6 +362,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <a href="#features" class="hide-m" data-i18n="nav.features">Возможности</a>
       <a href="#switch" class="hide-m">Switch</a>
       <a href="#android" class="hide-m">Android</a>
+      <a href="#faq" class="hide-m" data-i18n="nav.faq">Вопросы</a>
       <a href="#changes" class="hide-m" data-i18n="nav.changes">Версии</a>
       <a href="https://github.com/Q7N3T/shuttle" class="gh">★ GitHub</a>
       <button class="pill" id="lang" aria-label="Language">EN</button>
@@ -345,11 +374,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <main>
 <div class="wrap">
   <section class="hero">
+    <canvas class="pixels" aria-hidden="true"></canvas>
     <div>
       <div class="code"><b>shuttle</b> { mac <i>↔</i> android <i>↔</i> switch } <span data-i18n="hero.code">// бесплатно · macOS 14+</span> · <span class="ver-now">v0.4</span></div>
-      <h1 id="title" aria-label="Перетащи. Готово."><span class="t1">Перетащи.</span><br><span class="gold t2">Готово.</span></h1>
+      <h1 id="title" aria-label="Файлы, без облака в пути."><span class="ln l1">Файлы,</span><span class="ln l2">без облака</span><span class="ln l3">в пути.</span></h1>
       <p class="term" aria-hidden="true"><span class="p">$</span> <span id="cmd"></span><span class="caret"></span></p>
-      <p class="lead" data-i18n-html="hero.lead">Файлы между Mac, <b>Android</b> и <b>Nintendo&nbsp;Switch</b> — по кабелю, перетаскиванием. Без отладки, без настроек, без Android File Transfer.</p>
+      <p class="lead" data-i18n-html="hero.lead">Между Mac, <b>Android</b> и <b>Nintendo&nbsp;Switch</b> — напрямую по кабелю, перетаскиванием. Без отладки, настроек и Android File Transfer.</p>
       <div class="btns">
         <a class="btn primary dl-link" href="https://github.com/Q7N3T/shuttle/releases/latest"><span data-i18n="btn.download">Скачать для Mac</span> ↓</a>
         <a class="btn ghost" href="#features" data-i18n="btn.more">Что умеет</a>
@@ -375,10 +405,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
 <div class="wrap">
   <div class="stats">
-    <div class="stat rv"><b data-count="30" data-suffix=" МБ/с">0</b><span data-i18n="st.speed">скорость по USB</span></div>
-    <div class="stat rv"><b data-count="9">0</b><span data-i18n="st.parts">разделов Switch во вкладках</span></div>
-    <div class="stat rv"><b data-count="1">0</b><span data-i18n="st.setup">кабель — и всё</span></div>
-    <div class="stat rv"><b data-count="2">0</b><span data-i18n="st.langs">языка: русский и английский</span></div>
+    <div class="stat rv"><b data-count="30" data-suffix=" МБ/с">0</b><span data-i18n="st.speed">по кабелю — без загрузки в облако</span></div>
+    <div class="stat rv"><b data-count="9">0</b><span data-i18n="st.parts">разделов Switch, каждый во вкладке</span></div>
+    <div class="stat rv"><b data-count="0">0</b><span data-i18n="st.zero">аккаунтов, подписок и рекламы</span></div>
+    <div class="stat rv"><b data-count="1">0</b><span data-i18n="st.setup">кабель — и больше ничего</span></div>
   </div>
 
   <section id="features" class="node">
@@ -444,9 +474,20 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </section>
 
+  <section id="faq" class="node">
+    <div class="sec-head rv">
+      <div class="num">05 / <span data-i18n="n.q">вопросы</span></div>
+      <div class="code">faq { <i>before</i> --install {</div>
+      <h2 class="glitch" data-i18n="q.title">Коротко о главном</h2>
+      <p class="sub" data-i18n="q.sub">То, что спрашивают до установки.</p>
+    </div>
+    <div class="faq rv" id="faq-list"></div>
+  </section>
+  <div class="close" aria-hidden="true">} }</div>
+
   <section id="changes" class="node">
     <div class="sec-head rv">
-      <div class="num">05 / <span data-i18n="n.c">версии</span></div>
+      <div class="num">06 / <span data-i18n="n.c">версии</span></div>
       <div class="code">changelog { <i>releases</i> --all {</div>
       <h2 class="glitch" data-i18n="ch.title">Что нового</h2>
       <p class="sub" data-i18n="ch.sub">Каждая версия — с описанием и своим DMG. Старые тоже можно скачать.</p>
@@ -481,9 +522,10 @@ const REPO = 'Q7N3T/shuttle';
 /* ---------- Язык ---------- */
 const EN = {
   'nav.features':'Features','nav.changes':'Releases','hero.code':'// free · macOS 14+',
-  'hero.lead':'Files between your Mac, <b>Android</b> and a <b>Nintendo&nbsp;Switch</b> — over a cable, by drag and drop. No debugging, no setup, no Android File Transfer.',
+  'hero.lead':'Between your Mac, <b>Android</b> and a <b>Nintendo&nbsp;Switch</b> — straight over the cable, by drag and drop. No debugging, no setup, no Android File Transfer.',
   'btn.download':'Download for Mac','btn.more':'Features','btn.source':'Source',
-  'st.speed':'over USB','st.parts':'Switch storages as tabs','st.setup':'cable, that’s it','st.langs':'languages: Russian & English',
+  'st.speed':'over the cable — no cloud uploads','st.parts':'Switch storages, each in a tab','st.zero':'accounts, subscriptions and ads','st.setup':'cable — nothing else',
+  'nav.faq':'FAQ','n.q':'faq','q.title':'The short version','q.sub':'What people ask before installing.',
   'f.title':'It just works','f.sub':'Plug in the cable and drag files back and forth. Shuttle handles the rest.',
   'sw.title':'For a Switch with DBI','sw.sub':'Every DBI storage as a tab. Games, homebrew and saves without sorting folders by hand.',
   'an.title':'Your camera in one click','an.sub':'Shuttle remembers what you already have and fetches only new photos and videos.',
@@ -538,6 +580,21 @@ const ANDROID = [
   ['Превью и дубли','миниатюры, сетка с фото и пометка «уже на Mac».','Previews & duplicates','thumbnails, a photo grid and an “already on Mac” badge.'],
   ['ADB по желанию','быстрее, по Wi‑Fi, установка APK и снимок экрана телефона.','ADB if you want','faster, over Wi‑Fi, installs APKs and takes phone screenshots.'],
 ];
+const TITLE = { ru: ['Файлы,', 'без облака', 'в пути.'], en: ['Files,', 'no cloud', 'in between.'] };
+const FAQ = [
+  ['Нужен root или режим разработчика?', 'Нет. На Android достаточно выбрать «Передача файлов» после подключения. Режим разработчика нужен только для ADB — а он по желанию.',
+   'Do I need root or developer mode?', 'No. On Android just pick “File transfer” after plugging in. Developer mode is only for ADB, and that’s optional.'],
+  ['Почему macOS не даёт открыть с первого раза?', 'Shuttle подписан, но не заверен в Apple — это платно. Один раз: Настройки → Конфиденциальность и безопасность → «Всё равно открыть». Код открыт, можно проверить.',
+   'Why won’t macOS open it the first time?', 'Shuttle is signed but not notarized by Apple — that costs money. Once: Settings → Privacy & Security → “Open Anyway”. The code is open, check it yourself.'],
+  ['Что нужно на Switch?', 'DBI с режимом MTP («Run MTP responder»). Shuttle ничего не взламывает и не раздаёт игры — только переносит ваши файлы.',
+   'What does the Switch need?', 'DBI in MTP mode (“Run MTP responder”). Shuttle doesn’t hack anything or hand out games — it only moves your own files.'],
+  ['Выдернул кабель посреди копирования. Всё пропало?', 'Нет. Shuttle дождётся устройства и докачает с того же места — заново начинать не придётся.',
+   'Pulled the cable mid-copy. Is it gone?', 'No. Shuttle waits for the device and continues from the same spot — no starting over.'],
+  ['Телефон не появляется', 'Закройте Android File Transfer, OpenMTP и похожие программы: устройство может держать только одна. Потом переподключите кабель.',
+   'My phone doesn’t show up', 'Quit Android File Transfer, OpenMTP and similar apps: only one program can hold the device. Then replug the cable.'],
+  ['Сколько стоит?', 'Нисколько. Без аккаунтов, подписок и рекламы. Новые версии приходят прямо в приложение.',
+   'How much is it?', 'Nothing. No accounts, subscriptions or ads. New versions arrive right inside the app.'],
+];
 const TICKER_RU = ['БЕЗ ОТЛАДКИ','ANDROID','NINTENDO SWITCH','DBI','~30 МБ/С ПО USB','ПРОДОЛЖЕНИЕ ПОСЛЕ ОБРЫВА','АВТООБНОВЛЕНИЯ','БЕСПЛАТНО','APPLE SILICON И INTEL','ОТКРЫТЫЙ КОД'];
 const TICKER_EN = ['NO DEBUGGING','ANDROID','NINTENDO SWITCH','DBI','~30 MB/S OVER USB','RESUMES AFTER A DROP','AUTO UPDATES','FREE','APPLE SILICON & INTEL','OPEN SOURCE'];
 const CMDS_RU = ['shuttle --device switch  → 9 разделов','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle camera  → 12 новых: фото и видео','shuttle resume  → продолжаем с 61%','shuttle sync DCIM/Camera ~/Pictures  → только новое'];
@@ -583,6 +640,7 @@ function renderLists(){
   $('#ticker').innerHTML = items + items;
   const warn = (lang === 'en' ? WARN_EN : WARN_RU).map(t => `<span>${t}</span>`).join('');
   $('#ticker2').innerHTML = warn + warn;
+  $('#faq-list').innerHTML = FAQ.map((q, i) => `<details${i === 0 ? ' open' : ''}><summary><i>${String(i + 1).padStart(2, '0')}</i>${T(q[0], q[2])}</summary><p>${T(q[1], q[3])}</p></details>`).join('');
   bindCards();
 }
 const ATTRS = [
@@ -630,7 +688,102 @@ function scramble(el, text, delay = 0){
     if (++frame <= total) setTimeout(step, 22); else el.textContent = text;
   }, delay);
 }
-function playTitle(){ $('#title').setAttribute('aria-label', T('Перетащи. Готово.', 'Drag it. Done.')); scramble($('.t1'), T('Перетащи.','Drag it.')); scramble($('.t2'), T('Готово.','Done.'), 380); }
+let letters = [], centers = null;
+function fitTitle(){
+  // Длинная строка (в английском) не должна вылезать за колонку — ужимаем шрифт.
+  const h = $('#title'); h.style.fontSize = '';
+  const w = h.clientWidth, max = Math.max(...$$('#title .ln:not(.l2)').map(l => l.scrollWidth));
+  if (max > w) h.style.fontSize = (parseFloat(getComputedStyle(h).fontSize) * w / max * .97).toFixed(1) + 'px';
+  centers = null;
+}
+function playTitle(){
+  const h = $('#title'), L = TITLE[lang]; let c = 0;
+  h.setAttribute('aria-label', L.join(' '));
+  h.innerHTML = L.map((line, i) => `<span class="ln l${i + 1}" aria-hidden="true">` +
+    line.split(' ').map(w => `<span class="ch-w">${[...w].map(ch => `<span class="ch" style="--c:${c++}">${ch}</span>`).join('')}</span>`).join(' ') + '</span>').join('');
+  letters = $$('#title .ch'); fitTitle();
+  if (reduced) return;
+  h.classList.remove('intro'); void h.offsetWidth; h.classList.add('intro');
+  const G = lang === 'en' ? GLYPHS_EN : GLYPHS, real = letters.map(l => l.textContent), t0 = performance.now();
+  (function f(){
+    const t = performance.now() - t0; let left = 0;
+    letters.forEach((l, i) => { if (t < i * 20 + 260) { left++; if (Math.random() < .5) l.textContent = G[Math.random() * G.length | 0]; } else l.textContent = real[i]; });
+    if (left) setTimeout(f, 40); else fitTitle();
+  })();
+}
+addEventListener('resize', fitTitle);
+document.fonts && document.fonts.ready.then(fitTitle);
+
+/* ---------- Заголовок: пиксельная тема и буквы за курсором ---------- */
+(() => {
+  const title = $('#title'), hero = $('.hero');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (reduced) return;
+  function swap(on){
+    title.classList.toggle('px', on); title.classList.add('swap');
+    letters.forEach(l => { l.style.transform = ''; l.style.color = ''; }); active = []; centers = null;
+    setTimeout(() => title.classList.remove('swap'), 360);
+  }
+  let active = [], q = false, mx = 0, my = 0;
+  if (!fine) { title.addEventListener('click', () => swap(!title.classList.contains('px'))); return; }
+  title.addEventListener('pointerenter', () => swap(true));
+  title.addEventListener('pointerleave', () => swap(false));
+  function remember(){
+    centers = letters.map(el => { const b = el.getBoundingClientRect(); return { el, x: b.left + b.width / 2 + scrollX, y: b.top + b.height / 2 + scrollY }; });
+  }
+  hero.addEventListener('pointermove', e => {
+    mx = e.clientX + scrollX; my = e.clientY + scrollY;
+    if (q) return; q = true;
+    requestAnimationFrame(() => {
+      q = false;
+      if (!centers) { letters.forEach(l => l.style.transform = ''); remember(); }
+      const now = centers.filter(c => (mx - c.x) ** 2 + (my - c.y) ** 2 < 22500);
+      active.forEach(c => { if (!now.includes(c)) { c.el.style.transform = ''; c.el.style.color = ''; } });
+      now.forEach(c => {
+        const t = 1 - Math.hypot(mx - c.x, my - c.y) / 150;
+        c.el.style.transform = `translateY(${(-t * 16).toFixed(1)}px) scale(${(1 + t * .16).toFixed(3)})`;
+        c.el.style.color = t > .45 ? 'var(--g2)' : t > .2 ? 'var(--accent)' : '';
+      });
+      active = now;
+    });
+  }, { passive: true });
+  hero.addEventListener('pointerleave', () => { active.forEach(c => { c.el.style.transform = ''; c.el.style.color = ''; }); active = []; });
+})();
+
+/* ---------- Пиксели первого экрана: загораются у курсора и мерцают сами ---------- */
+(() => {
+  const cv = $('.hero .pixels'); if (!cv || reduced) return;
+  const ctx = cv.getContext('2d'), cell = 28, size = 4, lit = new Map();
+  let cols = 0, rows = 0, px = -1, py = -1, running = false, last = 0, visible = true, colors = [];
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  function palette(){ const cs = getComputedStyle(document.documentElement); colors = [cs.getPropertyValue('--accent').trim(), cs.getPropertyValue('--accent').trim(), cs.getPropertyValue('--g2').trim() || '#8B5CF6']; }
+  function resize(){ const r = cv.getBoundingClientRect(); cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); cols = Math.ceil(r.width / cell); rows = Math.ceil(r.height / cell); }
+  function loop(now){
+    if (!visible || document.hidden || (!lit.size && px < 0)) { ctx.clearRect(0, 0, cv.width, cv.height); running = false; return; }
+    requestAnimationFrame(loop);
+    if (now - last < 48) return; last = now;
+    if (px >= 0) {
+      const cx = Math.floor(px / cell), cy = Math.floor(py / cell);
+      for (let n = 0; n < 9; n++) { const dx = Math.round((Math.random() - .5) * 9), dy = Math.round((Math.random() - .5) * 9), d = Math.hypot(dx, dy); if (d <= 5) lit.set(cx + dx + (cy + dy) * 10000, 1 - d / 6); }
+    }
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    lit.forEach((v, k) => {
+      const x = k % 10000, y = Math.floor(k / 10000);
+      ctx.globalAlpha = v * .7; ctx.fillStyle = colors[(x * 7 + y * 13) % colors.length];
+      ctx.fillRect(x * cell + 12, y * cell + 12, size, size);
+      const nv = v * .88; nv < .04 ? lit.delete(k) : lit.set(k, nv);
+    });
+    ctx.globalAlpha = 1;
+  }
+  function wake(){ if (!running && visible && !document.hidden) { running = true; requestAnimationFrame(loop); } }
+  palette(); resize();
+  addEventListener('resize', resize);
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; wake(); }).observe(cv);
+  setInterval(() => { if (!visible || document.hidden) return; palette(); lit.set((Math.random() * cols | 0) + (Math.random() * rows | 0) * 10000, .8); wake(); }, 420);
+  const host = cv.parentElement;
+  host.addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); px = e.clientX - r.left; py = e.clientY - r.top; wake(); }, { passive: true });
+  host.addEventListener('pointerleave', () => { px = py = -1; });
+})();
 
 /* ---------- Терминал ---------- */
 let cmdIdx = 0, cmdTimer;
@@ -665,7 +818,7 @@ function countUp(stat){
   const b = stat.querySelector('b'); if (b.dataset.done) return; b.dataset.done = 1;
   const to = +b.dataset.count, suf = b.dataset.suffix ? T(b.dataset.suffix, ' MB/s') : '';
   const t0 = performance.now(), d = reduced ? 0 : 1200;
-  (function f(t){ const k = Math.min(1, d ? (t - t0) / d : 1); b.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))) + suf; if (k < 1) requestAnimationFrame(f); })(t0);
+  (function f(t){ const k = Math.min(1, d ? (t - t0) / d : 1); b.innerHTML = Math.round(to * (1 - Math.pow(1 - k, 3))) + (suf ? `<small>${suf}</small>` : ''); if (k < 1) requestAnimationFrame(f); })(t0);
 }
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); if (e.target.classList.contains('stat')) countUp(e.target); io.unobserve(e.target); } }), { threshold: 0, rootMargin: '0px 0px -6% 0px' });
 // Подстраховка: всё, что уже выше нижнего края экрана, проявляется в любом случае.
@@ -786,6 +939,7 @@ const ACTIONS = () => [
   [T('Возможности', 'Features'), '#features', () => location.hash = 'features'],
   ['Nintendo Switch', '#switch', () => location.hash = 'switch'],
   ['Android', '#android', () => location.hash = 'android'],
+  [T('Вопросы', 'FAQ'), '#faq', () => location.hash = 'faq'],
   [T('Что нового', 'What’s new'), '#changes', () => location.hash = 'changes'],
   [T('Сменить тему', 'Toggle theme'), 'T', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark')],
   [T('English', 'Русский'), 'lang', () => $('#lang').click()],
