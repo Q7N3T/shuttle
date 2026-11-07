@@ -212,10 +212,10 @@ struct DeviceCard: View {
         HStack(spacing: 6) {
             if info.kind == .phone {
                 if !state.newPhotos.isEmpty {
-                    Chip(title: L("Новые фото: %d", state.newPhotos.count), icon: "photo.badge.arrow.down", isOn: true) {
+                    Chip(title: L("С камеры: %d", state.newPhotos.count), icon: "photo.badge.arrow.down", isOn: true) {
                         state.importNewPhotos()
                     }
-                    .help(L("Скачать снимки, которых ещё нет на Mac, в %@",
+                    .help(L("Скачать фото и видео, которых ещё нет на Mac, в %@",
                             state.photosDestination.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")))
                     .transition(.scale.combined(with: .opacity))
                 }

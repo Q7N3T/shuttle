@@ -202,7 +202,7 @@ struct DeviceCommands: Commands, MenuPickers {
     var body: some Commands {
         CommandMenu(L("Устройство")) {
             if phone {
-                Button(L("Скачать новые фото (%d)", state.newPhotos.count)) { state.importNewPhotos() }
+                Button(L("Скачать новое с камеры (%d)", state.newPhotos.count)) { state.importNewPhotos() }
                     .keyboardShortcut("i", modifiers: [.command, .shift])
                     .disabled(state.newPhotos.isEmpty)
                 Button(L("Синхронизация папок…")) { state.showSync = true }

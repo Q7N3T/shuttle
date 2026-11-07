@@ -14,7 +14,7 @@ struct MenuBarView: View {
             if let b = d.battery { Text(L("Заряд: %d%%", b)) }
             Divider()
             if d.kind == .phone {
-                Button(L("Скачать новые фото (%d)", state.newPhotos.count)) { state.importNewPhotos() }
+                Button(L("Скачать новое с камеры (%d)", state.newPhotos.count)) { state.importNewPhotos() }
                     .disabled(state.newPhotos.isEmpty)
                 Button(L("Синхронизировать")) {
                     state.runSyncs(SyncStore.shared.rules(for: d.key).filter(\.enabled))

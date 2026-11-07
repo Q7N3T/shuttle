@@ -311,7 +311,7 @@ extension AppState {
         download(items, to: dest, labelFor: { MediaKind.isVideo($0.name) ? L("Новое видео") : L("Новое фото") },
                  markImported: true) { [weak self] in
             self?.refreshPhotosIndex()
-            self?.toast(L("Фото сохранены в %@", dest.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")))
+            self?.toast(L("Сохранено в %@", dest.path.replacingOccurrences(of: NSHomeDirectory(), with: "~")))
         }
     }
 
