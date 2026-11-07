@@ -2,3 +2,5 @@
 build/
 DerivedData/
 .DS_Store
+.claude/
+docs/releases.json
