@@ -1,0 +1,35 @@
+name: Shuttle
+options:
+  bundleIdPrefix: com.vadimgrekov
+  deploymentTarget:
+    macOS: "14.0"
+targets:
+  Shuttle:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+      - path: Resources/Fonts
+        type: folder
+        buildPhase: resources
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: Shuttle
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        ATSApplicationFontsPath: Fonts
+        LSApplicationCategoryType: public.app-category.utilities
+        LSMinimumSystemVersion: "14.0"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vadimgrekov.shuttle
+        SWIFT_VERSION: "5.0"
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/Shuttle-Bridging-Header.h
+        HEADER_SEARCH_PATHS: /opt/homebrew/include
+        LIBRARY_SEARCH_PATHS: /opt/homebrew/lib
+        OTHER_LDFLAGS: -lmtp
+        ENABLE_HARDENED_RUNTIME: NO
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
