@@ -287,7 +287,10 @@ struct MacPane: View {
                                      modified: item.modified,
                                      selected: state.macSelection.contains(item.url), compact: compact)
                             .onTapGesture(count: 2) { state.openMac(item) }
-                            .onTapGesture { toggleSelection(&state.macSelection, item.url) }
+                            .onTapGesture {
+                                state.activeSide = .mac
+                                toggleSelection(&state.macSelection, item.url)
+                            }
                             .onDrag { NSItemProvider(object: item.url as NSURL) }
                             .contextMenu { menu(for: item) }
                     }
@@ -313,6 +316,8 @@ struct MacPane: View {
         }
         .disabled(state.device == nil)
         Button("Показать в Finder") { NSWorkspace.shared.activateFileViewerSelecting(items.map(\.url)) }
+        Divider()
+        Button("Переместить в Корзину", role: .destructive) { state.trashMac(items) }
     }
 
     private var displayPath: String {
@@ -337,11 +342,6 @@ struct DevicePane: View {
     @EnvironmentObject private var state: AppState
     @Environment(\.palette) private var p
     @State private var targeted = false
-    @State private var newFolderName = ""
-    @State private var askNewFolder = false
-    @State private var renaming: RemoteItem?
-    @State private var renameText = ""
-    @State private var toDelete: [RemoteItem] = []
     var snapshotWidth: CGFloat = 500
 
     var body: some View {
@@ -364,7 +364,7 @@ struct DevicePane: View {
                         }
                     }
                     IconButton(systemName: "folder.badge.plus", help: "Новая папка") {
-                        newFolderName = ""; askNewFolder = true
+                        state.beginNewFolder()
                     }
                     IconButton(systemName: "arrow.clockwise", help: "Обновить") { state.refreshAndroid() }
                 } else {
@@ -380,19 +380,20 @@ struct DevicePane: View {
             loadURLs(providers) { state.upload($0) }
             return true
         }
-        .alert("Новая папка", isPresented: $askNewFolder) {
-            TextField("Название", text: $newFolderName)
-            Button("Создать") { state.createAndroidFolder(newFolderName.trimmingCharacters(in: .whitespaces)) }
+        .alert("Новая папка", isPresented: $state.askNewFolder) {
+            TextField("Название", text: $state.dialogText)
+            Button("Создать") { state.createAndroidFolder(state.dialogText.trimmingCharacters(in: .whitespaces)) }
             Button("Отмена", role: .cancel) {}
         }
-        .alert("Переименовать", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
-            TextField("Название", text: $renameText)
-            Button("Готово") { if let r = renaming { state.renameAndroid(r, to: renameText) } }
+        .alert("Переименовать", isPresented: Binding(get: { state.renaming != nil },
+                                                     set: { if !$0 { state.renaming = nil } })) {
+            TextField("Название", text: $state.dialogText)
+            Button("Готово") { if let r = state.renaming { state.renameAndroid(r, to: state.dialogText) } }
             Button("Отмена", role: .cancel) {}
         }
-        .confirmationDialog(deleteTitle, isPresented: Binding(get: { !toDelete.isEmpty },
-                                                              set: { if !$0 { toDelete = [] } })) {
-            Button("Удалить", role: .destructive) { state.deleteAndroid(toDelete) }
+        .confirmationDialog(deleteTitle, isPresented: Binding(get: { !state.toDelete.isEmpty },
+                                                              set: { if !$0 { state.toDelete = [] } })) {
+            Button("Удалить", role: .destructive) { state.deleteAndroid(state.toDelete) }
         } message: {
             Text("Файлы удалятся с устройства без корзины.")
         }
@@ -418,9 +419,7 @@ struct DevicePane: View {
             } else {
                 FileTable(snapshotWidth: snapshotWidth) { compact in
                     ForEach(rows) { row in
-                        DeviceRow(row: row, compact: compact,
-                                  onRename: { renameText = row.item.name; renaming = row.item },
-                                  onDelete: { toDelete = state.selectedRemote(orItem: row.item) })
+                        DeviceRow(row: row, compact: compact)
                     }
                 }
             }
@@ -428,7 +427,8 @@ struct DevicePane: View {
     }
 
     private var deleteTitle: String {
-        toDelete.count == 1 ? "Удалить «\(toDelete[0].name)»?" : "Удалить объектов: \(toDelete.count)?"
+        let d = state.toDelete
+        return d.count == 1 ? "Удалить «\(d[0].name)»?" : "Удалить объектов: \(d.count)?"
     }
 
     private var breadcrumbs: some View {
@@ -451,8 +451,6 @@ struct DeviceRow: View {
     @EnvironmentObject private var state: AppState
     let row: RemoteRow
     let compact: Bool
-    let onRename: () -> Void
-    let onDelete: () -> Void
     @State private var dropTarget = false
 
     var body: some View {
@@ -462,7 +460,10 @@ struct DeviceRow: View {
                      selected: state.androidSelection.contains(item.id), dropTarget: dropTarget,
                      compact: compact, onToggle: { state.toggleExpand(item) })
             .onTapGesture(count: 2) { item.isFolder ? state.openAndroid(item) : state.download([item]) }
-            .onTapGesture { toggleSelection(&state.androidSelection, item.id) }
+            .onTapGesture {
+                state.activeSide = .device
+                toggleSelection(&state.androidSelection, item.id)
+            }
             .onDrag {
                 state.draggingRemote = state.selectedRemote(orItem: item)
                 return state.itemProvider(for: item, state: state)
@@ -479,9 +480,9 @@ struct DeviceRow: View {
                 Button(items.count > 1 ? "Скачать на Mac (\(items.count))" : "Скачать на Mac") {
                     state.download(items)
                 }
-                Button("Переименовать", action: onRename).disabled(items.count > 1)
+                Button("Переименовать") { state.beginRename(item) }.disabled(items.count > 1)
                 Divider()
-                Button("Удалить…", role: .destructive, action: onDelete)
+                Button("Удалить…", role: .destructive) { state.toDelete = items }
             }
     }
 }

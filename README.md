@@ -82,6 +82,7 @@ scripts/make-dmg.sh        # → build/Shuttle-<версия>.dmg
 - `Shuttle --selftest` — прогон на подключённом устройстве: все разделы, загрузка и скачивание со сверкой SHA-256, папки, отмена, переименование, удаление. Работает во временной папке `ShuttleSelfTest` в первом разделе и убирает её за собой. Само приложение перед этим закройте.
 - `Shuttle --snapshot out.png dark|light phone|switch [nomac]` — снимок окна с тестовыми данными.
 - `Shuttle --icon out.png` — иконка 1024×1024.
+- `Shuttle --dump-menu` — печатает строку меню.
 
 <details><summary>Ещё скриншоты</summary>
 

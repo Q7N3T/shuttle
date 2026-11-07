@@ -49,6 +49,9 @@ struct SortOrder: Equatable {
     var ascending = true
 }
 
+/// Панель, где последний раз кликали: к ней относятся команды меню.
+enum Side { case mac, device }
+
 struct QuickFolder: Identifiable {
     let id: String
     let title: String
@@ -95,6 +98,13 @@ final class AppState: ObservableObject {
     // Очередь
     @Published var transfers: [Transfer] = []
     @Published var errorMessage: String?
+
+    // Диалоги (открываются и из панели, и из строки меню)
+    @Published var activeSide: Side = .device
+    @Published var askNewFolder = false
+    @Published var renaming: RemoteItem?
+    @Published var toDelete: [RemoteItem] = []
+    @Published var dialogText = ""
 
     /// Что сейчас тащим из панели устройства внутри приложения.
     var draggingRemote: [RemoteItem] = []
@@ -469,6 +479,87 @@ final class AppState: ObservableObject {
             return nil
         }
         return provider
+    }
+
+    // MARK: Команды меню
+
+    var selectedRemoteItems: [RemoteItem] { androidRows.map(\.item).filter { androidSelection.contains($0.id) } }
+    var selectedLocalItems: [LocalItem] { macItems.filter { macSelection.contains($0.url) } }
+
+    var hasSelection: Bool {
+        activeSide == .device ? !androidSelection.isEmpty : !macSelection.isEmpty
+    }
+
+    func beginNewFolder() {
+        guard device != nil else { return }
+        dialogText = ""
+        askNewFolder = true
+    }
+
+    func beginRename(_ item: RemoteItem) {
+        dialogText = item.name
+        renaming = item
+    }
+
+    func selectAll() {
+        switch activeSide {
+        case .device: androidSelection = Set(androidRows.map(\.id))
+        case .mac: macSelection = Set(macItems.map(\.url))
+        }
+    }
+
+    func deleteSelected() {
+        switch activeSide {
+        case .device: if !selectedRemoteItems.isEmpty { toDelete = selectedRemoteItems }
+        case .mac: trashMac(selectedLocalItems)
+        }
+    }
+
+    func renameSelected() {
+        guard activeSide == .device, selectedRemoteItems.count == 1 else { return }
+        beginRename(selectedRemoteItems[0])
+    }
+
+    func openSelected() {
+        switch activeSide {
+        case .device:
+            if let f = selectedRemoteItems.first(where: \.isFolder), selectedRemoteItems.count == 1 { openAndroid(f) }
+        case .mac:
+            if let f = selectedLocalItems.first, selectedLocalItems.count == 1 { openMac(f) }
+        }
+    }
+
+    func goUp() {
+        activeSide == .device ? androidUp() : macUp()
+    }
+
+    func refreshAll() {
+        loadMac()
+        refreshAndroid()
+    }
+
+    func downloadSelected() {
+        if !selectedRemoteItems.isEmpty { download(selectedRemoteItems) }
+    }
+
+    func uploadSelected() {
+        if !selectedLocalItems.isEmpty { upload(selectedLocalItems.map(\.url)) }
+    }
+
+    func selectStorage(at index: Int) {
+        guard let storages = device?.storages, index < storages.count else { return }
+        selectStorage(storages[index].id)
+    }
+
+    /// На Mac удаляем только в Корзину — это можно отменить.
+    func trashMac(_ items: [LocalItem]) {
+        guard !items.isEmpty else { return }
+        NSWorkspace.shared.recycle(items.map(\.url)) { _, error in
+            Task { @MainActor in
+                if let error { self.show(error) }
+                self.loadMac()
+            }
+        }
     }
 
     func clearFinished() {

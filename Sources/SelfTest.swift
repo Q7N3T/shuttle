@@ -1,11 +1,39 @@
 #if DEBUG
 import Foundation
+import AppKit
 import CryptoKit
 
 /// Отладка: `Shuttle --selftest` прогоняет реальные операции на подключённом телефоне.
 /// Всё делается во временной папке ShuttleSelfTest в корне памяти и удаляется в конце.
 enum SelfTest {
     static func runIfRequested() {
+        if CommandLine.arguments.contains("--dump-menu") {
+            // Печатает строку меню после запуска и выходит.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                setvbuf(stdout, nil, _IOLBF, 0)
+                func dump(_ m: NSMenu, _ indent: String) {
+                    for i in m.items {
+                        if i.isSeparatorItem { print(indent + "—"); continue }
+                        var key = i.keyEquivalent
+                        if !key.isEmpty {
+                            var mods = ""
+                            if i.keyEquivalentModifierMask.contains(.control) { mods += "⌃" }
+                            if i.keyEquivalentModifierMask.contains(.option) { mods += "⌥" }
+                            if i.keyEquivalentModifierMask.contains(.shift) { mods += "⇧" }
+                            if i.keyEquivalentModifierMask.contains(.command) { mods += "⌘" }
+                            key = "  [" + mods + key.replacingOccurrences(of: "\r", with: "↩")
+                                .replacingOccurrences(of: "\u{8}", with: "⌫")
+                                .replacingOccurrences(of: "\u{7f}", with: "⌫") + "]"
+                        }
+                        print(indent + i.title + key + (i.isEnabled ? "" : "  (неактивно)"))
+                        if let sub = i.submenu, indent.count < 4 { dump(sub, indent + "  ") }
+                    }
+                }
+                if let main = NSApp.mainMenu { dump(main, "") }
+                exit(0)
+            }
+            return
+        }
         guard CommandLine.arguments.contains("--selftest") else { return }
         setvbuf(stdout, nil, _IOLBF, 0)
         let code = run()
