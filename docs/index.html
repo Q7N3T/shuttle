@@ -19,13 +19,14 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@400;500;600;700&family=Martian+Mono:wdth,wght@75..112.5,400..700&family=Handjet:wght@400..800&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Martian+Mono:wdth,wght@75..112.5,400..700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#17121A;--bg2:#1C1520;--surface:#221A26;--hover:#2B2130;--line:#3A2E3F;
   --text:#F2EAE0;--muted:#A3959F;--dim:#6E6170;--accent:#E9B949;--accent2:#F7D27A;--ink:#2A1E05;--ok:#7FC79A;--plum:#8B5CF6;
   --grid:rgba(242,234,224,.05);--g1:#E9B949;--pxsh:#9a7420;--g2:#8B5CF6;--plus:rgba(233,185,73,.22);
-  --display:"Dela Gothic One","Arial Black",system-ui,sans-serif;--tech:"Handjet","Martian Mono",ui-monospace,monospace;
+  --display:"Departure Mono","Martian Mono",ui-monospace,monospace;--tech:"Departure Mono","Martian Mono",ui-monospace,monospace;
   --body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"Martian Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   color-scheme:dark;
@@ -35,6 +36,7 @@
   --text:#1F1822;--muted:#7A6C76;--dim:#A99CA4;--accent:#D9A42E;--accent2:#E9B949;--ink:#2A1E05;--ok:#3E8E5E;
   --grid:rgba(31,24,34,.066);--plus:rgba(184,134,30,.3);--pxsh:#c79a3a;color-scheme:light;
 }
+@font-face{font-family:"Departure Mono";src:url(fonts/DepartureMono-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
 *,*::before,*::after{box-sizing:border-box}
 .no-trans,.no-trans *{transition:none!important}
 html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:70px;overflow-x:clip}
@@ -106,7 +108,7 @@ nav a:hover{color:var(--text);background:var(--hover)}
 
 /* Первый экран */
 .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:52px;align-items:center;padding:70px 0 40px}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,6.4vw,80px);line-height:1.02;letter-spacing:-.02em;margin:18px 0 22px;position:relative;z-index:2;perspective:600px;cursor:default;width:fit-content;max-width:100%}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,6.6vw,84px);line-height:1.08;letter-spacing:0;margin:18px 0 22px;position:relative;z-index:2;perspective:600px;cursor:default;width:fit-content;max-width:100%}
 h1 .gold{color:var(--accent);text-shadow:0 0 40px rgba(233,185,73,.35)}
 h1 .scr{color:var(--dim)}
 .term{font-family:var(--mono);font-size:14px;color:var(--muted);margin:0 0 22px;min-height:22px}
@@ -156,7 +158,7 @@ h1 .scr{color:var(--dim)}
 /* Секции */
 section{margin:0 0 100px}
 .sec-head{margin-bottom:28px}
-h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.6vw,44px);line-height:1.1;margin:10px 0 10px;letter-spacing:-.01em}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.6vw,44px);line-height:1.12;margin:10px 0 10px;letter-spacing:0;text-shadow:2px 0 0 rgba(139,92,246,.45),-2px 0 0 rgba(233,185,73,.35)}
 .sub{color:var(--muted);max-width:60ch;margin:0}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 @media (max-width:1060px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -250,15 +252,26 @@ h2.glitch:hover{animation:jit .32s steps(2) 1}
 
 /* Заголовок: каждая буква отдельно; при наведении — пиксельная тема */
 h1 .ln{display:block;white-space:nowrap}
-h1 .l2{-webkit-mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;-webkit-mask-composite:source-in;mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;mask-composite:intersect;font-family:var(--tech);font-weight:800;font-size:.78em;line-height:1;letter-spacing:.01em;color:var(--accent);margin:0}
+h1 .ln{text-shadow:2px 0 0 rgba(139,92,246,.6),-2px 0 0 rgba(233,185,73,.5)}
+h1 .l2{font-size:.5em;line-height:1.1;color:var(--accent);text-shadow:2px 0 0 rgba(139,92,246,.45),0 0 26px rgba(233,185,73,.35)}
 h1 .ch-w{display:inline-block;white-space:nowrap}
 h1 .ch{display:inline-block;white-space:pre;transition:transform .14s ease-out,color .14s}
 h1.intro .ch{animation:chin .6s cubic-bezier(.16,1.4,.3,1) backwards;animation-delay:calc(var(--c) * 18ms)}
 @keyframes chin{from{opacity:0;transform:translateY(.5em) rotateX(-70deg) scale(.8)}}
-h1.px .ln{font-family:var(--tech);font-weight:700;letter-spacing:.02em}
-h1.px .l1,h1.px .l3{text-shadow:3px 0 0 rgba(139,92,246,.55),-3px 0 0 rgba(233,185,73,.45)}
-h1.px .ln{-webkit-mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;-webkit-mask-composite:source-in;mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;mask-composite:intersect}
-h1.px .l2{font-weight:800;color:var(--g2)}
+/* при наведении — светодиодная матрица и сильнее расслоение цвета */
+h1.px .ln{-webkit-mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;-webkit-mask-composite:source-in;mask:linear-gradient(90deg,#000 3px,transparent 3px) 0 0/4px 4px,linear-gradient(#000 3px,transparent 3px) 0 0/4px 4px;mask-composite:intersect;text-shadow:4px 0 0 rgba(139,92,246,.7),-4px 0 0 rgba(233,185,73,.6)}
+h1.px .l2{color:var(--g2)}
+/* сам по себе иногда «лагает» */
+h1.lag .ln{animation:lag .42s steps(1) 1}
+h1.lag .l2{animation-delay:.06s}h1.lag .l3{animation-delay:.12s}
+@keyframes lag{
+  0%{transform:translateX(-6px);clip-path:inset(0 0 55% 0);text-shadow:5px 0 0 rgba(139,92,246,.8),-5px 0 0 rgba(233,185,73,.7)}
+  20%{transform:translateX(5px);clip-path:inset(45% 0 0 0)}
+  40%{transform:translateX(-2px);clip-path:inset(20% 0 35% 0);opacity:.7}
+  60%{transform:translateX(3px);clip-path:none;opacity:1}
+  80%{transform:translateX(-1px)}
+  100%{transform:none;clip-path:none}}
+@media (prefers-reduced-motion:reduce){h1.lag .ln{animation:none}}
 h1.swap{animation:pxswap .34s steps(3) 1}
 @keyframes pxswap{0%{clip-path:inset(0 0 62% 0);transform:translateX(-5px)}34%{clip-path:inset(38% 0 20% 0);transform:translateX(5px)}67%{clip-path:inset(70% 0 0 0);transform:translateX(-3px)}100%{clip-path:none;transform:none}}
 .hero .pixels{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
@@ -295,7 +308,7 @@ h1.swap{animation:pxswap .34s steps(3) 1}
 .toast.v{border-left-color:var(--g2)}.toast.g{border-left-color:var(--ok)}
 .toast small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .toast b{font-weight:600}
-.toast em{margin-left:auto;font-style:normal;font-family:var(--tech);font-weight:700;font-size:22px;color:var(--accent);white-space:nowrap}
+.toast em{margin-left:auto;font-style:normal;font-family:var(--tech);font-weight:400;font-size:18px;color:var(--accent);white-space:nowrap}
 .toast.v em{color:var(--g2)}.toast.g em{color:var(--ok)}
 .toast.out{animation:toastOut .35s steps(4) forwards}
 @keyframes toastIn{from{opacity:0;transform:translateX(40px) scale(.96)}}
@@ -797,7 +810,6 @@ document.fonts && document.fonts.ready.then(fitTitle);
   if (reduced) return;
   function swap(on){
     // Шрифт при наведении уже — фиксируем рамку, иначе она уезжает из-под курсора и эффект мигает.
-    title.style.width = on ? title.offsetWidth + 'px' : '';
     title.classList.toggle('px', on); title.classList.add('swap');
     letters.forEach(l => { l.style.transform = ''; l.style.color = ''; }); active = []; centers = null;
     setTimeout(() => title.classList.remove('swap'), 360);
@@ -826,6 +838,25 @@ document.fonts && document.fonts.ready.then(fitTitle);
     });
   }, { passive: true });
   title.addEventListener('pointerleave', () => { active.forEach(c => { c.el.style.transform = ''; c.el.style.color = ''; }); active = []; });
+})();
+
+/* ---------- Заголовок иногда «лагает» сам ---------- */
+(() => {
+  if (reduced) return;
+  const title = $('#title');
+  const G = '▒░█#*+=/\\<>01';
+  function lag(){
+    if (!document.hidden && !title.classList.contains('px') && !title.classList.contains('lag') && letters.length) {
+      title.classList.add('lag');
+      const picks = [...Array(1 + (Math.random() * 3 | 0))].map(() => letters[Math.random() * letters.length | 0]);
+      const real = picks.map(l => l.textContent);
+      picks.forEach(l => { if (l.textContent.trim()) l.textContent = G[Math.random() * G.length | 0]; });
+      setTimeout(() => picks.forEach((l, i) => l.textContent = real[i]), 160);
+      setTimeout(() => title.classList.remove('lag'), 560);
+    }
+    setTimeout(lag, 3200 + Math.random() * 4200);
+  }
+  setTimeout(lag, 4000);
 })();
 
 /* ---------- Пиксели первого экрана: загораются у курсора и мерцают сами ---------- */
