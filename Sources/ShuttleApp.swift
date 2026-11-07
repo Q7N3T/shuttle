@@ -7,6 +7,7 @@ struct ShuttleApp: App {
 
     init() {
         #if DEBUG
+        SelfTest.runIfRequested()
         MainActor.assumeIsolated { Snapshot.runIfRequested() }
         #endif
     }

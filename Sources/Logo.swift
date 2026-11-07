@@ -58,3 +58,30 @@ struct DroidMark: View {
     .padding(40)
     .background(Color(hex: 0x17121A))
 }
+
+/// Иконка приложения: сливовый «сквиркл» macOS и золотой дроид.
+/// Рисуется в 1024×1024 по сетке Apple (поле 824 с отступом 100).
+struct AppIconView: View {
+    var body: some View {
+        ZStack {
+            Color.clear
+            RoundedRectangle(cornerRadius: 186, style: .continuous)
+                .fill(LinearGradient(colors: [Color(hex: 0x2B2130), Color(hex: 0x17121A)],
+                                     startPoint: .top, endPoint: .bottom))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 186, style: .continuous)
+                        .strokeBorder(Color(hex: 0x3A2E3F), lineWidth: 6))
+                .overlay(
+                    // Тёплый отсвет за дроидом.
+                    Circle().fill(Color(hex: 0xE9B949).opacity(0.16))
+                        .frame(width: 560, height: 560).blur(radius: 90).offset(y: 30))
+                .clipShape(RoundedRectangle(cornerRadius: 186, style: .continuous))
+                .frame(width: 824, height: 824)
+                .shadow(color: .black.opacity(0.35), radius: 14, y: 10)
+            DroidMark(size: 540, glow: false)
+                .shadow(color: Color(hex: 0xE9B949).opacity(0.45), radius: 40)
+                .offset(y: 6)
+        }
+        .frame(width: 1024, height: 1024)
+    }
+}

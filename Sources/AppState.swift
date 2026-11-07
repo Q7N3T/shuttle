@@ -96,6 +96,7 @@ final class AppState: ObservableObject {
             let info = try await mtp.run { try $0.connectIfNeeded() }
             connection = .connected(info)
             if !wasConnected {
+                androidCache = [:]
                 androidPath = [Crumb(id: mtpRoot, name: info.storageName)]
                 activeQuick = "root"
                 await loadAndroid()
@@ -107,6 +108,7 @@ final class AppState: ObservableObject {
             default: connection = .searching
             }
             if wasConnected {
+                androidCache = [:]
                 androidItems = []
                 androidPath = []
                 androidSelection = []
@@ -118,13 +120,28 @@ final class AppState: ObservableObject {
 
     // MARK: Android
 
-    func loadAndroid() async {
+    /// Кэш списков папок: на больших папках MTP отвечает секундами
+    /// (Камера с 600+ фото — около 17 с на Huawei), поэтому повторно не перечитываем.
+    private var androidCache: [UInt32: [RemoteItem]] = [:]
+
+    /// `force: false` — взять из кэша, если папка уже открывалась.
+    func loadAndroid(force: Bool = true) async {
         guard let storage = storageID else { return }
         let folder = currentAndroidFolder
+        if !force, let cached = androidCache[folder] {
+            androidItems = cached
+            androidSelection = []
+            return
+        }
         androidLoading = true
         defer { androidLoading = false }
         do {
-            androidItems = try await mtp.run { try $0.list(storage: storage, parent: folder) }
+            let items = try await mtp.run { try $0.list(storage: storage, parent: folder) }
+                .filter { !$0.name.hasPrefix(".") } // служебные папки вроде .RecycleBinHW
+            androidCache[folder] = items
+            // Пока грузилось, могли уйти в другую папку.
+            guard currentAndroidFolder == folder else { return }
+            androidItems = items
             androidSelection = []
         } catch {
             show(error)
@@ -135,14 +152,14 @@ final class AppState: ObservableObject {
         guard item.isFolder else { return }
         androidPath.append(Crumb(id: item.id, name: item.name))
         activeQuick = nil
-        Task { await loadAndroid() }
+        Task { await loadAndroid(force: false) }
     }
 
     func goToCrumb(_ index: Int) {
         guard index < androidPath.count - 1 else { return }
         androidPath = Array(androidPath.prefix(index + 1))
         activeQuick = index == 0 ? "root" : nil
-        Task { await loadAndroid() }
+        Task { await loadAndroid(force: false) }
     }
 
     func androidUp() {
@@ -156,7 +173,7 @@ final class AppState: ObservableObject {
             do {
                 let crumbs = try await mtp.run { try $0.resolve(path: q.path, storage: info.storageID) }
                 androidPath = [Crumb(id: mtpRoot, name: info.storageName)] + crumbs.map { Crumb(id: $0.id, name: $0.name) }
-                await loadAndroid()
+                await loadAndroid(force: false)
             } catch {
                 show(error)
             }

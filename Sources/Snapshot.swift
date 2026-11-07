@@ -7,6 +7,15 @@ enum Snapshot {
     @MainActor
     static func runIfRequested() {
         let args = CommandLine.arguments
+        if let j = args.firstIndex(of: "--icon"), j + 1 < args.count {
+            let r = ImageRenderer(content: AppIconView())
+            r.scale = 1
+            if let cg = r.cgImage {
+                let rep = NSBitmapImageRep(cgImage: cg)
+                try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: args[j + 1]))
+            }
+            exit(0)
+        }
         guard let i = args.firstIndex(of: "--snapshot"), i + 1 < args.count else { return }
         let out = URL(fileURLWithPath: args[i + 1])
         let dark = !(args.count > i + 2 && args[i + 2] == "light")

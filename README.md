@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/logo.svg" width="96" alt="Shuttle"></p>
+<p align="center"><img src="docs/icon-1024.png" width="128" alt="Shuttle"></p>
 
 # Shuttle
 
@@ -57,5 +57,8 @@ open build/DD/Build/Products/Debug/Shuttle.app
 | `Sources/Theme.swift` | Палитра, шрифты, общие элементы |
 | `Sources/Logo.swift` | Логотип |
 
-Отладочный снимок окна с тестовыми данными:
-`Shuttle.app/Contents/MacOS/Shuttle --snapshot out.png dark`
+Отладочные режимы (только Debug-сборка):
+
+- `Shuttle --selftest` — прогон на подключённом телефоне: чтение, загрузка и скачивание со сверкой SHA-256, папки, отмена, переименование, удаление. Работает во временной папке `ShuttleSelfTest` и убирает её за собой. Само приложение перед этим закройте.
+- `Shuttle --snapshot out.png dark|light` — снимок окна с тестовыми данными.
+- `Shuttle --icon out.png` — иконка 1024×1024.

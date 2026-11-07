@@ -56,7 +56,8 @@ private final class ProgressBox {
 private let progressThunk: LIBMTP_progressfunc_t = { sent, total, data in
     guard let data else { return 0 }
     let box = Unmanaged<ProgressBox>.fromOpaque(data).takeUnretainedValue()
-    if box.handler(sent, total) { return 0 }
+    // MTP считает в отправленном и служебный заголовок, поэтому обрезаем по размеру.
+    if box.handler(min(sent, total), total) { return 0 }
     box.cancelled = true
     return 1
 }
@@ -207,11 +208,13 @@ final class MTPService: @unchecked Sendable {
         f.pointee.filename = strdup(url.lastPathComponent)
         f.pointee.filesize = UInt64(values?.fileSize ?? 0)
         f.pointee.filetype = LIBMTP_FILETYPE_UNKNOWN
-        f.pointee.parent_id = parent == mtpRoot ? 0 : parent
+        f.pointee.parent_id = parent
         f.pointee.storage_id = storage
         f.pointee.modificationdate = time_t((values?.contentModificationDate ?? Date()).timeIntervalSince1970)
 
-        let box = ProgressBox(progress)
+        // В «отправлено» и «всего» libmtp включает служебный заголовок — меряем по размеру файла.
+        let fileSize = f.pointee.filesize
+        let box = ProgressBox { sent, _ in progress(min(sent, fileSize), fileSize) }
         let ctx = Unmanaged.passRetained(box)
         defer { ctx.release() }
         let r = url.path.withCString { LIBMTP_Send_File_From_File(dev, $0, f, progressThunk, ctx.toOpaque()) }
@@ -226,7 +229,7 @@ final class MTPService: @unchecked Sendable {
         guard let dev = device else { throw MTPError.notConnected }
         guard let cName = strdup(name) else { throw MTPError.failed("Не хватает памяти") }
         defer { free(cName) }
-        let id = LIBMTP_Create_Folder(dev, cName, parent == mtpRoot ? 0 : parent, storage)
+        let id = LIBMTP_Create_Folder(dev, cName, parent, storage)
         if id == 0 { throw MTPError.failed(lastError(dev, fallback: "Не удалось создать папку")) }
         return id
     }
