@@ -31,6 +31,9 @@ targets:
         LIBRARY_SEARCH_PATHS: /opt/homebrew/lib
         OTHER_LDFLAGS: -lmtp
         ENABLE_HARDENED_RUNTIME: NO
-        CODE_SIGN_IDENTITY: "-"
+        # Постоянная подпись: macOS запоминает выданные разрешения
+        # (доступ к «Загрузкам» и т.д.) по сертификату, а не по хешу сборки.
+        CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: HDYY45A296
         MACOSX_DEPLOYMENT_TARGET: "14.0"
