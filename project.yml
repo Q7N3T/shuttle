@@ -25,8 +25,8 @@ targets:
         CFBundleDevelopmentRegion: ru
         CFBundleLocalizations: [ru]
         CFBundleAllowMixedLocalizations: true
-        CFBundleShortVersionString: "0.2.0"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "0.2.1"
+        CFBundleVersion: "3"
         ATSApplicationFontsPath: Fonts
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "14.0"
