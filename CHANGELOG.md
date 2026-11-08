@@ -8,7 +8,6 @@ Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle
 
 ## [0.5.1] — 2026-11-08
 
-- Settings fit on a 13-inch Mac screen: tabs scroll inside the window
 - The last update check date follows the app language
 - Updates and the Download button get the DMG from the Shuttle site — works even where github.com is blocked
 
@@ -17,7 +16,7 @@ Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle
 - Shuttle the mascot lives in the window header: blinks, jokes in a retro bubble, cheers for new devices and finished transfers
 - The mascot runs along the transfer bar and sits down to wait if the cable drops; yawns when the phone battery is low
 - Badges with pixel icons and “past the cloud” stats — the Badges tab in Settings
-- Seasonal hats, a birthday and the secret ↑↑↓↓←→←→BA code
+- Seasonal hats and birthday
 - Phone and Switch at the same time: each device in its own tab, transfers run in parallel
 - Verification after copying: every verified file gets a ✓
 - Free up space: delete from the phone only what’s definitely on the Mac, with content verification
