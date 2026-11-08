@@ -1,6 +1,6 @@
 import Foundation
 
-/// Избранная папка на устройстве: раздел + путь из имён.
+/// A favorite folder on the device: storage + a path of names.
 struct FavoriteFolder: Codable, Hashable, Identifiable {
     var id: String { storage + "/" + path.joined(separator: "/") }
     var storage: String

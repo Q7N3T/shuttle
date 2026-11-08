@@ -1,7 +1,7 @@
 import Foundation
 
-/// Android через ADB: быстрее MTP, работает по Wi‑Fi, умеет ставить APK и снимать экран.
-/// Нужен установленный `adb` (Android platform-tools) и включённая отладка на телефоне.
+/// Android over ADB: faster than MTP, works over Wi‑Fi, installs APKs and takes screenshots.
+/// Needs `adb` installed (Android platform-tools) and USB debugging on the phone.
 final class ADBDriver: DeviceDriver {
     let transport: Transport = .adb
     private var serial: String?
@@ -10,7 +10,7 @@ final class ADBDriver: DeviceDriver {
     private var nextID: UInt32 = 1
     static let root = "/sdcard"
 
-    /// Где искать adb: Homebrew, Android Studio, PATH.
+    /// Where to look for adb: Homebrew, Android Studio, PATH.
     static var executable: String? {
         let fm = FileManager.default
         var paths = ["/opt/homebrew/bin/adb", "/usr/local/bin/adb",
@@ -23,7 +23,7 @@ final class ADBDriver: DeviceDriver {
 
     static var isAvailable: Bool { executable != nil }
 
-    // MARK: Запуск adb
+    // MARK: Running adb
 
     @discardableResult
     static func adb(_ args: [String], serial: String? = nil, timeout: TimeInterval = 30) throws -> Data {
@@ -60,7 +60,7 @@ final class ADBDriver: DeviceDriver {
 
     static func quote(_ s: String) -> String { "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'" }
 
-    /// Подключиться по Wi‑Fi: `adb connect 192.168.1.20:5555`.
+    /// Connect over Wi‑Fi: `adb connect 192.168.1.20:5555`.
     static func connectWiFi(_ address: String) throws -> String {
         let d = try adb(["connect", address], timeout: 15)
         return String(data: d, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -119,7 +119,7 @@ final class ADBDriver: DeviceDriver {
 
     func list(storage: UInt32, parent: UInt32) throws -> [RemoteItem] {
         let dir = try path(parent)
-        // toybox: тип|размер|время|путь для каждого элемента папки
+        // toybox: type|size|time|path for every item in the folder
         let out = try shell("find \(ADBDriver.quote(dir)) -mindepth 1 -maxdepth 1 -exec stat -c '%F|%s|%Y|%n' {} + 2>/dev/null")
         return out.split(separator: "\n").compactMap { line in
             let f = line.split(separator: "|", maxSplits: 3).map(String.init)
@@ -132,7 +132,7 @@ final class ADBDriver: DeviceDriver {
         }
     }
 
-    // MARK: Сверка: по ADB телефон сам считает размер и SHA-256
+    // MARK: Verification: over ADB the phone computes the size and SHA-256 itself
 
     func remoteSize(_ id: UInt32) -> UInt64? {
         guard let p = try? path(id), let out = try? shell("stat -c %s \(ADBDriver.quote(p))") else { return nil }
@@ -165,7 +165,7 @@ final class ADBDriver: DeviceDriver {
         return id(for: remote)
     }
 
-    /// adb не отдаёт прогресс без терминала — меряем размер сами, пока идёт копирование.
+    /// adb gives no progress without a terminal — we measure the size ourselves while copying.
     private func runWatching(_ args: [String], total: UInt64, measure: @escaping () -> UInt64,
                              progress: @escaping (UInt64, UInt64) -> Bool) throws {
         guard let exe = ADBDriver.executable else { throw MTPError.notConnected }
@@ -205,7 +205,7 @@ final class ADBDriver: DeviceDriver {
         let old = try path(id)
         let new = ((old as NSString).deletingLastPathComponent as NSString).appendingPathComponent(name)
         _ = try shell("mv \(ADBDriver.quote(old)) \(ADBDriver.quote(new))")
-        // Переносим и пути вложенных объектов, которые уже видели.
+        // Move the paths of nested objects we've already seen as well.
         for (cid, p) in pathByID where p == old || p.hasPrefix(old + "/") {
             let moved = new + p.dropFirst(old.count)
             pathByID[cid] = moved
@@ -214,7 +214,7 @@ final class ADBDriver: DeviceDriver {
         }
     }
 
-    // MARK: Только ADB
+    // MARK: ADB only
 
     func install(apk url: URL) throws {
         _ = try ADBDriver.adb(["install", "-r", url.path], serial: serial, timeout: 300)

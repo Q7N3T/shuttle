@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Карточка обновления поверх окна: выезжает сверху, этапы перетекают друг в друга.
+/// The update card on top of the window: slides in from the top, stages blend into each other.
 struct UpdateOverlay: View {
     @EnvironmentObject private var updates: UpdateModel
     @Environment(\.palette) private var p
@@ -56,7 +56,7 @@ struct UpdateCard: View {
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: updates.phase)
     }
 
-    // MARK: Маленькая плашка: проверка, «последняя версия», «обновлено»
+    // MARK: Small pill: checking, "latest version", "updated"
 
     private var toast: some View {
         HStack(spacing: 10) {
@@ -80,7 +80,7 @@ struct UpdateCard: View {
         .id(updates.phase.key)
     }
 
-    // MARK: Большая карточка
+    // MARK: Big card
 
     private var full: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -193,9 +193,9 @@ struct UpdateCard: View {
     }
 }
 
-// MARK: - Анимированные элементы
+// MARK: - Animated elements
 
-/// Дроид, который парит и мягко светится.
+/// A droid that floats and glows softly.
 struct FloatingDroid: View {
     @State private var up = false
 
@@ -209,7 +209,7 @@ struct FloatingDroid: View {
     }
 }
 
-/// Пункт списка изменений, появляется с задержкой по порядку.
+/// A changelog item that appears with a staggered delay.
 struct StaggeredNote: View {
     @Environment(\.palette) private var p
     @Environment(\.isSnapshot) private var snap
@@ -230,7 +230,7 @@ struct StaggeredNote: View {
     }
 }
 
-/// Полоса прогресса с бегущим бликом.
+/// A progress bar with a moving shine.
 struct ShimmerTrack: View {
     @Environment(\.palette) private var p
     var value: Double
@@ -263,7 +263,7 @@ struct ShimmerTrack: View {
     }
 }
 
-/// Галочка, которая рисуется сама.
+/// A checkmark that draws itself.
 struct DrawnCheck: View {
     @Environment(\.isSnapshot) private var snap
     var size: CGFloat = 16
@@ -295,7 +295,7 @@ struct CheckShape: Shape {
     }
 }
 
-/// Главная кнопка: золотая пилюля.
+/// The main button: a golden pill.
 struct AccentButton: View {
     @Environment(\.palette) private var p
     let title: String
@@ -316,7 +316,7 @@ struct AccentButton: View {
     }
 }
 
-/// Тихая текстовая кнопка.
+/// A quiet text button.
 struct GhostButton: View {
     @Environment(\.palette) private var p
     let title: String

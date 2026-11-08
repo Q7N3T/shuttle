@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 import Sparkle
 
-/// Что сейчас показывает карточка обновления.
+/// What the update card is showing now.
 enum UpdatePhase: Equatable {
     case hidden
     case checking
@@ -15,7 +15,7 @@ enum UpdatePhase: Equatable {
     case upToDate
     case failed(String)
 
-    /// Для анимации смены содержимого.
+    /// For animating content changes.
     var key: String {
         switch self {
         case .hidden: "hidden"
@@ -37,7 +37,7 @@ struct UpdateInfo: Equatable {
     let notes: [String]
 }
 
-/// Состояние обновлений для интерфейса + настройки.
+/// Update state for the interface + settings.
 @MainActor
 final class UpdateModel: ObservableObject {
     @Published var phase: UpdatePhase = .hidden
@@ -48,7 +48,7 @@ final class UpdateModel: ObservableObject {
         didSet { updater?.automaticallyDownloadsUpdates = automaticallyInstalls }
     }
     @Published private(set) var hasSkippedVersion = false
-    /// Итог последней проверки — показываем в настройках (карточка в окне исчезает сама).
+    /// The result of the last check — shown in Settings (the card in the window hides by itself).
     @Published var lastResult: String?
     @Published var lastResultIsError = false
 
@@ -56,7 +56,7 @@ final class UpdateModel: ObservableObject {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
     }
 
-    // Ответы Sparkle, которые ждут действия пользователя.
+    // Sparkle replies waiting for the user's action.
     var choiceReply: ((SPUUserUpdateChoice) -> Void)?
     var cancelDownload: (() -> Void)?
     var acknowledgement: (() -> Void)?
@@ -84,7 +84,7 @@ final class UpdateModel: ObservableObject {
         }
         refreshSkipped()
         #if DEBUG
-        // Проверка обновления целиком: --update-feed <url> --auto-accept-update
+        // A full update check: --update-feed <url> --auto-accept-update
         if UpdaterDelegate.testFeed != nil {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self.checkNow() }
         }
@@ -105,7 +105,7 @@ final class UpdateModel: ObservableObject {
         updater?.checkForUpdates()
     }
 
-    // Кнопки карточки
+    // Card buttons
     func install() { answer(.install) }
     func later() { answer(.dismiss) }
     func skip() {
@@ -132,7 +132,7 @@ final class UpdateModel: ObservableObject {
         reply?(choice)
     }
 
-    /// «Снова показывать пропущенные версии».
+    /// "Show skipped versions again".
     func resetSkipped() {
         for key in ["SUSkippedMinorVersion", "SUSkippedMajorVersion", "SUSkippedMajorSubreleaseVersion", "SUSkippedVersion"] {
             UserDefaults.standard.removeObject(forKey: key)
@@ -146,7 +146,7 @@ final class UpdateModel: ObservableObject {
             .contains { d.object(forKey: $0) != nil }
     }
 
-    /// Через пару секунд прячет сообщения, которые не требуют ответа.
+    /// Hides messages that need no answer after a couple of seconds.
     func autoHide(after seconds: Double, for key: String) {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(seconds))
@@ -155,7 +155,7 @@ final class UpdateModel: ObservableObject {
     }
 }
 
-/// Мост между Sparkle и нашей карточкой. Sparkle вызывает методы на главном потоке.
+/// The bridge between Sparkle and our card. Sparkle calls these methods on the main thread.
 final class ShuttleUserDriver: NSObject, SPUUserDriver {
     private weak var model: UpdateModel?
 
@@ -188,7 +188,7 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
             m.choiceReply = reply
             m.lastResult = L("Доступна версия %@", info.version)
             m.lastResultIsError = false
-            // Уже скачано в фоне — сразу предлагаем установить.
+            // Already downloaded in the background — offer to install right away.
             m.phase = state.stage == .notDownloaded ? .found(info) : .ready(info)
             if UpdateModel.autoAccept {
                 NSLog("Shuttle test: найдено обновление \(info.version), ставим")
@@ -219,7 +219,7 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
                 m.lastResult = error.localizedDescription
                 m.lastResultIsError = true
             }
-            // Фоновые проверки не беспокоят: например, без интернета.
+            // Background checks don't bother the user: e.g. without internet.
             guard m.userInitiated || m.phase != .hidden else { acknowledgement(); return }
             m.userInitiated = false
             m.acknowledgement = acknowledgement
@@ -293,10 +293,10 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
         }
     }
 
-    /// Пункты списка изменений из описания версии в appcast (<li>…</li> или строки «- …»).
+    /// Changelog items from the version description in the appcast (<li>…</li> or "- …" lines).
     static func notes(from html: String?, english: Bool = L10n.english) -> [String] {
         guard var html, !html.isEmpty else { return [] }
-        // В appcast два списка: русский — пунктами <li>, английский — <p> внутри <div data-lang="en">.
+        // The appcast has two lists: Russian as <li> items, English as <p> inside <div data-lang="en">.
         if let r = html.range(of: #"<div data-lang="en">"#) {
             let en = String(html[r.upperBound...])
             if english {
@@ -326,7 +326,7 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
     }
 }
 
-/// Отладка: подмена адреса списка версий (--update-feed <url>).
+/// Debug: override the version list URL (--update-feed <url>).
 final class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
     static var testFeed: String? {
         #if DEBUG

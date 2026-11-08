@@ -1,12 +1,12 @@
 import Foundation
 
-/// Одна передача в очереди. Прогресс приходит с очереди устройства,
-/// а @Published меняются только на главном потоке.
+/// One transfer in the queue. Progress comes from the device queue,
+/// while @Published values change only on the main thread.
 final class Transfer: ObservableObject, Identifiable {
     enum Direction { case toMac, toAndroid }
     enum State: Equatable {
         case queued, running, done, failed(String), cancelled
-        /// Связь прервалась — продолжим, когда устройство вернётся.
+        /// The connection dropped — we'll continue when the device returns.
         case waiting
         var isFinished: Bool {
             switch self {
@@ -20,9 +20,9 @@ final class Transfer: ObservableObject, Identifiable {
     let id = UUID()
     let name: String
     let direction: Direction
-    /// Подпись слева от имени: «Установка», «Синхронизация»…
+    /// The label left of the name: "Install", "Sync"…
     let label: String?
-    /// Для какого устройства: продолжаем только на нём же.
+    /// Which device it's for: we only continue on that same device.
     let deviceKey: String
     private(set) var token = CancelToken()
 
@@ -30,19 +30,19 @@ final class Transfer: ObservableObject, Identifiable {
     @Published var sent: UInt64 = 0
     @Published var total: UInt64 = 0
     @Published var bytesPerSecond: Double = 0
-    /// Куда легло на Mac, чтобы показать в Finder.
+    /// Where it landed on the Mac, to show in Finder.
     @Published var resultURL: URL?
-    /// Файлы сверены после копирования: размеры на обоих концах совпали.
+    /// Files were verified after copying: sizes match on both ends.
     @Published var verified = false
 
-    /// Запустить снова (после обрыва). Задаёт AppState.
+    /// Run again (after a drop). Set by AppState.
     var restart: (() -> Void)?
-    /// Сколько раз продолжали после обрыва.
+    /// How many times it was resumed after a drop.
     var attempts = 0
 
     private var startedAt: Date?
     private var sentAtStart: UInt64 = 0
-    private var lastReport = Date.distantPast // трогается только с очереди устройства
+    private var lastReport = Date.distantPast // only touched from the device queue
 
     init(name: String, direction: Direction, label: String? = nil, deviceKey: String = "") {
         self.name = name
@@ -53,7 +53,7 @@ final class Transfer: ObservableObject, Identifiable {
 
     var fraction: Double { total == 0 ? 0 : Double(sent) / Double(total) }
 
-    /// Вызывается с очереди устройства.
+    /// Called from the device queue.
     func began() {
         DispatchQueue.main.async {
             self.state = .running
@@ -62,7 +62,7 @@ final class Transfer: ObservableObject, Identifiable {
         }
     }
 
-    /// Вызывается с очереди устройства; не чаще 10 раз в секунду.
+    /// Called from the device queue; at most 10 times a second.
     func report(_ sent: UInt64, _ total: UInt64) {
         let now = Date()
         guard now.timeIntervalSince(lastReport) > 0.1 || sent == total else { return }
@@ -92,7 +92,7 @@ final class Transfer: ObservableObject, Identifiable {
         }
     }
 
-    /// Перед повтором: новый флаг отмены.
+    /// Before a retry: a new cancel flag.
     @MainActor
     func prepareRetry() {
         token = CancelToken()

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Пиксельный значок 8×8 из строк «#» и «.».
+/// An 8×8 pixel badge from rows of "#" and ".".
 struct PixelBadgeIcon: View {
     let rows: [String]
     var color: Color
@@ -19,7 +19,7 @@ struct PixelBadgeIcon: View {
     }
 }
 
-/// Витрина достижений и статистика «мимо облака» — вкладка в настройках.
+/// The achievements showcase and "past the cloud" stats — a tab in Settings.
 struct AchievementsView: View {
     @ObservedObject private var store = Achievements.shared
     @Environment(\.palette) private var p

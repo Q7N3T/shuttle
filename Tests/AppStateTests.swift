@@ -1,7 +1,7 @@
 import XCTest
 @testable import Shuttle
 
-/// Сценарии приложения целиком: AppState + тестовое устройство.
+/// Whole-app scenarios: AppState + a test device.
 @MainActor
 final class AppStateTests: XCTestCase {
     var mock: MockDriver!
@@ -16,14 +16,14 @@ final class AppStateTests: XCTestCase {
         await waitUntil { self.state.androidPath.count == 1 && self.state.cache[self.state.currentKey!] != nil }
     }
 
-    /// Подождать условие (передачи идут на очереди устройства).
+    /// Wait for a condition (transfers run on the device queue).
     func waitUntil(_ timeout: TimeInterval = 10, _ cond: @escaping () -> Bool) async {
         let end = Date().addingTimeInterval(timeout)
         while !cond(), Date() < end { try? await Task.sleep(for: .milliseconds(30)) }
-        XCTAssertTrue(cond(), "не дождались")
+        XCTAssertTrue(cond(), "timed out waiting")
     }
 
-    /// Открыть «Камеру» и дождаться её содержимого.
+    /// Open "Camera" and wait for its contents.
     func openCamera() async {
         state.openQuick(QuickFolder.android[0])
         await waitUntil { self.state.androidPath.last?.name == "Camera" && !self.state.androidRows.isEmpty
@@ -37,7 +37,7 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(state.device?.kind, .console)
         XCTAssertEqual(state.currentStorage?.name, "SD Card")
         XCTAssertTrue(state.androidRows.contains { $0.item.name == ".overlays" } == false,
-                      ".overlays лежит в switch/, а не в корне")
+                      ".overlays lives in switch/, not at the root")
         XCTAssertTrue(state.androidRows.contains { $0.item.name == "atmosphere" })
     }
 
@@ -81,10 +81,10 @@ final class AppStateTests: XCTestCase {
         mock.failAfterBytes = 1_200_000
         state.download([vid])
         await waitUntil { self.state.transfers.first?.state == .waiting }
-        // «Кабель» отключён: устройство пропало…
+        // The "cable" is unplugged: the device is gone…
         await state.tick()
         XCTAssertNil(state.device)
-        // …и вернулось — передача продолжается сама.
+        // …and it's back — the transfer continues by itself.
         mock.connected = true
         await state.tick()
         await waitUntil { self.allDone() }
@@ -101,7 +101,7 @@ final class AppStateTests: XCTestCase {
         mock.failAfterBytes = 900_000
         state.download([vid])
         await waitUntil { self.state.transfers.first?.state == .waiting }
-        // Кабель вернули до следующего опроса: AppState ещё «видит» устройство.
+        // The cable came back before the next poll: AppState still "sees" the device.
         XCTAssertNotNil(state.device)
         mock.connected = true
         await state.tick()
@@ -116,12 +116,12 @@ final class AppStateTests: XCTestCase {
         let nsp = d.appendingPathComponent("Game [0100000000010000][v0].nsp")
         try? Data(repeating: 1, count: 1000).write(to: nsp)
         state.handleDrop([nsp])
-        XCTAssertEqual(state.pendingInstall?.files, [nsp], "игра — в окно установки")
+        XCTAssertEqual(state.pendingInstall?.files, [nsp], "a game goes to the install sheet")
         state.pendingInstall = nil
         let zip = d.appendingPathComponent("tool.zip")
         try? Data([0x50, 0x4b]).write(to: zip)
         state.handleDrop([zip])
-        XCTAssertEqual(state.pendingHomebrew, zip, "архив на SD — в окно homebrew")
+        XCTAssertEqual(state.pendingHomebrew, zip, "an archive on the SD goes to the homebrew sheet")
     }
 
     func testAPKOverMTPGoesToDownloads() async {
@@ -129,7 +129,7 @@ final class AppStateTests: XCTestCase {
         let apk = tempDir().appendingPathComponent("app.apk")
         try? Data(repeating: 9, count: 5000).write(to: apk)
         state.handleDrop([apk])
-        XCTAssertNil(state.pendingAPK, "по MTP установить нельзя — просто копируем")
+        XCTAssertNil(state.pendingAPK, "can't install over MTP — just copy")
         await waitUntil { self.allDone() }
         XCTAssertNotNil(mock.find(["Download", "app.apk"], storage: 1))
     }
@@ -147,7 +147,7 @@ final class AppStateTests: XCTestCase {
 
     func testNoSpaceBlocksInstall() async {
         await make(.console)
-        // SD-карта почти полная: на ней «занято» 9 ГБ + файлы, оставим ~50 КБ.
+        // The SD card is almost full: 9 GB "used" + files, leave ~50 KB.
         let sdIndex = mock.storages.firstIndex(where: \.isSDCard)!
         let sd = mock.storages[sdIndex]
         let used = 9_000_000_000 + mock.nodes.values.filter { $0.storage == sd.id }.reduce(0) { $0 + UInt64($1.data.count) }
@@ -157,8 +157,8 @@ final class AppStateTests: XCTestCase {
         try? Data(repeating: 1, count: 200_000).write(to: nsp)
         let before = state.transfers.count
         state.installGames([nsp], toNAND: false)
-        XCTAssertEqual(state.transfers.count, before, "передача не начинается")
-        XCTAssertTrue(state.errorMessage?.contains(formatBytes(200_000)) ?? false, state.errorMessage ?? "нет ошибки")
+        XCTAssertEqual(state.transfers.count, before, "the transfer doesn't start")
+        XCTAssertTrue(state.errorMessage?.contains(formatBytes(200_000)) ?? false, state.errorMessage ?? "no error")
     }
 
     func testHomebrewInstallReplacesFiles() async {
@@ -176,14 +176,14 @@ final class AppStateTests: XCTestCase {
         XCTAssertEqual(state.transfers.first?.state, .done)
         XCTAssertEqual(mock.find(["atmosphere", "package3"], storage: 1)?.data, Data("NEW".utf8))
         XCTAssertNotNil(mock.find(["switch", "Tool", "Tool.nro"], storage: 1))
-        XCTAssertNotNil(mock.find(["atmosphere", "stratosphere.romfs"], storage: 1), "остальное не тронуто")
+        XCTAssertNotNil(mock.find(["atmosphere", "stratosphere.romfs"], storage: 1), "everything else is untouched")
     }
 
     func testBackupSaves() async {
         await make(.console)
         state.backupSaves()
         await waitUntil { self.allDone() }
-        guard let dest = state.transfers.first?.resultURL else { return XCTFail("нет папки") }
+        guard let dest = state.transfers.first?.resultURL else { return XCTFail("no folder") }
         let save = dest.appendingPathComponent("Celeste/Игрок 1/save.dat")
         XCTAssertEqual(localSize(save), 64_000)
         try? FileManager.default.removeItem(at: dest)
@@ -215,7 +215,7 @@ final class AppStateTests: XCTestCase {
         await waitUntil { self.allDone() }
         XCTAssertEqual(localSize(local.appendingPathComponent("Отпуск 2026/trip_1.jpg")),
                        UInt64(mock.find(["DCIM", "Camera", "Отпуск 2026", "trip_1.jpg"], storage: 1)!.data.count))
-        // Второй прогон ничего не качает.
+        // The second run downloads nothing.
         state.clearFinished()
         let before = mock.log.filter { $0.hasPrefix("download") }.count
         state.runSyncs([rule])
@@ -228,7 +228,7 @@ final class AppStateTests: XCTestCase {
         state.searchText = "Screenshot"
         state.deepSearch()
         await waitUntil { !self.state.deepSearching }
-        XCTAssertEqual(state.deepResults?.count, 4, "папка Screenshots + 3 файла")
+        XCTAssertEqual(state.deepResults?.count, 4, "the Screenshots folder + 3 files")
         XCTAssertTrue(state.deepResults?.contains { $0.path == "Pictures/Screenshots" } ?? false)
         state.clearSearch()
         XCTAssertNil(state.deepResults)

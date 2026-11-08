@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-/// Палитра из kino-na-vecher: сливовый фон, золотой акцент.
+/// The kino-na-vecher palette: plum background, golden accent.
 struct Palette {
     let bg, surface, hover, line, text, muted, accent, ink, ok, danger: Color
 
@@ -38,8 +38,8 @@ extension EnvironmentValues {
     }
 }
 
-/// Unbounded для заголовков, Golos Text для текста.
-/// Если шрифты не положены в Resources/Fonts — аккуратный системный фолбэк.
+/// Unbounded for headings, Golos Text for text.
+/// If the fonts aren't in Resources/Fonts — a neat system fallback.
 enum AppFont {
     private static let hasUnbounded = NSFontManager.shared.availableMembers(ofFontFamily: "Unbounded") != nil
     private static let hasGolos = NSFontManager.shared.availableMembers(ofFontFamily: "Golos Text") != nil
@@ -56,7 +56,7 @@ enum AppFont {
 
     private static let hasDeparture = NSFontManager.shared.availableMembers(ofFontFamily: "Departure Mono") != nil
 
-    /// Пиксельный Departure Mono — для реплик маскота, как на сайте.
+    /// Pixel Departure Mono — for the mascot's lines, like on the site.
     static func pixel(_ size: CGFloat = 12) -> Font {
         hasDeparture ? .custom("Departure Mono", size: size) : .system(size: size, design: .monospaced)
     }
@@ -88,9 +88,9 @@ enum ThemeMode: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Общие элементы
+// MARK: - Shared elements
 
-/// Чип-пилюля, как в kino-na-vecher.
+/// A pill chip, like in kino-na-vecher.
 struct Chip: View {
     @Environment(\.palette) private var p
     let title: String
@@ -116,7 +116,7 @@ struct Chip: View {
     }
 }
 
-/// Маленький переключатель-иконка (тема).
+/// A small icon toggle (theme).
 struct IconChip: View {
     @Environment(\.palette) private var p
     let systemName: String
@@ -140,7 +140,7 @@ struct IconChip: View {
     }
 }
 
-/// Круглая иконка-кнопка.
+/// A round icon button.
 struct IconButton: View {
     @Environment(\.palette) private var p
     let systemName: String
@@ -184,7 +184,7 @@ struct ProgressTrack: View {
     }
 }
 
-/// Размер на языке интерфейса Shuttle (а не системы): «4,2 МБ» / «4.2 MB». Десятичные единицы, как в Finder.
+/// A size in Shuttle's interface language (not the system's): "4,2 МБ" / "4.2 MB". Decimal units, like Finder.
 func formatBytes(_ bytes: UInt64) -> String {
     let en = L10n.english
     let units = en ? ["B", "KB", "MB", "GB", "TB"] : ["Б", "КБ", "МБ", "ГБ", "ТБ"]
@@ -199,7 +199,7 @@ func formatBytes(_ bytes: UInt64) -> String {
     return (f.string(from: NSNumber(value: v)) ?? String(Int(v))) + " " + units[i]
 }
 
-// MARK: - Режим снимка (отладка): ImageRenderer не рисует ScrollView и Menu.
+// MARK: - Snapshot mode (debug): ImageRenderer doesn't draw ScrollView or Menu.
 
 private struct SnapshotKey: EnvironmentKey { static let defaultValue = false }
 extension EnvironmentValues {
@@ -224,10 +224,10 @@ struct Scrollable<Content: View>: View {
     }
 }
 
-// MARK: - Окно: прозрачная шапка-панель
+// MARK: - Window: transparent header toolbar
 
-/// Делает полосу заголовка прозрачной: сливовый фон окна идёт до самого верха,
-/// а панель инструментов (логотип, кнопки) — поверх, на одной линии с кнопками окна.
+/// Makes the title bar transparent: the plum window background goes all the way up,
+/// and the toolbar (logo, buttons) sits on top, aligned with the window buttons.
 struct WindowChrome: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView { ChromeView() }
     func updateNSView(_ nsView: NSView, context: Context) {}
@@ -257,7 +257,7 @@ extension View {
 }
 
 extension ToolbarContent {
-    /// Без «стеклянной» подложки macOS 26 вокруг элементов панели.
+    /// Without macOS 26's "glass" backing around toolbar items.
     @ToolbarContentBuilder
     func withoutGlass() -> some ToolbarContent {
         if #available(macOS 26.0, *) {

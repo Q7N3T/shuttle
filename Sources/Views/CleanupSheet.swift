@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// «Освободить место на телефоне»: находит фото и видео, у которых на Mac лежит точная копия,
-/// сверяет содержимое (SHA-256 по ADB или пробы по MTP) и удаляет с телефона только их.
+/// "Free up space on the phone": finds photos and videos that have an exact copy on the Mac,
+/// verifies their contents (SHA-256 over ADB or samples over MTP) and deletes only those from the phone.
 @MainActor
 final class PhoneCleanup: ObservableObject {
     enum Phase: Equatable {
@@ -25,7 +25,7 @@ final class PhoneCleanup: ObservableObject {
     @Published private(set) var differ = 0
     private let token = CancelToken()
 
-    /// Где на телефоне живут снимки.
+    /// Where shots live on the phone.
     static let folders: [[String]] = [["DCIM", "Camera"], ["DCIM", "Screenshots"], ["Pictures", "Screenshots"]]
 
     var safeBytes: UInt64 { safe.reduce(0) { $0 + $1.item.size } }
@@ -41,7 +41,7 @@ final class PhoneCleanup: ObservableObject {
         let token = token
         Task {
             do {
-                // 1. Что есть на телефоне
+                // 1. What's on the phone
                 phase = .scanning(L("Читаем папки телефона…"))
                 let remote: [RemoteItem] = try await svc.run { svc in
                     var out: [RemoteItem] = []
@@ -52,7 +52,7 @@ final class PhoneCleanup: ObservableObject {
                     }
                     return out
                 }
-                // 2. Что есть на Mac: имя и размер → файл
+                // 2. What's on the Mac: name and size → file
                 phase = .scanning(L("Ищем копии на Mac…"))
                 let local = await Task.detached(priority: .userInitiated) { Self.localFiles(roots) }.value
                 var candidates: [Match] = []
@@ -62,7 +62,7 @@ final class PhoneCleanup: ObservableObject {
                     else { missing += 1 }
                 }
                 notOnMac = missing
-                // 3. Сверка содержимого — по одному файлу, с прогрессом
+                // 3. Content verification — one file at a time, with progress
                 var ok: [Match] = []
                 var bad = 0
                 for (i, m) in candidates.enumerated() {
@@ -99,7 +99,7 @@ final class PhoneCleanup: ObservableObject {
         }
     }
 
-    /// Файлы в папке фото (со всеми подпапками) и в текущей папке Mac.
+    /// Files in the photos folder (with all subfolders) and in the current Mac folder.
     nonisolated static func localFiles(_ roots: [URL]) -> [String: URL] {
         var out: [String: URL] = [:]
         let fm = FileManager.default

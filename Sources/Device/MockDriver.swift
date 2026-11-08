@@ -3,14 +3,14 @@ import AppKit
 import ImageIO
 import UniformTypeIdentifiers
 
-/// Тестовое устройство в памяти: телефон или Switch с DBI.
-/// Запуск: `Shuttle --mock-device phone|switch` (Debug), а также в автотестах.
+/// An in-memory test device: a phone or a Switch with DBI.
+/// Run with `Shuttle --mock-device phone|switch` (Debug), and in automated tests.
 final class MockDriver: DeviceDriver {
     enum Kind: String { case phone, console = "switch" }
 
     static var requestedKind: Kind? { requestedKinds?.first }
 
-    /// `--mock-device phone|switch|both` — одно тестовое устройство или сразу два.
+    /// `--mock-device phone|switch|both` — one test device or two at once.
     static var requestedKinds: [Kind]? {
         let a = CommandLine.arguments
         guard let i = a.firstIndex(of: "--mock-device"), i + 1 < a.count else { return nil }
@@ -34,12 +34,12 @@ final class MockDriver: DeviceDriver {
     var storages: [StorageInfo] = []
     private var nextID: UInt32 = 100
 
-    // Управление для тестов
+    // Test controls
     var connected = true
     var locked = false
-    /// Оборвать «кабель», когда передано столько байт (за одну операцию).
+    /// Cut the "cable" after this many bytes (within one operation).
     var failAfterBytes: UInt64?
-    /// 0 — мгновенно (тесты); в приложении — как настоящий USB.
+    /// 0 — instant (tests); in the app — like real USB.
     var bytesPerSecond: Double
     var supportsPartialDownload: Bool { true }
     private(set) var log: [String] = []
@@ -109,11 +109,11 @@ final class MockDriver: DeviceDriver {
                 received.append(data.subdata(in: range))
             }
         } catch MTPError.interrupted {
-            // Как настоящий MTP: на устройстве остаётся обрывок.
+            // Like real MTP: a partial file stays on the device.
             _ = add(url.lastPathComponent, parent: parent, storage: storage, data: received)
             throw MTPError.interrupted
         }
-        // DBI: файл в разделе установки «ставится» и исчезает, а игра появляется в Installed games.
+        // DBI: a file in an install storage gets "installed" and disappears, and the game shows up in Installed games.
         if let s = storages.first(where: { $0.id == storage }), s.isInstallTarget,
            ["nsp", "nsz", "xci", "xcz"].contains(url.pathExtension.lowercased()),
            let games = storages.first(where: { $0.isInstalledGames }) {
@@ -149,7 +149,7 @@ final class MockDriver: DeviceDriver {
         return n.data
     }
 
-    // MARK: Помощники для тестов
+    // MARK: Test helpers
 
     @discardableResult
     func add(_ name: String, parent: UInt32, storage: UInt32, folder: Bool = false,
@@ -173,7 +173,7 @@ final class MockDriver: DeviceDriver {
 
     func children(of id: UInt32) -> [Node] { nodes.values.filter { $0.parent == id } }
 
-    // MARK: Внутреннее
+    // MARK: Internals
 
     func remoteSize(_ id: UInt32) -> UInt64? { nodes[id].map { UInt64($0.data.count) } }
 
@@ -196,7 +196,7 @@ final class MockDriver: DeviceDriver {
         nodes.values.filter { $0.storage == storage }.reduce(0) { $0 + UInt64($1.data.count) } + 9_000_000_000
     }
 
-    /// Передача кусками с нужной скоростью, отменой и обрывом.
+    /// Transfer in chunks with the given speed, cancellation and drops.
     private func stream(total: UInt64, from start: UInt64, progress: (UInt64, UInt64) -> Bool,
                         write: (Range<Int>) -> Void) throws {
         let chunk = 256 * 1024
@@ -220,7 +220,7 @@ final class MockDriver: DeviceDriver {
         _ = progress(total, total)
     }
 
-    // MARK: Наполнение
+    // MARK: Seeding
 
     private func seedPhone() {
         storages = [StorageInfo(id: 1, name: "Внутренняя память", capacity: 128_000_000_000, free: 0)]
@@ -272,20 +272,20 @@ final class MockDriver: DeviceDriver {
         _ = add("Nintendo", parent: mtpRoot, storage: 1, folder: true)
         add("hbmenu.nro", parent: mtpRoot, storage: 1, data: Data(repeating: 5, count: 160_000))
         add("boot.ini", parent: mtpRoot, storage: 1, data: Data("[boot]\n".utf8))
-        // Установленные игры (как их называет DBI)
+        // Installed games (as DBI names them)
         for g in ["Mario Kart 8 Deluxe [0100152000022000][v0]",
                   "The Legend of Zelda Tears of the Kingdom [0100F2C0115B6000][v0]",
                   "Celeste [01002B30028F6000][v0]"] {
             let id = add(g, parent: mtpRoot, storage: 4, folder: true)
             add("\(g).nca", parent: id, storage: 4, data: Data(repeating: 6, count: 120_000))
         }
-        // Сейвы
+        // Saves
         for g in ["Mario Kart 8 Deluxe", "Celeste"] {
             let id = add(g, parent: mtpRoot, storage: 7, folder: true)
             let user = add("Игрок 1", parent: id, storage: 7, folder: true)
             add("save.dat", parent: user, storage: 7, data: Data(repeating: 1, count: 64_000))
         }
-        // Альбом
+        // Album
         let album = add("Mario Kart 8 Deluxe", parent: mtpRoot, storage: 8, folder: true)
         for i in 0..<6 {
             add("2026110\(i)1530000-ABCDEF.jpg", parent: album, storage: 8, data: MockDriver.jpeg(seed: 80 + i))
@@ -293,7 +293,7 @@ final class MockDriver: DeviceDriver {
         add("2026110715300000-ABCDEF.mp4", parent: album, storage: 8, data: Data(repeating: 2, count: 900_000))
     }
 
-    /// Небольшая JPEG-картинка с градиентом — чтобы превью было на что смотреть.
+    /// A small JPEG with a gradient — so thumbnails have something to show.
     static func jpeg(seed: Int, size: CGSize = CGSize(width: 320, height: 240)) -> Data {
         image(seed: seed, size: size, type: UTType.jpeg) ?? Data(repeating: UInt8(seed % 255), count: 30_000)
     }

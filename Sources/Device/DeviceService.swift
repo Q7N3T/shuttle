@@ -1,23 +1,23 @@
 import Foundation
 
-/// Что делать, если на устройстве уже есть файл с таким именем.
+/// What to do if the device already has a file with that name.
 enum ConflictPolicy {
-    /// Тот же размер — пропустить (так работает и продолжение после обрыва).
+    /// Same size — skip it (that's also how resuming after a drop works).
     case skipIdentical
-    /// Удалить старый и загрузить заново (обновление homebrew, Atmosphère).
+    /// Delete the old one and upload again (homebrew and Atmosphère updates).
     case replace
 }
 
-/// Вся работа с устройством идёт через одну последовательную очередь:
-/// libmtp не потокобезопасна, а MTP умеет только одну операцию за раз.
-/// Над драйвером (MTP / ADB / тестовый) — общие операции с деревьями папок.
+/// All device work goes through one serial queue:
+/// libmtp isn't thread-safe, and MTP can only do one operation at a time.
+/// On top of the driver (MTP / ADB / test) — shared operations on folder trees.
 final class DeviceService: @unchecked Sendable {
     static let shared = DeviceService()
 
     private let queue = DispatchQueue(label: "shuttle.device", qos: .userInitiated)
     private var candidates: [DeviceDriver]
     private(set) var active: DeviceDriver?
-    /// Файлы, загрузка которых оборвалась: их остаток на устройстве можно удалить.
+    /// Files whose upload was interrupted: their leftovers on the device can be deleted.
     private var partialUploads: Set<String> = []
 
     init(drivers: [DeviceDriver]? = nil) {
@@ -34,7 +34,7 @@ final class DeviceService: @unchecked Sendable {
         return list
     }
 
-    /// Пересобрать список драйверов (включили/выключили ADB в настройках).
+    /// Rebuild the driver list (ADB turned on or off in Settings).
     func reloadDrivers() {
         queue.async {
             self.active?.release()
@@ -43,7 +43,7 @@ final class DeviceService: @unchecked Sendable {
         }
     }
 
-    // MARK: Очередь
+    // MARK: Queue
 
     func run<T>(_ work: @escaping (DeviceService) throws -> T) async throws -> T {
         try await withCheckedThrowingContinuation { cont in
@@ -53,12 +53,12 @@ final class DeviceService: @unchecked Sendable {
         }
     }
 
-    /// Для колбэков AppKit (перетаскивание в Finder).
+    /// For AppKit callbacks (dragging to Finder).
     func runDetached(_ work: @escaping (DeviceService) -> Void) {
         queue.async { work(self) }
     }
 
-    /// Для тестов: выполнить синхронно на очереди.
+    /// For tests: run synchronously on the queue.
     func sync<T>(_ work: (DeviceService) throws -> T) rethrows -> T {
         try queue.sync { try work(self) }
     }
@@ -68,7 +68,7 @@ final class DeviceService: @unchecked Sendable {
         return active
     }
 
-    // MARK: Подключение
+    // MARK: Connection
 
     func connectIfNeeded() throws -> DeviceInfo {
         if let a = active {
@@ -83,7 +83,7 @@ final class DeviceService: @unchecked Sendable {
             } catch MTPError.notConnected {
                 continue
             } catch {
-                // Устройство есть, но занято или заблокировано — дальше не ищем.
+                // The device is there but busy or locked — stop looking.
                 active = d
                 lastError = error
                 break
@@ -99,7 +99,7 @@ final class DeviceService: @unchecked Sendable {
         active = nil
     }
 
-    // MARK: Файлы
+    // MARK: Files
 
     func list(storage: UInt32, parent: UInt32) throws -> [RemoteItem] {
         try driver().list(storage: storage, parent: parent).sorted {
@@ -108,7 +108,7 @@ final class DeviceService: @unchecked Sendable {
         }
     }
 
-    /// Найти папку по пути из имён, например ["DCIM", "Camera"].
+    /// Find a folder by a path of names, e.g. ["DCIM", "Camera"].
     func resolve(path: [String], storage: UInt32) throws -> [(id: UInt32, name: String)] {
         var parent = mtpRoot
         var crumbs: [(UInt32, String)] = []
@@ -123,7 +123,7 @@ final class DeviceService: @unchecked Sendable {
         return crumbs
     }
 
-    /// Папка с таким именем или новая. Путь создаётся целиком: ["switch", "DBI"].
+    /// A folder with that name or a new one. The whole path is created: ["switch", "DBI"].
     func ensureFolder(path: [String], storage: UInt32, from root: UInt32 = mtpRoot) throws -> UInt32 {
         var parent = root
         for name in path where !name.isEmpty {
@@ -151,7 +151,7 @@ final class DeviceService: @unchecked Sendable {
         try driver().upload(url, parent: parent, storage: storage, progress: progress)
     }
 
-    /// MTP не всегда удаляет непустые папки, поэтому идём снизу вверх.
+    /// MTP doesn't always delete non-empty folders, so we go bottom-up.
     func deleteTree(_ item: RemoteItem) throws {
         if item.isFolder {
             for c in try list(storage: item.storageID, parent: item.id) { try deleteTree(c) }
@@ -159,9 +159,9 @@ final class DeviceService: @unchecked Sendable {
         try driver().delete(item.id)
     }
 
-    // MARK: Деревья
+    // MARK: Trees
 
-    /// Все файлы внутри папки с путями относительно неё.
+    /// All files inside a folder with paths relative to it.
     func walk(storage: UInt32, root: UInt32, token: CancelToken? = nil, maxDepth: Int = 24,
               visit: ((String) -> Void)? = nil) throws -> [(item: RemoteItem, path: [String])] {
         var out: [(RemoteItem, [String])] = []
@@ -181,7 +181,7 @@ final class DeviceService: @unchecked Sendable {
         return out
     }
 
-    /// Поиск по имени внутри папки и всех вложенных. Находки отдаются по мере обхода.
+    /// Search by name in a folder and all its subfolders. Matches are reported as we go.
     func search(storage: UInt32, root: UInt32, query: String, token: CancelToken,
                 found: @escaping (RemoteItem, [String]) -> Void, scanned: @escaping (Int) -> Void) throws {
         let q = query.lowercased()
@@ -198,8 +198,8 @@ final class DeviceService: @unchecked Sendable {
         try go(root, [], 0)
     }
 
-    /// Скачать файл или папку целиком.
-    /// `resumeInto` — продолжить в уже начатое место: готовые файлы пропускаются, недокачанные докачиваются.
+    /// Download a file or a whole folder.
+    /// `resumeInto` — continue into an already started place: finished files are skipped, partial ones resumed.
     func downloadTree(_ item: RemoteItem, into dir: URL, token: CancelToken, resumeInto: URL? = nil,
                       progress: @escaping (UInt64, UInt64) -> Void) throws -> URL {
         let d = try driver()
@@ -238,7 +238,7 @@ final class DeviceService: @unchecked Sendable {
                     progress(base + sent, total)
                     return !token.isCancelled
                 }
-                // Сверка: на Mac должно лечь ровно столько, сколько на устройстве. Нет — качаем заново.
+                // Verification: the Mac must get exactly as many bytes as the device has. If not — download again.
                 if it.size > 0, localSize(dest) != it.size {
                     try? fm.removeItem(at: dest)
                     try d.download(it, to: dest, offset: 0) { sent, _ in
@@ -252,10 +252,10 @@ final class DeviceService: @unchecked Sendable {
                 }
                 token.noteVerified()
             } catch MTPError.interrupted {
-                // Обрыв: недокачанное оставляем — продолжим с этого места.
+                // A drop: keep the partial file — we'll continue from there.
                 throw MTPError.interrupted
             } catch {
-                // Отмена или ошибка: обрывок не нужен.
+                // Cancelled or failed: the partial file isn't needed.
                 try? fm.removeItem(at: dest)
                 throw error
             }
@@ -265,7 +265,7 @@ final class DeviceService: @unchecked Sendable {
         return target
     }
 
-    /// Загрузить файлы и папки. Папки сливаются с существующими.
+    /// Upload files and folders. Folders merge with existing ones.
     func uploadTree(_ urls: [URL], parent: UInt32, storage: UInt32, token: CancelToken,
                     conflict: ConflictPolicy = .skipIdentical,
                     progress: @escaping (UInt64, UInt64) -> Void) throws {
@@ -274,7 +274,7 @@ final class DeviceService: @unchecked Sendable {
         let total = urls.reduce(UInt64(0)) { $0 + localSize($1) }
         var done: UInt64 = 0
         progress(0, total)
-        // Содержимое папок назначения читаем один раз: на больших папках MTP отвечает секундами.
+        // Read destination folder contents once: MTP takes seconds on big folders.
         var listings: [UInt32: [RemoteItem]] = [:]
         func existing(in parent: UInt32) throws -> [RemoteItem] {
             if let l = listings[parent] { return l }
@@ -295,7 +295,7 @@ final class DeviceService: @unchecked Sendable {
                     folderID = f.id
                 } else {
                     folderID = try d.createFolder(name, parent: parent, storage: storage)
-                    listings[folderID] = [] // новая папка пуста — читать не нужно
+                    listings[folderID] = [] // a new folder is empty — no need to read it
                 }
                 let kids = try fm.contentsOfDirectory(at: url, includingPropertiesForKeys: nil,
                                                       options: [.skipsHiddenFiles])
@@ -310,7 +310,7 @@ final class DeviceService: @unchecked Sendable {
                     progress(done, total)
                     return
                 }
-                // Замена, или остаток оборванной загрузки.
+                // Replacing, or the leftover of an interrupted upload.
                 if conflict == .replace || partialUploads.contains(key) { try d.delete(old.id) }
             }
             let base = done
@@ -320,8 +320,8 @@ final class DeviceService: @unchecked Sendable {
                     progress(base + sent, total)
                     return !token.isCancelled
                 }
-                // Сверка: устройство должно сообщить тот же размер. Файл явно обрезан — загружаем ещё раз.
-                // Больше или ноль (DBI устанавливает и убирает файл) — не трогаем: это не обрыв.
+                // Verification: the device must report the same size. Clearly truncated — upload again.
+                // Larger or zero (DBI installs and removes the file) — leave it: that's not a drop.
                 if let got = d.remoteSize(id), got > 0, got < size {
                     try? d.delete(id)
                     id = try d.upload(url, parent: parent, storage: storage) { sent, _ in
@@ -347,12 +347,12 @@ final class DeviceService: @unchecked Sendable {
         progress(total, total)
     }
 
-    // MARK: Сверка с копией на Mac
+    // MARK: Verification against the copy on the Mac
 
     enum Sameness { case identical, different, unknown }
 
-    /// Тот же ли это файл, что на Mac. Размер обязателен; дальше — SHA-256 на устройстве (ADB)
-    /// или три пробы содержимого по 64 КБ: начало, середина, конец (MTP).
+    /// Is this the same file as on the Mac. Size is required; then SHA-256 on the device (ADB)
+    /// or three 64 KB content samples: start, middle, end (MTP).
     func compare(_ item: RemoteItem, with url: URL) -> Sameness {
         guard let d = active, item.size > 0, localSize(url) == item.size else { return .different }
         if let remote = d.sha256(item) {

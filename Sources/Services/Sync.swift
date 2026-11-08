@@ -1,6 +1,6 @@
 import Foundation
 
-/// Правило синхронизации: папка устройства → папка Mac (в одну сторону, только новое).
+/// A sync rule: device folder → Mac folder (one way, only new files).
 struct SyncRule: Codable, Identifiable, Hashable {
     var id = UUID()
     var device: String
@@ -44,7 +44,7 @@ final class SyncStore: ObservableObject {
     }
 }
 
-/// Что скачать: файлы, которых нет на Mac или у которых другой размер.
+/// What to download: files that aren't on the Mac or have a different size.
 enum SyncPlanner {
     struct RemoteFile { let path: [String]; let size: UInt64 }
 
@@ -54,7 +54,7 @@ enum SyncPlanner {
             if skipHidden, f.path.contains(where: { $0.hasPrefix(".") }) { return false }
             let u = f.path.reduce(localRoot) { $0.appendingPathComponent($1) }
             guard fm.fileExists(atPath: u.path) else {
-                // Уже сконвертированный HEIC тоже считается скачанным.
+                // An already converted HEIC counts as downloaded too.
                 if (u.pathExtension.lowercased() == "heic"),
                    fm.fileExists(atPath: u.deletingPathExtension().appendingPathExtension("jpg").path) { return false }
                 return true

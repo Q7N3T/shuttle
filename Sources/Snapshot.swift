@@ -2,9 +2,9 @@
 import SwiftUI
 import AppKit
 
-/// Отладка:
-/// `Shuttle --snapshot out.png [dark|light] [phone|switch] [nomac]` — окно с тестовыми данными;
-/// `Shuttle --icon out.png` — иконка 1024×1024.
+/// Debug:
+/// `Shuttle --snapshot out.png [dark|light] [phone|switch] [nomac]` — the window with test data;
+/// `Shuttle --icon out.png` — a 1024×1024 icon.
 enum Snapshot {
     @MainActor
     static func runIfRequested() {
@@ -24,7 +24,7 @@ enum Snapshot {
             r.scale = args.count > j + 2 ? CGFloat(Double(args[j + 2]) ?? 1) : 1
             if let cg = r.cgImage {
                 let rep = NSBitmapImageRep(cgImage: cg)
-                rep.size = DMGBackground.size // 72 dpi-размер в точках, чтобы @2x был ретиной
+                rep.size = DMGBackground.size // size in points at 72 dpi, so @2x is Retina
                 try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: args[j + 1]))
             }
             exit(0)
@@ -39,7 +39,7 @@ enum Snapshot {
 
         let day: TimeInterval = 86_400
         if !args.contains("switch") {
-            // Телефон: слева папка с фото на Mac, внизу — снимки с камеры.
+            // Phone: the Mac photos folder on the left, camera shots at the bottom.
             s.macURL = URL(fileURLWithPath: NSHomeDirectory() + "/Pictures/Shuttle/HUAWEI nova 9")
             s.macItems = [
                 LocalItem(url: URL(fileURLWithPath: "/p1"), name: "Отпуск 2026", size: 0, modified: .now - 30 * day, isFolder: true),

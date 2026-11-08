@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Настройки (⌘,).
+/// Settings (⌘,).
 struct SettingsView: View {
     @EnvironmentObject private var updates: UpdateModel
     @ObservedObject private var settings = AppSettings.shared
@@ -23,7 +23,7 @@ struct SettingsView: View {
                 }
                 Spacer()
             }
-            // Вкладки — отдельной строкой: четыре в одну строку с логотипом не помещаются.
+            // Tabs on their own row: four of them don't fit on one line with the logo.
             HStack(spacing: 6) {
                 tabChip(0, L("Основные"), "gearshape")
                 tabChip(1, L("Устройства"), "cable.connector")
@@ -32,10 +32,10 @@ struct SettingsView: View {
             }
             .fixedSize()
             UpdateCheckRow()
-            // Вкладка прокручивается в своей рамке: окно настроек одной высоты
-            // и помещается даже на 13-дюймовом экране.
+            // The tab scrolls inside its own frame: the settings window keeps one height
+            // and fits even on a 13-inch screen.
             if snap {
-                // Снимок экрана не рисует содержимое ScrollView — показываем вкладку целиком.
+                // A snapshot doesn't draw ScrollView contents — show the whole tab.
                 tabContent
             } else {
                 ScrollView { tabContent.padding(.bottom, 4) }
@@ -69,7 +69,7 @@ struct SettingsView: View {
         Chip(title: title, icon: icon, isOn: tab == i) { tab = i }
     }
 
-    // MARK: Основные
+    // MARK: General
 
     private var general: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -122,7 +122,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: Устройства
+    // MARK: Devices
 
     private var devices: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -176,7 +176,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: Обновления
+    // MARK: Updates
 
     private var updatesSection: some View {
         section(L("Обновления")) {
@@ -233,7 +233,7 @@ struct SettingsView: View {
     }
 }
 
-/// Строка с переключателем-пилюлей и подсказкой.
+/// A row with a pill toggle and a hint.
 struct SettingToggle: View {
     @Environment(\.palette) private var p
     let title: String
@@ -259,7 +259,7 @@ struct SettingToggle: View {
     }
 }
 
-/// Проверка обновлений прямо в настройках: кнопка и итог, видны с любой вкладки.
+/// Checking for updates right in Settings: a button and the result, visible from any tab.
 struct UpdateCheckRow: View {
     @EnvironmentObject private var updates: UpdateModel
     @Environment(\.palette) private var p
@@ -331,7 +331,7 @@ struct UpdateCheckRow: View {
         }
         if busy { return nil }
         guard let d = updates.lastCheck else { return L("Ещё не проверяли") }
-        // Дата и время на языке интерфейса, а не системы: без «2:21 PM» посреди русского текста.
+        // Date and time in the interface language, not the system one: no "2:21 PM" in the middle of Russian text.
         let f = DateFormatter()
         f.locale = Locale(identifier: L10n.english ? "en_US" : "ru_RU")
         f.dateStyle = .medium

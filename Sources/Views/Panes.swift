@@ -1,7 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-// MARK: - Общие части панелей
+// MARK: - Shared pane parts
 
 struct PaneShell<Header: View, Content: View>: View {
     @Environment(\.palette) private var p
@@ -25,16 +25,16 @@ struct PaneShell<Header: View, Content: View>: View {
     }
 }
 
-/// Ширины колонок таблицы.
+/// Table column widths.
 enum Col {
     static let date: CGFloat = 118
     static let size: CGFloat = 70
     static let indent: CGFloat = 14
-    /// Уже этого колонка даты прячется.
+    /// Narrower than this, the date column hides.
     static let compactBelow: CGFloat = 440
 }
 
-/// Заголовок таблицы с сортировкой по клику.
+/// The table header with click-to-sort.
 struct ColumnHeader: View {
     @EnvironmentObject private var state: AppState
     @Environment(\.palette) private var p
@@ -69,7 +69,7 @@ struct ColumnHeader: View {
     }
 }
 
-/// Строка таблицы: треугольник, иконка или превью, имя, дата, размер.
+/// A table row: disclosure triangle, icon or thumbnail, name, date, size.
 struct FileTableRow: View {
     @Environment(\.palette) private var p
     let name: String
@@ -77,16 +77,16 @@ struct FileTableRow: View {
     let size: UInt64
     let modified: Date
     var depth: Int = 0
-    /// nil — строка без раскрытия (панель Mac).
+    /// nil — a row without disclosure (Mac pane).
     var expanded: Bool? = nil
     var loading = false
     var selected = false
     var dropTarget = false
     var compact = false
     var thumbnail: NSImage? = nil
-    /// Показать вместо имени (например, название игры).
+    /// Show instead of the name (e.g. a game title).
     var title: String? = nil
-    /// Мелкая подпись справа от имени: путь в поиске, ID игры.
+    /// A small caption right of the name: the path in search, a game ID.
     var subtitle: String? = nil
     var onMac = false
     var onToggle: () -> Void = {}
@@ -199,7 +199,7 @@ private let dateFormatter: DateFormatter = {
 }()
 
 func formatDate(_ d: Date) -> String {
-    // DBI и часть телефонов дату не отдают (0 → 1970).
+    // DBI and some phones don't report a date (0 → 1970).
     guard d.timeIntervalSince1970 > 315_532_800 else { return "—" }
     dateFormatter.locale = Locale(identifier: L10n.english ? "en_US" : "ru_RU")
     let cal = Calendar.current
@@ -213,7 +213,7 @@ func formatDate(_ d: Date) -> String {
     return dateFormatter.string(from: d)
 }
 
-/// Пустое состояние или подсказка.
+/// An empty state or a hint.
 struct Hint: View {
     @Environment(\.palette) private var p
     let icon: String
@@ -232,7 +232,7 @@ struct Hint: View {
     }
 }
 
-/// Обработка клика: обычный — выбрать, ⌘ — добавить к выбору.
+/// Click handling: plain — select, ⌘ — add to the selection.
 func toggleSelection<T: Hashable>(_ set: inout Set<T>, _ id: T) {
     if NSEvent.modifierFlags.contains(.command) {
         if set.contains(id) { set.remove(id) } else { set.insert(id) }
@@ -241,7 +241,7 @@ func toggleSelection<T: Hashable>(_ set: inout Set<T>, _ id: T) {
     }
 }
 
-/// Таблица с заголовком; колонка даты прячется, когда панель узкая.
+/// A table with a header; the date column hides when the pane is narrow.
 struct FileTable<Rows: View>: View {
     @Environment(\.isSnapshot) private var snap
     var snapshotWidth: CGFloat = 500
@@ -329,7 +329,7 @@ struct MacPane: View {
         .focusEffectDisabled()
         .onKeyPress(.space) { state.activeSide = .mac; state.quickLook(); return .handled }
         .modifier(DropTarget(types: [.plainText], targeted: $targeted) { _ in
-            // Принимаем только то, что тащат из панели устройства.
+            // Accept only what is dragged from the device pane.
             guard !state.draggingRemote.isEmpty else { return false }
             let items = state.draggingRemote
             state.draggingRemote = []
@@ -374,7 +374,7 @@ struct MacPane: View {
     }
 }
 
-// MARK: - Устройство
+// MARK: - Device
 
 struct DevicePane: View {
     @EnvironmentObject private var state: AppState
@@ -429,7 +429,7 @@ struct DevicePane: View {
         .onReceive(NotificationCenter.default.publisher(for: .focusSearch)) { _ in searchFocused = true }
     }
 
-    // MARK: Заголовок
+    // MARK: Header
 
     private var header: some View {
         HStack(spacing: 6) {
@@ -474,7 +474,7 @@ struct DevicePane: View {
         HStack(spacing: 4) {
             Image(systemName: "magnifyingglass").font(.system(size: 10)).foregroundStyle(p.muted)
             if snap {
-                // Снимок окна не рисует поле ввода — показываем подсказку как текст.
+                // A window snapshot doesn't draw text fields — show the placeholder as text.
                 Text(L("Поиск")).font(AppFont.body(12)).foregroundStyle(p.muted)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -522,7 +522,7 @@ struct DevicePane: View {
         .transition(.move(edge: .top).combined(with: .opacity))
     }
 
-    // MARK: Содержимое
+    // MARK: Content
 
     @ViewBuilder
     private var content: some View {
@@ -569,7 +569,7 @@ struct DevicePane: View {
         return d.count == 1 ? L("Удалить «%@»?", d[0].name) : L("Удалить объектов: %d?", d.count)
     }
 
-    /// Путь: текущая папка целиком, предыдущие сокращаются, середина длинного пути — «…».
+    /// The path: the current folder in full, earlier ones shortened, the middle of a long path — "…".
     private var breadcrumbs: some View {
         let path = state.androidPath
         let shown: [(Int, Crumb)] = path.count > 3
@@ -595,7 +595,7 @@ struct DevicePane: View {
     }
 }
 
-/// Название игры для разделов DBI.
+/// Game title for DBI storages.
 func gameTitle(_ item: RemoteItem, storage: StorageInfo?) -> (String?, String?) {
     guard let s = storage, s.isInstalledGames || s.isSaves else { return (nil, nil) }
     let g = GameName(item.name)
@@ -604,7 +604,7 @@ func gameTitle(_ item: RemoteItem, storage: StorageInfo?) -> (String?, String?) 
     return (g.title, sub.isEmpty ? nil : sub)
 }
 
-/// Строка устройства: своё состояние подсветки при перетаскивании на папку.
+/// A device row: its own highlight state when dragging onto a folder.
 struct DeviceRow: View {
     @EnvironmentObject private var state: AppState
     @ObservedObject private var thumbs = Thumbnails.shared
@@ -641,7 +641,7 @@ struct DeviceRow: View {
     }
 }
 
-/// Контекстное меню файла или папки на устройстве.
+/// The context menu of a file or folder on the device.
 struct RemoteMenu: View {
     @EnvironmentObject private var state: AppState
     let item: RemoteItem
@@ -675,7 +675,7 @@ struct RemoteMenu: View {
     }
 }
 
-// MARK: - Сетка с превью (альбом, камера)
+// MARK: - Grid with thumbnails (album, camera)
 
 struct GridBrowser: View {
     @EnvironmentObject private var state: AppState
@@ -758,7 +758,7 @@ struct GridCell: View {
     }
 }
 
-/// Зона перетаскивания панели. В снимке окна не нужна: ImageRenderer рисует её жёлтыми уголками.
+/// The pane's drop zone. Not needed in a window snapshot: ImageRenderer draws it as yellow corners.
 struct DropTarget: ViewModifier {
     @Environment(\.isSnapshot) private var snap
     let types: [UTType]
@@ -770,7 +770,7 @@ struct DropTarget: ViewModifier {
     }
 }
 
-/// Бросить файлы прямо на папку в списке.
+/// Drop files right onto a folder in the list.
 struct FolderDrop: ViewModifier {
     @Environment(\.isSnapshot) private var snap
     let enabled: Bool
@@ -789,7 +789,7 @@ struct FolderDrop: ViewModifier {
     }
 }
 
-/// Достаёт file URL из перетаскиваемых объектов.
+/// Gets file URLs from dragged items.
 func loadURLs(_ providers: [NSItemProvider], completion: @escaping @MainActor ([URL]) -> Void) {
     let group = DispatchGroup()
     let lock = NSLock()

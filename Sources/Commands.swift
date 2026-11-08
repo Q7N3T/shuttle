@@ -5,9 +5,9 @@ extension Notification.Name {
     static let focusSearch = Notification.Name("ShuttleFocusSearch")
 }
 
-/// Строка меню macOS: Файл, Правка, Вид, Переход, Устройство, Справка.
-/// Разбита на небольшие блоки: одно большое описание меню переполняет стек SwiftUI.
-/// Команды относятся к панели, где последний раз кликали (Mac или устройство).
+/// The macOS menu bar: File, Edit, View, Go, Device, Help.
+/// Split into small blocks: one big menu description overflows the SwiftUI stack.
+/// Commands apply to the pane clicked last (Mac or device).
 struct ShuttleCommands: Commands {
     @ObservedObject var state: AppState
     @Binding var theme: ThemeMode
@@ -248,7 +248,7 @@ struct HelpCommands: Commands, MenuPickers {
     }
 }
 
-/// Выбор файлов для команд меню.
+/// Picking files for menu commands.
 protocol MenuPickers {
     var state: AppState { get }
 }

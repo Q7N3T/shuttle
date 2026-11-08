@@ -1,7 +1,7 @@
 import XCTest
 @testable import Shuttle
 
-/// Временная папка, которая удаляется после теста.
+/// A temp folder that's removed after the test.
 func tempDir(_ name: String = "t") -> URL {
     let u = FileManager.default.temporaryDirectory.appendingPathComponent("ShuttleTests-\(name)-\(UUID().uuidString)")
     try? FileManager.default.createDirectory(at: u, withIntermediateDirectories: true)
@@ -105,7 +105,7 @@ final class HomebrewLayoutTests: XCTestCase {
         write("x", d.appendingPathComponent("switch/reboot_to_payload.nro"))
         write("x", d.appendingPathComponent("hbmenu.nro"))
         let plan = Dictionary(uniqueKeysWithValues: HomebrewLayout.plan(unpacked: d).map { ($0.local.lastPathComponent, $0.remoteFolder) })
-        XCTAssertEqual(plan["hbmenu.nro"], [], "hbmenu.nro должен лежать в корне SD")
+        XCTAssertEqual(plan["hbmenu.nro"], [], "hbmenu.nro must be at the SD root")
         XCTAssertEqual(plan["switch"], [])
         XCTAssertEqual(plan["atmosphere"], [])
     }
@@ -142,7 +142,7 @@ final class SyncPlannerTests: XCTestCase {
         let root = tempDir()
         write("12345", root.appendingPathComponent("A/same.jpg"))
         write("1", root.appendingPathComponent("A/changed.jpg"))
-        write("x", root.appendingPathComponent("photo.jpg")) // сконвертированный HEIC
+        write("x", root.appendingPathComponent("photo.jpg")) // converted HEIC
         let remote: [SyncPlanner.RemoteFile] = [
             .init(path: ["A", "same.jpg"], size: 5),
             .init(path: ["A", "changed.jpg"], size: 99),

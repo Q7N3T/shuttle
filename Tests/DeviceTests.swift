@@ -1,7 +1,7 @@
 import XCTest
 @testable import Shuttle
 
-/// Слой устройств на тестовом драйвере.
+/// The device layer on the test driver.
 final class DeviceServiceTests: XCTestCase {
     var mock: MockDriver!
     var svc: DeviceService!
@@ -19,7 +19,7 @@ final class DeviceServiceTests: XCTestCase {
         XCTAssertEqual(info.kind, .phone)
         XCTAssertEqual(info.transport, .mock)
         let root = try svc.sync { try $0.list(storage: 1, parent: mtpRoot) }
-        XCTAssertTrue(root.first!.isFolder, "папки сверху")
+        XCTAssertTrue(root.first!.isFolder, "folders first")
         XCTAssertTrue(root.contains { $0.name == "DCIM" })
     }
 
@@ -29,7 +29,7 @@ final class DeviceServiceTests: XCTestCase {
         let id = try svc.sync { try $0.ensureFolder(path: ["Download", "Новая", "Глубже"], storage: 1) }
         XCTAssertEqual(mock.find(["Download", "Новая", "Глубже"], storage: 1)?.id, id)
         let again = try svc.sync { try $0.ensureFolder(path: ["Download", "Новая", "Глубже"], storage: 1) }
-        XCTAssertEqual(id, again, "существующая папка не создаётся заново")
+        XCTAssertEqual(id, again, "an existing folder is not created again")
     }
 
     func testDownloadTreeByteExact() throws {
@@ -51,12 +51,12 @@ final class DeviceServiceTests: XCTestCase {
         XCTAssertThrowsError(try svc.sync { try $0.downloadTree(vid, into: dir, token: CancelToken(), resumeInto: target) { _, _ in } }) {
             XCTAssertEqual($0 as? MTPError, .interrupted)
         }
-        XCTAssertEqual(localSize(target), 1_000_000, "недокачанное остаётся")
+        XCTAssertEqual(localSize(target), 1_000_000, "the partial file stays")
         mock.connected = true
         _ = try svc.sync { try $0.connectIfNeeded() }
         _ = try svc.sync { try $0.downloadTree(vid, into: dir, token: CancelToken(), resumeInto: target) { _, _ in } }
         XCTAssertEqual(try Data(contentsOf: target), mock.nodes[vid.id]!.data)
-        XCTAssertTrue(mock.log.contains { $0.contains("from 1000000") }, "докачка с места обрыва: \(mock.log)")
+        XCTAssertTrue(mock.log.contains { $0.contains("from 1000000") }, "resumes from where it dropped: \(mock.log)")
     }
 
     func testCancelRemovesPartialFile() throws {
@@ -77,8 +77,8 @@ final class DeviceServiceTests: XCTestCase {
         try svc.sync { try $0.uploadTree([src.appendingPathComponent("Мой")], parent: dl, storage: 1, token: CancelToken()) { _, _ in } }
         try svc.sync { try $0.uploadTree([src.appendingPathComponent("Мой")], parent: dl, storage: 1, token: CancelToken()) { _, _ in } }
         let folder = mock.find(["Download", "Мой"], storage: 1)!
-        XCTAssertEqual(mock.nodes.values.filter { $0.parent == dl && $0.name == "Мой" }.count, 1, "папка слилась")
-        XCTAssertEqual(mock.children(of: folder.id).filter { $0.name == "a.txt" }.count, 1, "одинаковый файл не задвоился")
+        XCTAssertEqual(mock.nodes.values.filter { $0.parent == dl && $0.name == "Мой" }.count, 1, "the folder was merged")
+        XCTAssertEqual(mock.children(of: folder.id).filter { $0.name == "a.txt" }.count, 1, "an identical file is not duplicated")
         XCTAssertEqual(mock.find(["Download", "Мой", "вложенная", "b.txt"], storage: 1)?.data, Data("two".utf8))
     }
 
@@ -90,7 +90,7 @@ final class DeviceServiceTests: XCTestCase {
         let dl = mock.find(["Download"], storage: 1)!.id
         let before = mock.listCalls
         try svc.sync { try $0.uploadTree(files, parent: dl, storage: 1, token: CancelToken()) { _, _ in } }
-        XCTAssertEqual(mock.listCalls - before, 1, "папка назначения читается один раз")
+        XCTAssertEqual(mock.listCalls - before, 1, "the destination folder is listed once")
         XCTAssertEqual(mock.children(of: dl).filter { $0.name.hasPrefix("f") }.count, 20)
     }
 
@@ -114,7 +114,7 @@ final class DeviceServiceTests: XCTestCase {
         let dl = mock.find(["Download"], storage: 1)!.id
         mock.failAfterBytes = 700_000
         XCTAssertThrowsError(try svc.sync { try $0.uploadTree([big], parent: dl, storage: 1, token: CancelToken()) { _, _ in } })
-        XCTAssertEqual(mock.find(["Download", "big.bin"], storage: 1)?.data.count, 700_000, "обрывок на устройстве")
+        XCTAssertEqual(mock.find(["Download", "big.bin"], storage: 1)?.data.count, 700_000, "a partial file is left on the device")
         mock.connected = true
         _ = try svc.sync { try $0.connectIfNeeded() }
         try svc.sync { try $0.uploadTree([big], parent: dl, storage: 1, token: CancelToken()) { _, _ in } }

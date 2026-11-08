@@ -1,12 +1,12 @@
 import SwiftUI
 import AppKit
 
-// MARK: - Модель: что маскот говорит и как себя чувствует
+// MARK: - Model: what the mascot says and how it feels
 
-/// Маскот Shuttle — пиксельный дроид из логотипа. Сидит в шапке окна,
-/// шутит по клику и реагирует на то, что происходит с устройством и передачами.
-/// Приёмы юмора те же, что на сайте: пауза перед поворотом (‖),
-/// опечатка с исправлением ({ошибка|верно}), повторы и «снежный ком» кликов.
+/// Shuttle the mascot — the pixel droid from the logo. Sits in the window header,
+/// jokes on click and reacts to what happens with devices and transfers.
+/// Same humor tricks as on the site: a pause before the twist (‖),
+/// a typo with a correction ({wrong|right}), repetition and a "snowball" of clicks.
 @MainActor
 final class Mascot: ObservableObject {
     static let shared = Mascot()
@@ -16,20 +16,20 @@ final class Mascot: ObservableObject {
         case connected(console: Bool), disconnected, done(Int), failed, newPhotos(Int), error
         case lowBattery(Int), batteryOK, achievement(String)
     }
-    /// Что надето на голову: зависит от даты и времени.
+    /// What it wears on its head: depends on the date and time.
     enum Hat { case none, nightcap, newYear, party }
 
-    /// Напечатанная часть реплики. nil — облачко скрыто.
+    /// The typed part of the line. nil — the bubble is hidden.
     @Published private(set) var shown: String?
     @Published private(set) var talking = false
     @Published private(set) var mood: Mood = .calm
-    /// Растёт на каждый прыжок — вид анимирует подскок.
+    /// Grows on every hop — the view animates the jump.
     @Published private(set) var hops = 0
-    /// Поднял ручки и машет (после удачной передачи).
+    /// Raised its arms and waves (after a successful transfer).
     @Published private(set) var cheering = false
-    /// Телефон почти разряжен — маскот тоже клюёт носом.
+    /// The phone is almost dead — the mascot is nodding off too.
     @Published private(set) var tired = false
-    /// Танцует после секретного кода.
+    /// Dances after the secret code.
     @Published private(set) var dancing = false
 
     private var task: Task<Void, Never>?
@@ -41,12 +41,12 @@ final class Mascot: ObservableObject {
     private var konami: [UInt16] = []
     private var keyMonitor: Any?
 
-    /// День рождения — дата первого выпуска Shuttle.
+    /// Birthday — the date of Shuttle's first release.
     static let birthday = DateComponents(month: 11, day: 7)
 
     init() {
         guard !AppFolders.testing else { return }
-        // Секретный код ↑↑↓↓←→←→BA — слушаем клавиатуру, но ничего у окна не забираем.
+        // The secret code ↑↑↓↓←→←→BA — we listen to the keyboard but take nothing away from the window.
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] e in
             MainActor.assumeIsolated { self?.key(e.keyCode) }
             return e
@@ -83,7 +83,7 @@ final class Mascot: ObservableObject {
         return .none
     }
 
-    // MARK: Реплики
+    // MARK: Lines
 
     private var jokes: [String] {
         [
@@ -118,7 +118,7 @@ final class Mascot: ObservableObject {
         ]
     }
 
-    // MARK: Клик: шутка, а если кликать подряд — снежный ком
+    // MARK: Click: a joke, and clicking in a row — a snowball
 
     func click() {
         hop()
@@ -159,7 +159,7 @@ final class Mascot: ObservableObject {
         }
     }
 
-    // MARK: Реакции на события
+    // MARK: Reactions to events
 
     func react(_ e: Event) {
         switch e {
@@ -193,7 +193,7 @@ final class Mascot: ObservableObject {
         }
     }
 
-    /// Сам по себе маскот говорит не чаще раза в 12 секунд и молчит, если его выключили.
+    /// On its own the mascot speaks at most once every 12 seconds, and stays quiet if turned off.
     private func auto(_ text: String, _ mood: Mood, force: Bool = false) {
         guard AppSettings.shared.mascotTalks else { self.mood = mood; return }
         guard force || (Date().timeIntervalSince(lastAuto) > 12 && shown == nil) else { return }
@@ -211,7 +211,7 @@ final class Mascot: ObservableObject {
         }
     }
 
-    // MARK: Печать с паузами и опечатками
+    // MARK: Typing with pauses and typos
 
     private enum Op { case type(String), pause(Double), typo(String, String) }
 
@@ -274,7 +274,7 @@ final class Mascot: ObservableObject {
 
     private var buffer = ""
 
-    /// Печатает по букве; на знаках препинания — чуть дольше, как живая речь.
+    /// Types letter by letter; a bit slower on punctuation, like real speech.
     private func put(_ s: String) async {
         for ch in s {
             if Task.isCancelled { return }
@@ -287,10 +287,10 @@ final class Mascot: ObservableObject {
     func hush() { task?.cancel(); shown = nil; talking = false }
 }
 
-// MARK: - Спрайт
+// MARK: - Sprite
 
-/// Пиксельный маскот: та же сетка 32×30, что на сайте. В шапке ручки и ножки спрятаны,
-/// ручки появляются, когда он радуется; ножки — когда бежит по полоске передачи.
+/// The pixel mascot: the same 32×30 grid as on the site. In the header its arms and legs are hidden,
+/// arms appear when it's happy; legs — when it runs along the transfer bar.
 struct MascotSprite: View {
     enum Arms { case hidden, down, cheer(up: Bool), dance(left: Bool) }
 
@@ -302,7 +302,7 @@ struct MascotSprite: View {
     var mood: Mascot.Mood = .calm
     var tired = false
     var hat: Mascot.Hat = .none
-    /// nil — без ножек; 0/1 — шаг левой или правой.
+    /// nil — no legs; 0/1 — a step with the left or right foot.
     var step: Int? = nil
 
     private typealias R = (Int, Int, Int, Int)
@@ -317,7 +317,7 @@ struct MascotSprite: View {
     private static let eyeL: [R] = [(13, 11, 2, 1), (12, 12, 2, 1), (11, 13, 2, 1), (12, 14, 2, 1), (13, 15, 2, 1)]
     private static let eyes = eyeL + mir(eyeL)
     private static let closed: [R] = [(11, 13, 4, 1)] + mir([(11, 13, 4, 1)])
-    // сонные глаза: верхняя половина «закрыта веком»
+    // sleepy eyes: the top half is "closed by an eyelid"
     private static let sleepy: [R] = [(11, 13, 4, 1), (12, 14, 2, 1), (13, 15, 2, 1)] + mir([(11, 13, 4, 1), (12, 14, 2, 1), (13, 15, 2, 1)])
     private static let sadEyes: [R] = [(11, 13, 4, 1), (12, 14, 2, 1)] + mir([(11, 13, 4, 1), (12, 14, 2, 1)])
     private static let cheeks: [R] = [(8, 16, 2, 1)] + mir([(8, 16, 2, 1)])
@@ -326,19 +326,19 @@ struct MascotSprite: View {
     private static let yawn: [R] = [(15, 17, 2, 2)]
     private static let talk: [R] = [(14, 17, 4, 2)]
     private static let tongue: [R] = [(15, 18, 2, 1)]
-    // ручка вниз, ручка вверх
+    // arm down, arm up
     private static let arm: [R] = [(5, 12, 1, 2), (4, 13, 1, 2), (3, 14, 1, 2)]
     private static let cuff: [R] = [(2, 16, 3, 1)]
     private static let glove: [R] = [(1, 17, 4, 3), (0, 18, 1, 1), (2, 20, 2, 1)]
     private static let armUp: [R] = [(5, 11, 1, 2), (4, 9, 1, 2), (3, 7, 1, 2)]
     private static let cuffUp: [R] = [(2, 6, 3, 1)]
     private static let gloveUp: [R] = [(1, 3, 4, 3), (0, 4, 1, 1), (2, 2, 2, 1)]
-    // ножки
+    // legs
     private static let leg: [R] = [(12, 23, 2, 3)]
     private static let sock: [R] = [(12, 26, 2, 1)]
     private static let shoe: [R] = [(9, 27, 5, 2)]
     private static let sole: [R] = [(9, 29, 5, 1)]
-    // шапки
+    // hats
     private static let nightcap: [R] = [(9, 7, 14, 1), (10, 5, 12, 2), (12, 3, 9, 2), (15, 1, 6, 2), (20, 0, 3, 1)]
     private static let nightcapStripe: [R] = [(12, 4, 9, 1), (16, 1, 5, 1)]
     private static let nightcapPom: [R] = [(23, 0, 2, 2)]
@@ -414,10 +414,10 @@ struct MascotSprite: View {
     }
 }
 
-// MARK: - Маскот в шапке
+// MARK: - Mascot in the header
 
-/// Маленький маскот вместо значка в шапке. Моргает, шевелит антеннами,
-/// подпрыгивает от радости, надевает шапку по поводу и отвечает в облачке по клику.
+/// A small mascot instead of the icon in the header. Blinks, wiggles its antennas,
+/// hops with joy, puts on a hat for the occasion and answers in a bubble on click.
 struct HeaderMascot: View {
     @ObservedObject private var m = Mascot.shared
     @Environment(\.isSnapshot) private var snap
@@ -440,7 +440,7 @@ struct HeaderMascot: View {
             .offset(y: lift)
             .rotationEffect(.degrees(hover && !snap ? -6 : 0), anchor: .bottom)
             .animation(.spring(response: 0.3, dampingFraction: 0.5), value: hover)
-            // корпус занимает середину сетки — поджимаем пустые поля по бокам и сверху
+            // the body takes the middle of the grid — trim the empty margins on the sides and top
             .padding(.horizontal, -6).padding(.top, -2).padding(.bottom, -6)
             .contentShape(Rectangle())
             .onTapGesture { Mascot.shared.click() }
@@ -454,7 +454,7 @@ struct HeaderMascot: View {
             }
             .task {
                 guard !snap else { return }
-                // моргание, антенны, взмахи и шапка по часам — в своём ритме, пока окно живо
+                // blinking, antennas, waves and the hat by the clock — each in its own rhythm while the window lives
                 async let b: Void = loop(every: 3.6) {
                     blink = true
                     try? await Task.sleep(for: .milliseconds(130))
@@ -475,9 +475,9 @@ struct HeaderMascot: View {
     }
 }
 
-// MARK: - Бегун на полоске передачи
+// MARK: - Runner on the transfer bar
 
-/// Крошечный маскот бежит по полоске прогресса; если связь прервалась — садится и ждёт.
+/// A tiny mascot runs along the progress bar; if the connection drops it sits down and waits.
 struct MascotRunner: View {
     let fraction: Double
     let waiting: Bool
@@ -506,9 +506,9 @@ struct MascotRunner: View {
     }
 }
 
-// MARK: - Ретро-облачко
+// MARK: - Retro bubble
 
-/// Прямоугольник со ступенчатыми «пиксельными» углами.
+/// A rectangle with stepped "pixel" corners.
 struct StepRect: Shape {
     var step: CGFloat = 3
     func path(in r: CGRect) -> Path {
@@ -539,7 +539,7 @@ struct StepRect: Shape {
     }
 }
 
-/// Облачко с репликой под шапкой, хвостиком к маскоту.
+/// A speech bubble below the header, tail pointing at the mascot.
 struct MascotBubble: View {
     @ObservedObject private var m = Mascot.shared
     @Environment(\.palette) private var p
@@ -548,7 +548,7 @@ struct MascotBubble: View {
         ZStack(alignment: .topLeading) {
             if let text = m.shown {
                 VStack(alignment: .leading, spacing: 0) {
-                    // пиксельный хвостик вверх, к маскоту
+                    // pixel tail pointing up, at the mascot
                     VStack(spacing: 0) {
                         Rectangle().fill(p.accent).frame(width: 3, height: 3)
                         Rectangle().fill(p.accent).frame(width: 6, height: 3)

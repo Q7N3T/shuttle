@@ -1,18 +1,18 @@
 import Foundation
 
-/// Низкоуровневый доступ к устройству: MTP (libmtp), ADB или тестовое устройство.
-/// Все методы вызываются только с последовательной очереди `DeviceService`.
+/// Low-level device access: MTP (libmtp), ADB or a test device.
+/// All methods are called only from the serial `DeviceService` queue.
 protocol DeviceDriver: AnyObject {
     var transport: Transport { get }
 
-    /// Открыть устройство (если ещё не открыто) и вернуть сведения о нём.
-    /// `.notConnected` — устройства нет; `.busy` / `.locked` — есть, но пока недоступно.
+    /// Open the device (if not open yet) and return its info.
+    /// `.notConnected` — no device; `.busy` / `.locked` — it's there but not available yet.
     func connectIfNeeded() throws -> DeviceInfo
     func release()
 
     func list(storage: UInt32, parent: UInt32) throws -> [RemoteItem]
 
-    /// Скачать файл. `offset > 0` — дописать к уже скачанной части (если драйвер умеет).
+    /// Download a file. `offset > 0` — append to the part already downloaded (if the driver can).
     func download(_ item: RemoteItem, to url: URL, offset: UInt64,
                   progress: @escaping (UInt64, UInt64) -> Bool) throws
     var supportsPartialDownload: Bool { get }
@@ -25,15 +25,15 @@ protocol DeviceDriver: AnyObject {
     func delete(_ id: UInt32) throws
     func rename(_ id: UInt32, to name: String) throws
 
-    /// Маленькое превью (JPEG), если устройство умеет его отдавать.
+    /// A small preview (JPEG), if the device can provide one.
     func thumbnail(_ item: RemoteItem) -> Data?
 
-    // Сверка: чем точнее умеет драйвер, тем надёжнее проверка.
-    /// Размер объекта на устройстве — после загрузки сравниваем с файлом на Mac.
+    // Verification: the more precise the driver, the more reliable the check.
+    /// Object size on the device — after upload we compare it with the file on the Mac.
     func remoteSize(_ id: UInt32) -> UInt64?
-    /// Кусок файла с устройства — сравниваем пробы содержимого.
+    /// A chunk of a file from the device — we compare content samples.
     func readRange(_ item: RemoteItem, offset: UInt64, length: UInt32) -> Data?
-    /// SHA-256 файла, посчитанный на самом устройстве (ADB).
+    /// SHA-256 of a file, computed on the device itself (ADB).
     func sha256(_ item: RemoteItem) -> String?
 }
 

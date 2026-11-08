@@ -1,16 +1,16 @@
 import Foundation
 
-/// Достижение с пиксельным значком 8×8 («#» — закрашенный пиксель).
+/// An achievement with an 8×8 pixel badge ("#" — a filled pixel).
 struct Achievement: Identifiable, Equatable {
     let id: String
     let title: String
     let detail: String
     let icon: [String]
-    /// Секретное: пока не открыто, название и описание скрыты.
+    /// Secret: until unlocked, the title and description are hidden.
     var secret = false
 }
 
-/// Счётчики и достижения. Хранятся в achievements.json рядом с историей.
+/// Counters and achievements. Stored in achievements.json next to the history.
 @MainActor
 final class Achievements: ObservableObject {
     static let shared = Achievements()
@@ -22,11 +22,11 @@ final class Achievements: ObservableObject {
         var saves = 0
         var installs = 0
         var clicks = 0
-        /// Какие устройства уже подключали: phone, console.
+        /// Which devices were connected before: phone, console.
         var kinds: Set<String> = []
-        /// Разовые события: resumed, night, konami.
+        /// One-off events: resumed, night, konami.
         var flags: Set<String> = []
-        /// Перенесено по месяцам: «2026-11» → байты.
+        /// Transferred per month: "2026-11" → bytes.
         var months: [String: UInt64] = [:]
     }
 
@@ -46,7 +46,7 @@ final class Achievements: ObservableObject {
         unlocked = s.unlocked
     }
 
-    // MARK: Список
+    // MARK: List
 
     static var all: [Achievement] { [
         .init(id: "first", title: L("Первый рейс"), detail: L("Перенести первый файл"),
@@ -77,7 +77,7 @@ final class Achievements: ObservableObject {
 
     func isUnlocked(_ a: Achievement) -> Bool { unlocked[a.id] != nil }
 
-    // MARK: События
+    // MARK: Events
 
     func recordTransfer(bytes: UInt64, label: String?, resumed: Bool, at date: Date = Date()) {
         stats.bytes &+= bytes
@@ -101,7 +101,7 @@ final class Achievements: ObservableObject {
 
     func recordClick() {
         stats.clicks += 1
-        // Пишем на диск не на каждый клик, а когда это что-то меняет.
+        // Write to disk not on every click, only when it changes something.
         if stats.clicks == 50 || stats.clicks % 25 == 0 { commit() }
     }
 
@@ -125,11 +125,11 @@ final class Achievements: ObservableObject {
             fresh.append(a)
         }
         file.save(Saved(stats: stats, unlocked: unlocked))
-        // Вручаем по одному: облачко маскота показывает последнее.
+        // Hand them out one at a time: the mascot's bubble shows the last one.
         if let a = fresh.last { Mascot.shared.react(.achievement(a.title)) }
     }
 
-    // MARK: Статистика с юмором
+    // MARK: Stats with humor
 
     static func monthKey(_ d: Date) -> String {
         let c = Calendar.current.dateComponents([.year, .month], from: d)
@@ -138,7 +138,7 @@ final class Achievements: ObservableObject {
 
     var monthBytes: UInt64 { stats.months[Self.monthKey(Date())] ?? 0 }
 
-    /// Сколько стоило бы держать столько же в облаке: тарифы iCloud+ по объёму.
+    /// What it would cost to keep that much in the cloud: iCloud+ tiers by size.
     static func cloudPrice(for bytes: UInt64) -> String {
         switch bytes {
         case 0: "$0"
@@ -149,7 +149,7 @@ final class Achievements: ObservableObject {
         }
     }
 
-    /// «За месяц мимо облака: 38 ГБ — подписка на такой объём от $2.99 в месяц».
+    /// "This month, past the cloud: 38 GB — cloud storage that size starts at $2.99 a month".
     var monthJoke: String? {
         let b = monthBytes
         guard b > 0 else { return nil }

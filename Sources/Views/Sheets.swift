@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Все окна-листы приложения в одном месте.
+/// All of the app's sheets in one place.
 struct AppSheets: ViewModifier {
     @EnvironmentObject private var state: AppState
 
@@ -24,7 +24,7 @@ struct AppSheets: ViewModifier {
     }
 }
 
-/// Лист наследует тему окна, но палитру надо передать явно.
+/// A sheet inherits the window theme, but the palette has to be passed explicitly.
 struct Themed<Content: View>: View {
     @EnvironmentObject private var state: AppState
     @AppStorage("theme") private var theme: ThemeMode = .system
@@ -34,7 +34,7 @@ struct Themed<Content: View>: View {
     }
 }
 
-/// Общая рамка листа.
+/// The common sheet frame.
 struct SheetShell<Body: View, Buttons: View>: View {
     @Environment(\.palette) private var p
     let icon: String
@@ -67,7 +67,7 @@ struct SheetShell<Body: View, Buttons: View>: View {
     }
 }
 
-// MARK: - История
+// MARK: - History
 
 struct HistorySheet: View {
     @EnvironmentObject private var state: AppState
@@ -141,7 +141,7 @@ struct HistoryRow: View {
     }
 }
 
-// MARK: - Синхронизация
+// MARK: - Sync
 
 struct SyncSheet: View {
     @EnvironmentObject private var state: AppState
@@ -197,7 +197,7 @@ struct SyncSheet: View {
     }
 }
 
-// MARK: - Дубли
+// MARK: - Duplicates
 
 struct DuplicatesSheet: View {
     @EnvironmentObject private var state: AppState
@@ -258,7 +258,7 @@ struct DuplicatesSheet: View {
     }
 }
 
-// MARK: - Пакетное переименование
+// MARK: - Batch rename
 
 struct RenameSheet: View {
     @EnvironmentObject private var state: AppState
@@ -309,7 +309,7 @@ struct RenameSheet: View {
     }
 }
 
-// MARK: - Switch: установка игр
+// MARK: - Switch: installing games
 
 struct InstallSheet: View {
     @EnvironmentObject private var state: AppState

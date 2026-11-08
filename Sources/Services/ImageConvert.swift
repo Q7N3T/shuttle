@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 import AppKit
 
 enum ImageConvert {
-    /// HEIC → JPG рядом с исходником; исходник удаляется. Дата изменения сохраняется.
+    /// HEIC → JPG next to the original; the original is deleted. The modification date is kept.
     @discardableResult
     static func heicToJPEG(_ url: URL, quality: Double = 0.9) throws -> URL {
         guard let src = CGImageSourceCreateWithURL(url as CFURL, nil),
@@ -27,7 +27,7 @@ enum ImageConvert {
         return out
     }
 
-    /// Все HEIC внутри файла/папки.
+    /// Every HEIC inside a file/folder.
     static func convertAllHEIC(in url: URL) -> Int {
         var n = 0
         let fm = FileManager.default
@@ -42,7 +42,7 @@ enum ImageConvert {
         return n
     }
 
-    /// Уменьшенная копия для превью.
+    /// A downscaled copy for thumbnails.
     static func downsample(_ data: Data, maxPixel: Int = 256) -> NSImage? {
         guard let src = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         let opts: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true,

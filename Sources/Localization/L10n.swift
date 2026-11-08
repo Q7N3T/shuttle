@@ -1,6 +1,6 @@
 import Foundation
 
-/// Язык интерфейса: как в системе, русский или английский.
+/// Interface language: system, Russian or English.
 enum AppLanguage: String, CaseIterable, Identifiable {
     case system, ru, en
     var id: String { rawValue }
@@ -13,7 +13,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     }
 }
 
-/// Строки интерфейса пишутся по-русски; для английского — словарь `English.table`.
+/// Interface strings are written in Russian; English comes from the `English.table` dictionary.
 enum L10n {
     private(set) static var english: Bool = resolve()
 
@@ -29,13 +29,13 @@ enum L10n {
     static func reload() { english = resolve() }
 }
 
-/// Перевести строку интерфейса.
+/// Translate an interface string.
 func L(_ ru: String) -> String {
     guard L10n.english else { return ru }
     return English.table[ru] ?? ru
 }
 
-/// Перевести строку с подстановками: L("Свободно %@", size).
+/// Translate a string with arguments: L("Свободно %@", size).
 func L(_ ru: String, _ args: CVarArg...) -> String {
     String(format: L(ru), locale: Locale.current, arguments: args)
 }

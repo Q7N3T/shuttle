@@ -14,14 +14,14 @@ private let progressThunk: LIBMTP_progressfunc_t = { sent, total, data in
     return 1
 }
 
-/// Android (режим «Передача файлов») и Switch с DBI через libmtp.
+/// Android ("File transfer" mode) and a Switch with DBI via libmtp.
 final class MTPDriver: DeviceDriver {
     let transport: Transport = .mtp
     private var device: UnsafeMutablePointer<LIBMTP_mtpdevice_t>?
     private var vendorID: UInt16 = 0
     private var partial = false
 
-    /// Физическое устройство на шине USB. nil — первое найденное (как раньше, для самопроверки).
+    /// A physical device on the USB bus. nil — the first one found (as before, for the self-test).
     struct RawID: Hashable, Sendable {
         let bus: UInt32
         let devnum: UInt8
@@ -35,7 +35,7 @@ final class MTPDriver: DeviceDriver {
         self.target = target
     }
 
-    /// Все MTP-устройства, видимые сейчас по USB.
+    /// Every MTP device currently visible over USB.
     static func detect() -> [RawID] {
         LIBMTP_Init()
         var raw: UnsafeMutablePointer<LIBMTP_raw_device_t>?
@@ -54,7 +54,7 @@ final class MTPDriver: DeviceDriver {
 
     var supportsPartialDownload: Bool { partial }
 
-    // MARK: Подключение
+    // MARK: Connection
 
     func connectIfNeeded() throws -> DeviceInfo {
         if device == nil {
@@ -66,7 +66,7 @@ final class MTPDriver: DeviceDriver {
                 throw MTPError.notConnected
             }
             defer { free(raw) }
-            // Своё устройство среди найденных: по шине и номеру на ней.
+            // Our device among those found: by bus and its number on the bus.
             var index = 0
             if let target {
                 guard let i = (0..<Int(count)).first(where: { raw[$0].bus_location == target.bus && raw[$0].devnum == target.devnum })
@@ -116,7 +116,7 @@ final class MTPDriver: DeviceDriver {
         if name.isEmpty { name = model.isEmpty ? L("Устройство") : model }
         let serial = takeString(LIBMTP_Get_Serialnumber(dev)) ?? ""
 
-        // Nintendo (0x057E) или DBI — это Switch, а не телефон.
+        // Nintendo (0x057E) or DBI — that's a Switch, not a phone.
         let joined = (name + " " + model).lowercased()
         let isConsole = vendorID == 0x057E || joined.contains("switch") || joined.contains("dbi")
         if isConsole && (name.isEmpty || name.lowercased() == "dbi") { name = "Nintendo Switch" }
@@ -138,7 +138,7 @@ final class MTPDriver: DeviceDriver {
         return raw.replacingOccurrences(of: #"^\s*\d+\s*:\s*"#, with: "", options: .regularExpression)
     }
 
-    // MARK: Файлы
+    // MARK: Files
 
     func list(storage: UInt32, parent: UInt32) throws -> [RemoteItem] {
         let dev = try dev()
@@ -176,7 +176,7 @@ final class MTPDriver: DeviceDriver {
         }
     }
 
-    /// Докачка: дописываем к файлу кусками по 1 МБ.
+    /// Resuming: append to the file in 1 MB chunks.
     private func downloadPartial(_ dev: UnsafeMutablePointer<LIBMTP_mtpdevice_t>, _ item: RemoteItem,
                                  to url: URL, offset: UInt64, progress: (UInt64, UInt64) -> Bool) throws {
         guard let h = try? FileHandle(forWritingTo: url) else { throw MTPError.failed(L("Не удалось открыть файл")) }
@@ -215,7 +215,7 @@ final class MTPDriver: DeviceDriver {
         f.pointee.storage_id = storage
         f.pointee.modificationdate = time_t((values?.contentModificationDate ?? Date()).timeIntervalSince1970)
 
-        // В «отправлено» и «всего» libmtp включает служебный заголовок — меряем по размеру файла.
+        // libmtp includes a protocol header in "sent" and "total" — we measure by the file size.
         let fileSize = f.pointee.filesize
         let box = ProgressBox { sent, _ in progress(min(sent, fileSize), fileSize) }
         let ctx = Unmanaged.passRetained(box)
@@ -258,7 +258,7 @@ final class MTPDriver: DeviceDriver {
         return Data(bytes: data, count: Int(size))
     }
 
-    // MARK: Сверка
+    // MARK: Verification
 
     func remoteSize(_ id: UInt32) -> UInt64? {
         guard let dev = device, let f = LIBMTP_Get_Filemetadata(dev, id) else {
@@ -279,9 +279,9 @@ final class MTPDriver: DeviceDriver {
         return Data(bytes: data, count: Int(size))
     }
 
-    // MARK: Ошибки
+    // MARK: Errors
 
-    /// Если кабель отошёл — `.interrupted` (передачу продолжим), иначе текст ошибки libmtp.
+    /// If the cable came out — `.interrupted` (we'll resume the transfer), otherwise libmtp's error text.
     private func failure(_ dev: UnsafeMutablePointer<LIBMTP_mtpdevice_t>, cancelled: Bool, fallback: String) -> MTPError {
         if cancelled { LIBMTP_Clear_Errorstack(dev); return .cancelled }
         var text = fallback

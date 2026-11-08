@@ -3,12 +3,12 @@ import Foundation
 import AppKit
 import CryptoKit
 
-/// Отладка: `Shuttle --selftest` прогоняет реальные операции на подключённом телефоне.
-/// Всё делается во временной папке ShuttleSelfTest в корне памяти и удаляется в конце.
+/// Debug: `Shuttle --selftest` runs real operations on a connected phone.
+/// Everything happens in a temporary ShuttleSelfTest folder at the storage root and is deleted at the end.
 enum SelfTest {
     static func runIfRequested() {
         if CommandLine.arguments.contains("--dump-menu") {
-            // Печатает строку меню после запуска и выходит.
+            // Prints the menu bar after launch and exits.
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 setvbuf(stdout, nil, _IOLBF, 0)
                 func dump(_ m: NSMenu, _ indent: String) {
@@ -35,7 +35,7 @@ enum SelfTest {
             return
         }
         if CommandLine.arguments.contains("--dump-titlebar") {
-            // Положение кнопок окна и высота заголовка — для выравнивания шапки.
+            // Window button positions and title height — for aligning the header.
             let outPath = CommandLine.arguments.drop(while: { $0 != "--dump-titlebar" }).dropFirst().first
             if let outPath { freopen(outPath, "w", stdout) }
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -47,11 +47,11 @@ enum SelfTest {
                     for (n, t) in [("close", NSWindow.ButtonType.closeButton), ("mini", .miniaturizeButton), ("zoom", .zoomButton)] {
                         if let b = w.standardWindowButton(t), let sv = b.superview {
                             let r = sv.convert(b.frame, to: nil)
-                            // от верха окна
+                            // from the top of the window
                             print("\(n): x=\(Int(r.minX))…\(Int(r.maxX)) centerY=\(w.frame.height - r.midY)")
                         }
                     }
-                    // Элементы панели (логотип, кнопки).
+                    // Toolbar items (logo, buttons).
                     func walk(_ v: NSView, _ depth: Int) {
                         let r = v.convert(v.bounds, to: nil)
                         let top = w.frame.height - r.maxY
@@ -132,14 +132,14 @@ enum SelfTest {
         }
 
         print("— Запись (папка ShuttleSelfTest)")
-        // Убираем хвосты от прошлого прогона.
+        // Clean up leftovers from the previous run.
         for old in root where old.isFolder && old.name == "ShuttleSelfTest" { try? svc.deleteTree(old) }
 
         guard let folder = step("Создание папки", {
             try svc.createFolder("ShuttleSelfTest", parent: mtpRoot, storage: info.storageID)
         }) else { return 1 }
 
-        // Тестовые файлы: маленький, с кириллицей и пробелом, и 50 МБ для скорости.
+        // Test files: a small one, one with Cyrillic and a space, and 50 MB for speed.
         let small = work.appendingPathComponent("hello.txt")
         try? "Привет от Shuttle \(Date())".data(using: .utf8)!.write(to: small)
         let cyr = work.appendingPathComponent("Тест файл №1.txt")
@@ -202,7 +202,7 @@ enum SelfTest {
             let b = try? String(contentsOf: url.appendingPathComponent("внутри/b.txt"), encoding: .utf8)
             check("   Вложенный файл совпадает", b == "b")
         }
-        // Повторное скачивание не перезаписывает, а добавляет « 2».
+        // Downloading again doesn't overwrite, it appends " 2".
         if let remote = listed.first(where: { $0.name == "hello.txt" }),
            let url = step("Скачивание с тем же именем", { try svc.downloadTree(remote, into: back, token: CancelToken()) { _, _ in } }) {
             check("   Получилось «hello 2.txt»", url.lastPathComponent == "hello 2.txt", url.lastPathComponent)

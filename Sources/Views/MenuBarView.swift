@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Иконка в строке меню: устройство, место, быстрые действия.
+/// The menu bar icon: device, space, quick actions.
 struct MenuBarView: View {
     @EnvironmentObject private var state: AppState
     @Environment(\.openWindow) private var openWindow
@@ -33,7 +33,7 @@ struct MenuBarView: View {
         if !running.isEmpty {
             Divider()
             Text(L("В работе: %d", running.count))
-            // Сами передачи с процентами — можно следить, не открывая окно.
+            // The transfers themselves with percentages — follow them without opening the window.
             ForEach(running.prefix(6)) { t in
                 Text(t.state == .waiting ? L("%@ — ждём устройство", t.name)
                                          : "\(t.name) — \(Int(t.fraction * 100))%")
@@ -53,7 +53,7 @@ struct MenuBarView: View {
     }
 }
 
-/// Значок для строки меню — маленький дроид (шаблонное изображение под тему строки меню).
+/// The menu bar icon — a small droid (a template image that follows the menu bar theme).
 enum MenuBarIcon {
     static let image: NSImage = {
         let size = NSSize(width: 18, height: 18)
@@ -70,7 +70,7 @@ enum MenuBarIcon {
             let head = NSBezierPath(roundedRect: NSRect(x: w * 0.06, y: h * 0.36, width: w * 0.88, height: h * 0.52),
                                     xRadius: h * 0.26, yRadius: h * 0.26)
             head.fill()
-            // Глаза-стрелки вырезаем.
+            // Cut out the arrow eyes.
             NSGraphicsContext.current?.compositingOperation = .clear
             let eyes = NSBezierPath()
             eyes.lineWidth = 1.6

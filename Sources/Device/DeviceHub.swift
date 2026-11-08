@@ -1,28 +1,28 @@
 import Foundation
 
-/// Несколько устройств сразу: у каждого физического устройства свой `DeviceService`
-/// со своей очередью и своим драйвером. Телефон и Switch работают параллельно —
-/// установка игры на Switch не мешает листать камеру телефона.
+/// Several devices at once: every physical device gets its own `DeviceService`
+/// with its own queue and driver. Phone and Switch work in parallel —
+/// installing a game on the Switch doesn't block browsing the phone's camera.
 final class DeviceHub: @unchecked Sendable {
     static let shared = DeviceHub()
 
     struct Slot {
-        /// «mtp:шина:номер», «adb», «mock:phone» — постоянен, пока устройство воткнуто.
+        /// "mtp:bus:number", "adb", "mock:phone" — stays the same while the device is plugged in.
         let id: String
         let service: DeviceService
     }
 
     private let queue = DispatchQueue(label: "shuttle.hub")
     private var services: [String: DeviceService] = [:]
-    /// Для автотестов: набор сервисов задан заранее и не меняется.
+    /// For tests: the set of services is fixed in advance and never changes.
     private let fixed: [Slot]?
 
     init(fixed: [Slot]? = nil) {
         self.fixed = fixed
     }
 
-    /// Найти устройства: новым — завести сервис, пропавшим — закрыть.
-    /// `scan: false` — шину не трогаем (идёт передача): только уже известные устройства.
+    /// Find devices: create a service for new ones, close the ones that are gone.
+    /// `scan: false` — don't touch the bus (a transfer is running): only already known devices.
     func refresh(scan: Bool = true) async -> [Slot] {
         if let fixed { return fixed }
         return await withCheckedContinuation { c in
@@ -35,7 +35,7 @@ final class DeviceHub: @unchecked Sendable {
             .compactMap { id in services[id].map { Slot(id: id, service: $0) } }
     }
 
-    /// Включили или выключили ADB — пересобрать набор.
+    /// ADB was turned on or off — rebuild the set.
     func reload() {
         queue.async {
             for s in self.services.values { s.runDetached { $0.release() } }
@@ -55,14 +55,14 @@ final class DeviceHub: @unchecked Sendable {
             return order.compactMap { id in services[id].map { Slot(id: id, service: $0) } }
         }
         #endif
-        // ADB — первым: быстрее MTP и умеет больше. Один телефон по ADB.
+        // ADB first: faster than MTP and can do more. One phone over ADB.
         if UserDefaults.standard.bool(forKey: "adbEnabled"), ADBDriver.isAvailable {
             if services["adb"] == nil { services["adb"] = DeviceService(drivers: [ADBDriver()]) }
             order.append("adb")
         } else if let s = services.removeValue(forKey: "adb") {
             s.runDetached { $0.release() }
         }
-        // MTP — по сервису на каждое устройство на шине.
+        // MTP — one service per device on the bus.
         let raws = MTPDriver.detect()
         let present = Set(raws.map(\.slot))
         for (id, s) in services where id.hasPrefix("mtp:") && !present.contains(id) {

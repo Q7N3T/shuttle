@@ -1,16 +1,16 @@
 import XCTest
 @testable import Shuttle
 
-/// Новое в 0.5: несколько устройств сразу, сверка после копирования, «освободить место», достижения.
+/// New in 0.5: several devices at once, verification after copying, free up space, achievements.
 @MainActor
 final class FeatureTests: XCTestCase {
     func waitUntil(_ timeout: TimeInterval = 10, _ cond: @escaping () -> Bool) async {
         let end = Date().addingTimeInterval(timeout)
         while !cond(), Date() < end { try? await Task.sleep(for: .milliseconds(30)) }
-        XCTAssertTrue(cond(), "не дождались")
+        XCTAssertTrue(cond(), "timed out waiting")
     }
 
-    // MARK: Телефон и Switch одновременно
+    // MARK: Phone and Switch at the same time
 
     func testTwoDevicesAsTabs() async {
         let phone = MockDriver(kind: .phone, speed: 0), sw = MockDriver(kind: .console, speed: 0)
@@ -18,22 +18,22 @@ final class FeatureTests: XCTestCase {
         state.macURL = tempDir("mac2")
         await state.tick()
         XCTAssertEqual(state.devices.count, 2)
-        XCTAssertEqual(state.device?.kind, .phone, "первым выбран первый")
+        XCTAssertEqual(state.device?.kind, .phone, "the first device is selected first")
         await waitUntil { state.currentKey.map { state.cache[$0] != nil } ?? false }
         let phoneStorage = state.storageID
 
-        // Переключаемся на Switch: другой сервис, свои разделы.
+        // Switch to the Switch: a different service, its own storages.
         state.selectDevice(state.devices[1].slot)
         XCTAssertEqual(state.device?.kind, .console)
         XCTAssertEqual(state.currentStorage?.name, "SD Card")
         await waitUntil { state.currentKey.map { state.cache[$0] != nil } ?? false }
 
-        // И обратно: открытое на телефоне вернулось из памяти.
+        // And back: what was open on the phone is restored from memory.
         state.selectDevice(state.devices[0].slot)
         XCTAssertEqual(state.device?.kind, .phone)
         XCTAssertEqual(state.storageID, phoneStorage)
 
-        // Телефон отключили — остаётся Switch, вкладка переключается сама.
+        // The phone was unplugged — the Switch remains, the tab switches by itself.
         phone.connected = false
         await state.tick()
         XCTAssertEqual(state.devices.count, 1)
@@ -50,14 +50,14 @@ final class FeatureTests: XCTestCase {
         await waitUntil { state.androidPath.last?.name == "Camera" && !state.androidRows.isEmpty }
         let photo = state.androidRows.first { $0.item.name.hasSuffix(".jpg") }!.item
         state.download([photo])
-        // Сразу переключаемся на Switch — скачивание всё равно идёт с телефона.
+        // Switch to the Switch right away — the download still comes from the phone.
         state.selectDevice(state.devices[1].slot)
         await waitUntil { state.transfers.allSatisfy { $0.state.isFinished } }
         XCTAssertEqual(state.transfers.first?.state, .done)
         XCTAssertTrue(FileManager.default.fileExists(atPath: state.macURL.appendingPathComponent(photo.name).path))
     }
 
-    // MARK: Сверка
+    // MARK: Verification
 
     func testDownloadAndUploadAreVerified() throws {
         let mock = MockDriver(kind: .phone, speed: 0)
@@ -68,12 +68,12 @@ final class FeatureTests: XCTestCase {
         let dir = tempDir("verify")
         let token = CancelToken()
         _ = try svc.sync { try $0.downloadTree(photo, into: dir, token: token) { _, _ in } }
-        XCTAssertEqual(token.verified, 1, "скачанное сверено по размеру")
+        XCTAssertEqual(token.verified, 1, "the download is verified by size")
 
         let up = CancelToken()
         let file = dir.appendingPathComponent(photo.name)
         try svc.sync { try $0.uploadTree([file], parent: mtpRoot, storage: 1, token: up, conflict: .replace) { _, _ in } }
-        XCTAssertEqual(up.verified, 1, "загруженное сверено: устройство вернуло тот же размер")
+        XCTAssertEqual(up.verified, 1, "the upload is verified: the device reports the same size")
     }
 
     func testCompareFindsExactCopiesOnly() throws {
@@ -86,18 +86,18 @@ final class FeatureTests: XCTestCase {
         let copy = try svc.sync { try $0.downloadTree(photo, into: dir, token: CancelToken()) { _, _ in } }
         XCTAssertEqual(svc.sync { $0.compare(photo, with: copy) }, .identical)
 
-        // Тот же размер, но один байт другой — уже не копия.
+        // Same size, but one byte differs — no longer a copy.
         var data = try Data(contentsOf: copy)
         data[0] ^= 0xFF
         try data.write(to: copy)
         XCTAssertEqual(svc.sync { $0.compare(photo, with: copy) }, .different)
 
-        // Другой размер — тем более.
+        // A different size — even more so.
         try Data([1, 2, 3]).write(to: copy)
         XCTAssertEqual(svc.sync { $0.compare(photo, with: copy) }, .different)
     }
 
-    // MARK: Достижения
+    // MARK: Achievements
 
     func testAchievementsUnlockByThresholds() {
         let a = Achievements.shared
@@ -115,7 +115,7 @@ final class FeatureTests: XCTestCase {
         let html = #"<ul><li>Новый значок</li><li>Сверка</li></ul><div data-lang="en"><p>New icon</p><p>Verification</p></div>"#
         XCTAssertEqual(ShuttleUserDriver.notes(from: html, english: false), ["Новый значок", "Сверка"])
         XCTAssertEqual(ShuttleUserDriver.notes(from: html, english: true), ["New icon", "Verification"])
-        // Старые записи appcast — только русский список.
+        // Old appcast entries — Russian list only.
         XCTAssertEqual(ShuttleUserDriver.notes(from: "<ul><li>Только русский</li></ul>", english: true), ["Только русский"])
     }
 

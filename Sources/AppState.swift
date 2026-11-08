@@ -17,13 +17,13 @@ struct LocalItem: Identifiable, Hashable {
     let isFolder: Bool
 }
 
-/// Папка на устройстве: раздел + id папки.
+/// A folder on the device: storage + folder id.
 struct FolderKey: Hashable {
     let storage: UInt32
     let folder: UInt32
 }
 
-/// Строка дерева: элемент, глубина вложенности и (для поиска) путь.
+/// A tree row: item, nesting depth and (for search) the path.
 struct RemoteRow: Identifiable {
     let item: RemoteItem
     let depth: Int
@@ -50,7 +50,7 @@ struct SortOrder: Equatable {
     var ascending = true
 }
 
-/// Панель, где последний раз кликали: к ней относятся команды меню.
+/// The pane clicked last: menu commands apply to it.
 enum Side { case mac, device }
 
 enum ViewMode: String { case list, grid }
@@ -71,9 +71,9 @@ struct QuickFolder: Identifiable {
     ] }
 }
 
-/// Подключённое устройство — вкладка над панелями.
+/// A connected device — a tab above the panes.
 struct DeviceTab: Identifiable, Equatable {
-    /// Место на шине (`DeviceHub.Slot.id`).
+    /// Place on the bus (`DeviceHub.Slot.id`).
     let slot: String
     var info: DeviceInfo
     let service: DeviceService
@@ -81,7 +81,7 @@ struct DeviceTab: Identifiable, Equatable {
     static func == (a: DeviceTab, b: DeviceTab) -> Bool { a.slot == b.slot && a.info == b.info }
 }
 
-/// Что было открыто на устройстве — возвращаем, когда снова переключаемся на его вкладку.
+/// What was open on a device — restored when we switch back to its tab.
 private struct DeviceView {
     var storageID: UInt32?
     var androidPath: [Crumb]
@@ -94,19 +94,19 @@ private struct DeviceView {
 
 @MainActor
 final class AppState: ObservableObject {
-    /// Сервис устройства на текущей вкладке. Передачи запоминают свой сервис сами.
+    /// Service of the device on the current tab. Transfers remember their own service.
     private(set) var svc: DeviceService
     private let hub: DeviceHub
 
-    // Устройство
+    // Device
     @Published var connection: Connection = .searching
-    /// Все подключённые устройства — вкладки, если их больше одного.
+    /// All connected devices — tabs, if there is more than one.
     @Published private(set) var devices: [DeviceTab] = []
     @Published private(set) var selectedSlot: String?
     private var views: [String: DeviceView] = [:]
-    /// Для каких устройств уже отработало «подключилось» (фото, синхронизация) в этот раз.
+    /// Devices for which "connected" (photos, sync) already ran this time.
     private var introduced: Set<String> = []
-    /// Места на шине, где тот же телефон виден второй раз (по MTP, когда он уже есть по ADB).
+    /// Bus places where the same phone shows up a second time (over MTP when it's already there over ADB).
     private var shadowed: [String: String] = [:]
     @Published var storageID: UInt32?
     @Published var androidPath: [Crumb] = []
@@ -114,20 +114,20 @@ final class AppState: ObservableObject {
     @Published var activeQuick: String?
     @Published var expanded: Set<FolderKey> = []
     @Published private(set) var loadingKeys: Set<FolderKey> = []
-    /// Кэш списков папок: большие папки MTP отдаёт секундами
-    /// (Камера с 600+ фото — около 16 с на Huawei), поэтому повторно не перечитываем.
+    /// Folder listing cache: MTP takes seconds to list big folders
+    /// (Camera with 600+ photos — about 16 s on a Huawei), so we don't re-read them.
     @Published var cache: [FolderKey: [RemoteItem]] = [:]
-    /// Switch подключена по USB, но DBI не включил MTP.
+    /// A Switch is connected over USB, but DBI hasn't turned on MTP.
     @Published var nintendoWithoutMTP = false
 
-    // Вид
+    // View
     @Published var sort = SortOrder()
     @Published var showHidden: Bool = AppSettings.defaults.bool(forKey: "showHidden") {
         didSet { AppSettings.defaults.set(showHidden, forKey: "showHidden") }
     }
     @Published var viewMode: ViewMode = .list
 
-    // Поиск
+    // Search
     @Published var searchText = ""
     @Published var deepResults: [RemoteRow]?
     @Published var deepSearching = false
@@ -138,11 +138,11 @@ final class AppState: ObservableObject {
     @Published var macURL: URL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0]
     @Published var macItems: [LocalItem] = []
     @Published var macSelection: Set<URL> = []
-    /// «имя|размер» файлов в текущей папке Mac и в папке фото — для пометки «уже на Mac».
+    /// "name|size" of files in the current Mac folder and the photos folder — for the "already on Mac" badge.
     @Published var macIndex: Set<String> = []
     var photosIndex: Set<String> = []
 
-    // Очередь
+    // Queue
     @Published var transfers: [Transfer] = []
     @Published var errorMessage: String?
     @Published var toast: String?
@@ -151,7 +151,7 @@ final class AppState: ObservableObject {
     private var batchCount = 0
     private var batchBytes: UInt64 = 0
 
-    // Диалоги (открываются и из панели, и из строки меню)
+    // Dialogs (opened both from the pane and from the menu bar)
     @Published var activeSide: Side = .device
     @Published var askNewFolder = false
     @Published var renaming: RemoteItem?
@@ -170,13 +170,13 @@ final class AppState: ObservableObject {
     @Published var duplicates: [RemoteItem] = []
     @Published var newPhotos: [RemoteItem] = []
 
-    /// Что сейчас тащим из панели устройства внутри приложения.
+    /// What is being dragged from the device pane inside the app.
     var draggingRemote: [RemoteItem] = []
 
     private var monitor: Task<Void, Never>?
     private var lastDeviceKey: String?
 
-    /// `service`/`services` — заданные устройства (автотесты); без них — все, что найдёт `DeviceHub`.
+    /// `service`/`services` — given devices (tests); without them — everything `DeviceHub` finds.
     init(preview: Bool = false, service: DeviceService? = nil, services: [DeviceService] = []) {
         let given = (service.map { [$0] } ?? []) + services
         if let first = given.first {
@@ -187,7 +187,7 @@ final class AppState: ObservableObject {
             hub = .shared
         }
         if preview || AppFolders.testing { return }
-        // Превью ждут, пока идут передачи; при уходе из папки очередь превью сбрасывается.
+        // Thumbnails wait while transfers run; leaving a folder clears the thumbnail queue.
         Thumbnails.shared.isBusy = { [weak self] in self?.hasActiveTransfers ?? false }
         Thumbnails.shared.service = { [weak self] key in self?.service(for: key) }
         loadMac()
@@ -199,7 +199,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    // MARK: Производные
+    // MARK: Derived
 
     var device: DeviceInfo? { connection.info }
     var deviceKey: String { device?.key ?? "" }
@@ -210,10 +210,10 @@ final class AppState: ObservableObject {
     var hasActiveTransfers: Bool { transfers.contains { $0.state.isActive } }
     var isConsole: Bool { device?.kind == .console }
 
-    /// На телефоне служебные папки с точкой прячем; на Switch они нужны (.overlays).
+    /// On a phone we hide dot folders; on a Switch they matter (.overlays).
     var hidesDotFiles: Bool { !showHidden && device?.kind == .phone }
 
-    /// Путь текущей папки из имён (без раздела).
+    /// Path of the current folder as names (without the storage).
     var currentPathNames: [String] { androidPath.dropFirst().map(\.name) }
 
     var androidItems: [RemoteItem] {
@@ -221,7 +221,7 @@ final class AppState: ObservableObject {
         return arranged(cache[k] ?? [])
     }
 
-    /// Текущая папка с раскрытыми подпапками, развёрнутая в плоский список (и отфильтрованная поиском).
+    /// The current folder with expanded subfolders, flattened into a list (and filtered by search).
     var androidRows: [RemoteRow] {
         if let deepResults { return deepResults }
         guard let k = currentKey else { return [] }
@@ -273,25 +273,25 @@ final class AppState: ObservableObject {
         loadMac()
     }
 
-    // MARK: Подключение
+    // MARK: Connection
 
-    /// Опрос раз в 2 секунды: какие устройства на связи, что с текущей вкладкой.
+    /// Poll every 2 seconds: which devices are connected, what's up with the current tab.
     func tick() async {
-        // Пока идёт передача, шину USB не опрашиваем — поиск новых устройств может ей помешать.
+        // While a transfer runs we don't scan the USB bus — looking for new devices could disturb it.
         let slots = await hub.refresh(scan: !hasActiveTransfers)
         var found: [DeviceTab] = []
         var trouble: Connection?
         for slot in slots {
-            // Дубль уже подключённого телефона (тот же, что по ADB) — не открываем заново каждые 2 секунды.
+            // A duplicate of an already connected phone (the same one as over ADB) — don't reopen it every 2 seconds.
             if let key = shadowed[slot.id], found.contains(where: { $0.info.key == key }) { continue }
-            // Пока устройство занято передачей или чтением папки, его не дёргаем — берём прошлые сведения.
+            // While a device is busy with a transfer or a folder listing, leave it alone — reuse the last info.
             if let known = devices.first(where: { $0.slot == slot.id }), isBusy(known) {
                 found.append(known)
                 continue
             }
             do {
                 let info = try await slot.service.run { try $0.connectIfNeeded() }
-                // Один и тот же телефон по ADB и по MTP — оставляем первый (ADB).
+                // The same phone over ADB and over MTP — keep the first one (ADB).
                 if found.contains(where: { $0.info.key == info.key }) {
                     shadowed[slot.id] = info.key
                     slot.service.runDetached { $0.release() }
@@ -318,7 +318,7 @@ final class AppState: ObservableObject {
             introduced.remove(d.info.key)
         }
         if devices != found { devices = found }
-        // Кабель могли переподключить быстрее, чем прошёл один опрос, — продолжаем оборванное всегда.
+        // The cable may have been replugged faster than one poll — always resume what was interrupted.
         for d in found { resumeWaiting(for: d.info.key) }
 
         if let sel = selectedSlot, let tab = found.first(where: { $0.slot == sel }) {
@@ -331,7 +331,7 @@ final class AppState: ObservableObject {
                 selectStorage(first.id)
             }
         } else if let first = found.first {
-            // Текущее устройство пропало (или его не было) — переходим на первое из оставшихся.
+            // The current device is gone (or there was none) — switch to the first remaining one.
             if selectedSlot != nil { resetDevice() }
             show(first)
         } else {
@@ -344,10 +344,10 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// Переключиться на вкладку устройства.
+    /// Switch to a device's tab.
     func selectDevice(_ slot: String) {
         guard slot != selectedSlot, let tab = devices.first(where: { $0.slot == slot }) else { return }
-        // Запомнить, что было открыто на прежнем устройстве.
+        // Remember what was open on the previous device.
         if let cur = selectedSlot {
             views[cur] = DeviceView(storageID: storageID, androidPath: androidPath, cache: cache, expanded: expanded,
                                     activeQuick: activeQuick, viewMode: viewMode, newPhotos: newPhotos)
@@ -383,12 +383,12 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// Сервис устройства по его ключу — передача после обрыва продолжается на нём, где бы он ни был.
+    /// A device's service by its key — after a drop the transfer continues on it, wherever it is now.
     func service(for key: String) -> DeviceService? {
         devices.first { $0.info.key == key }?.service
     }
 
-    /// Не публиковать одно и то же каждые 2 секунды — иначе всё окно перерисовывается без нужды.
+    /// Don't publish the same thing every 2 seconds — otherwise the whole window redraws for nothing.
     private func setConnection(_ c: Connection) {
         if connection != c { connection = c }
     }
@@ -410,22 +410,22 @@ final class AppState: ObservableObject {
         clearSearch()
     }
 
-    /// Устройство подключилось: продолжить оборванные передачи, проверить новые фото, синхронизировать.
+    /// A device connected: resume interrupted transfers, check for new photos, sync.
     private func deviceConnected(_ info: DeviceInfo) {
         Achievements.shared.recordDevice(console: info.kind == .console)
         if info.kind == .phone {
-            // Сначала индекс папки фото, потом подсчёт новых — иначе уже скачанное посчитается новым.
+            // Photos folder index first, then count new ones — otherwise what's already downloaded counts as new.
             Task {
                 await refreshPhotosIndexNow()
                 await refreshNewPhotos()
-                // Автоимпорт: новые фото скачиваются сами, даже если окно закрыто.
+                // Auto-import: new photos download by themselves, even with the window closed.
                 if AppSettings.shared.autoImport, !newPhotos.isEmpty { importNewPhotos() }
             }
             if AppSettings.shared.autoSync { runSyncs(SyncStore.shared.rules(for: info.key).filter(\.enabled)) }
         }
     }
 
-    // MARK: Навигация по устройству
+    // MARK: Device navigation
 
     func selectStorage(_ id: UInt32) {
         guard let s = device?.storages.first(where: { $0.id == id }) else { return }
@@ -450,14 +450,14 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// `force: false` — взять из кэша, если папка уже открывалась.
+    /// `force: false` — take it from the cache if the folder was opened before.
     func loadAndroid(force: Bool = true) async {
         guard let k = currentKey else { return }
         await fetch(k, force: force)
         androidSelection = []
     }
 
-    /// Кнопка «Обновить»: текущая папка и все раскрытые в ней.
+    /// The Refresh button: the current folder and every folder expanded in it.
     func refreshAndroid() {
         guard let k = currentKey else { return }
         let keys = [k] + expanded.filter { $0.storage == k.storage && cache[$0] != nil }
@@ -478,7 +478,7 @@ final class AppState: ObservableObject {
     func openAndroid(_ item: RemoteItem) {
         guard item.isFolder else { return }
         if deepResults != nil, let row = deepResults?.first(where: { $0.item.id == item.id }), let path = row.path {
-            // Из результатов поиска: открыть папку по её пути.
+            // From search results: open the folder by its path.
             clearSearch()
             open(path: path.split(separator: "/").map(String.init) + [item.name])
             return
@@ -502,7 +502,7 @@ final class AppState: ObservableObject {
         if androidPath.count > 1 { goToCrumb(androidPath.count - 2) }
     }
 
-    /// Открыть папку по пути из имён в текущем разделе.
+    /// Open a folder by a path of names on the current storage.
     func open(path: [String], storage: StorageInfo? = nil, quick: String? = nil) {
         guard let st = storage ?? currentStorage else { return }
         if st.id != storageID { selectStorage(st.id) }
@@ -525,7 +525,7 @@ final class AppState: ObservableObject {
         FolderKey(storage: item.storageID, folder: item.parentID == 0 ? mtpRoot : item.parentID)
     }
 
-    /// Перечитать папку после изменения: текущую — всегда, остальные — если уже в кэше.
+    /// Re-read a folder after a change: the current one always, others only if cached.
     func invalidate(_ key: FolderKey) async {
         if key == currentKey || cache[key] != nil { await fetch(key, force: true) }
     }
@@ -599,7 +599,7 @@ final class AppState: ObservableObject {
         macIndex = Duplicates.localIndex(macURL, recursive: false).union(photosIndex)
     }
 
-    /// Индекс папки фото (рекурсивно, в фоне).
+    /// Photos folder index (recursive, in the background).
     func refreshPhotosIndex() {
         Task { await refreshPhotosIndexNow() }
     }
@@ -644,10 +644,10 @@ final class AppState: ObservableObject {
         macSelection.contains(item.url) ? macItems.filter { macSelection.contains($0.url) } : [item]
     }
 
-    // MARK: Механизм передач
+    // MARK: Transfer engine
 
-    /// Запустить передачу. `work` выполняется на очереди устройства и возвращает результат на Mac (если есть).
-    /// При обрыве связи передача ждёт то же устройство и продолжается сама.
+    /// Start a transfer. `work` runs on the device queue and returns the result on the Mac (if any).
+    /// If the connection drops, the transfer waits for the same device and continues by itself.
     func run(_ t: Transfer, completion: (@MainActor (Transfer) -> Void)? = nil,
              work: @escaping (DeviceService, Transfer) throws -> URL?) {
         transfers.insert(t, at: 0)
@@ -655,7 +655,7 @@ final class AppState: ObservableObject {
         let started = svc
         t.restart = { [weak self, weak t] in
             guard let self, let t else { return }
-            // После обрыва то же устройство могло вернуться на другом месте шины — ищем его по ключу.
+            // After a drop the same device may come back at another bus place — find it by key.
             self.execute(t, on: self.service(for: t.deviceKey) ?? started, completion: completion, work: work)
         }
         execute(t, on: started, completion: completion, work: work)
@@ -702,7 +702,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    /// Свободное имя в папке Mac с учётом передач, которые ещё не начались.
+    /// A free name in a Mac folder, counting transfers that haven't started yet.
     func reserveTarget(_ dir: URL, _ name: String) -> URL {
         var u = uniqueURL(dir.appendingPathComponent(name))
         var n = 2
@@ -736,9 +736,9 @@ final class AppState: ObservableObject {
     }
 
     #if DEBUG
-    /// Для снимков: подложить содержимое папки без устройства.
+    /// For screenshots: put folder contents in place without a device.
     func previewSet(_ key: FolderKey, _ items: [RemoteItem]) { cache[key] = items }
-    /// Для снимков: вкладки нескольких устройств.
+    /// For screenshots: tabs for several devices.
     func previewDevices(_ list: [DeviceInfo], selected: Int) {
         devices = list.enumerated().map { DeviceTab(slot: "p\($0.offset)", info: $0.element, service: DeviceService(drivers: [])) }
         selectedSlot = devices[selected].slot

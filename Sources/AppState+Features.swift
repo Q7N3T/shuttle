@@ -3,7 +3,7 @@ import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Пакетное переименование: что переименовываем.
+/// Batch rename: what we are renaming.
 struct RenameRequest: Identifiable {
     let id = UUID()
     var remote: [RemoteItem] = []
@@ -15,12 +15,12 @@ struct RenameRequest: Identifiable {
     }
 }
 
-/// Куда легли файлы (узнаём на очереди устройства, читаем после передачи).
+/// Where the files ended up (learned on the device queue, read after the transfer).
 final class DestinationBox: @unchecked Sendable {
     var folder: UInt32?
 }
 
-/// Игры, которые просят установить, и куда.
+/// Games waiting to be installed, and where.
 struct PendingInstall: Identifiable {
     let id = UUID()
     let files: [URL]
@@ -29,7 +29,7 @@ struct PendingInstall: Identifiable {
 
 extension AppState {
 
-    // MARK: - Скачивание и загрузка
+    // MARK: - Download and upload
 
     var photosDestination: URL {
         let name = (device?.name ?? L("Устройство")).replacingOccurrences(of: "/", with: "-")
@@ -65,7 +65,7 @@ extension AppState {
         }
     }
 
-    /// Загрузить на устройство. Сюда приходят и перетаскивания — со «специальными» файлами разбираемся здесь.
+    /// Upload to the device. Drops land here too — "special" files are handled here.
     func handleDrop(_ urls: [URL], into folder: RemoteItem? = nil) {
         guard let device, !urls.isEmpty else { return }
         if device.kind == .console {
@@ -108,7 +108,7 @@ extension AppState {
         }
     }
 
-    /// Загрузить в папку по пути (создаётся при необходимости) в текущем или указанном разделе.
+    /// Upload into a folder by path (created if needed) on the current or given storage.
     func uploadTo(path: [String], urls: [URL], storage: StorageInfo? = nil, label: String? = nil,
                   conflict: ConflictPolicy = .skipIdentical, completion: (@MainActor () -> Void)? = nil) {
         guard let st = storage ?? currentStorage else { return }
@@ -133,14 +133,14 @@ extension AppState {
         }
     }
 
-    /// После раскладки по нескольким папкам (homebrew, Atmosphère): корень и то, что открыто.
+    /// After placing files across several folders (homebrew, Atmosphère): the root and whatever is open.
     private func refreshAfterUpload(storage: UInt32) async {
         await invalidate(FolderKey(storage: storage, folder: mtpRoot))
         if let k = currentKey, k.storage == storage, k.folder != mtpRoot { await invalidate(k) }
         await refreshDevice()
     }
 
-    /// Хватит ли места. Для разделов установки Switch смотрим на SD-карту или NAND.
+    /// Is there enough space. For Switch install storages we look at the SD card or NAND.
     func checkSpace(_ urls: [URL], storage: UInt32) -> Bool {
         guard let device, let st = device.storages.first(where: { $0.id == storage }) else { return true }
         var target = st
@@ -159,7 +159,7 @@ extension AppState {
 
     // MARK: - Switch
 
-    /// Установить игры через DBI: файлы уходят в раздел «SD Card install» или «NAND install».
+    /// Install games via DBI: files go to the "SD Card install" or "NAND install" storage.
     func installGames(_ files: [URL], toNAND: Bool) {
         guard let device,
               let target = device.storage(where: { $0.isInstallTarget && $0.name.lowercased().contains(toNAND ? "nand" : "sd") })
@@ -172,7 +172,7 @@ extension AppState {
         }
     }
 
-    /// Распаковать архив homebrew и разложить по папкам SD-карты (с заменой старых файлов).
+    /// Unpack a homebrew archive and lay it out across the SD card folders (replacing old files).
     func installHomebrew(_ zip: URL) {
         guard let sd = device?.storage(where: \.isSDCard) ?? currentStorage else { return }
         let t = Transfer(name: zip.lastPathComponent, direction: .toAndroid, label: "Homebrew", deviceKey: deviceKey)
@@ -187,7 +187,7 @@ extension AppState {
         }
     }
 
-    /// Загрузить разложенные файлы с общим прогрессом.
+    /// Upload laid-out files with a shared progress.
     nonisolated static func place(_ placements: [HomebrewLayout.Placement], on storage: UInt32,
                                   svc: DeviceService, t: Transfer) throws {
         let total = placements.reduce(UInt64(0)) { $0 + localSize($1.local) }
@@ -204,7 +204,7 @@ extension AppState {
         t.report(total, total)
     }
 
-    /// Скачать все сейвы из раздела «Saves» в папку с датой.
+    /// Download every save from the "Saves" storage into a dated folder.
     func backupSaves() {
         guard let saves = device?.storage(where: \.isSaves) else {
             show(MTPError.failed(L("Раздела «Saves» нет. Запустите DBI в режиме MTP."))); return
@@ -236,7 +236,7 @@ extension AppState {
         }
     }
 
-    /// Обновить Atmosphère: копия старого на Mac → скачать с GitHub → разложить с заменой.
+    /// Update Atmosphère: copy the old one to the Mac → download from GitHub → lay out with replacement.
     func updateAtmosphere(_ release: AtmosphereRelease) {
         guard let sd = device?.storage(where: \.isSDCard) else { return }
         let key = deviceKey
@@ -286,7 +286,7 @@ extension AppState {
 
     // MARK: - Android
 
-    /// Сколько в «Камере» снимков, которых ещё нет на Mac.
+    /// How many shots in "Camera" aren't on the Mac yet.
     func refreshNewPhotos() async {
         guard let device, device.kind == .phone, let st = device.storages.first else { return }
         let key = device.key
@@ -345,7 +345,7 @@ extension AppState {
         }
     }
 
-    // MARK: - Синхронизация
+    // MARK: - Sync
 
     func addSyncRuleForCurrentFolder() {
         guard let device, let st = currentStorage else { return }
@@ -402,9 +402,9 @@ extension AppState {
         }
     }
 
-    // MARK: - Дубли
+    // MARK: - Duplicates
 
-    /// Файлы текущей папки (и раскрытых), которые уже есть в выбранной папке Mac.
+    /// Files of the current folder (and expanded ones) that already exist in the chosen Mac folder.
     func findDuplicates() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
@@ -424,7 +424,7 @@ extension AppState {
         }
     }
 
-    // MARK: - Поиск
+    // MARK: - Search
 
     func clearSearch() {
         searchToken?.cancel()
@@ -435,7 +435,7 @@ extension AppState {
         deepScanned = 0
     }
 
-    /// Искать во всех вложенных папках текущей.
+    /// Search all subfolders of the current one.
     func deepSearch() {
         let q = searchText.trimmingCharacters(in: .whitespaces)
         guard !q.isEmpty, let k = currentKey else { return }
@@ -464,7 +464,7 @@ extension AppState {
         }
     }
 
-    // MARK: - Быстрый просмотр
+    // MARK: - Quick Look
 
     func quickLook() {
         if QuickLook.isVisible { QuickLook.close(); return }
@@ -495,7 +495,7 @@ extension AppState {
         }
     }
 
-    /// Добавить выбранные фото и видео в приложение «Фото».
+    /// Add the selected photos and videos to the Photos app.
     func exportToPhotos(_ items: [RemoteItem]) {
         let media = items.filter { !$0.isFolder && MediaKind.isMedia($0.name) }
         guard !media.isEmpty else { return }
@@ -526,7 +526,7 @@ extension AppState {
         }
     }
 
-    // MARK: - Пакетное переименование
+    // MARK: - Batch rename
 
     func beginBatchRename() {
         switch activeSide {
@@ -559,7 +559,7 @@ extension AppState {
         }
     }
 
-    // MARK: - Избранное
+    // MARK: - Favorites
 
     var currentFavorite: FavoriteFolder? {
         currentStorage.map { FavoriteFolder(storage: $0.name, path: currentPathNames) }
@@ -570,7 +570,7 @@ extension AppState {
         if let row = deepResults?.first(where: { $0.item.id == item.id }), let p = row.path {
             return FavoriteFolder(storage: st.name, path: p.split(separator: "/").map(String.init) + [item.name])
         }
-        // Раскрытая вложенная папка: собираем путь по кэшу.
+        // An expanded subfolder: build the path from the cache.
         var path = [item.name]
         var parent = item.parentID
         while parent != 0, parent != mtpRoot, parent != currentAndroidFolder,
@@ -591,7 +591,7 @@ extension AppState {
         open(path: f.path, storage: st, quick: "fav:" + f.id)
     }
 
-    // MARK: - Команды меню
+    // MARK: - Menu commands
 
     var selectedRemoteItems: [RemoteItem] { androidRows.map(\.item).filter { androidSelection.contains($0.id) } }
     var selectedLocalItems: [LocalItem] { macItems.filter { macSelection.contains($0.url) } }
@@ -665,7 +665,7 @@ extension AppState {
         selectStorage(storages[index].id)
     }
 
-    /// На Mac удаляем только в Корзину — это можно отменить.
+    /// On the Mac we only delete to the Trash — that can be undone.
     func trashMac(_ items: [LocalItem]) {
         guard !items.isEmpty else { return }
         NSWorkspace.shared.recycle(items.map(\.url)) { _, error in
@@ -676,10 +676,10 @@ extension AppState {
         }
     }
 
-    // MARK: - Перетаскивание в Finder
+    // MARK: - Dragging to Finder
 
-    /// Перетаскивание файла с устройства прямо в Finder:
-    /// Finder просит файл, мы скачиваем его во временную папку и отдаём.
+    /// Dragging a file from the device straight into Finder:
+    /// Finder asks for the file, we download it to a temp folder and hand it over.
     nonisolated func itemProvider(for item: RemoteItem, state: AppState) -> NSItemProvider {
         let provider = NSItemProvider()
         provider.suggestedName = item.name

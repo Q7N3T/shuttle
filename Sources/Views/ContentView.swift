@@ -10,8 +10,8 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // В окне шапка — это панель инструментов (см. toolbar ниже), и macOS сама
-            // выравнивает её по кнопкам окна. В снимке панели нет — рисуем её копию.
+            // In the window the header is the toolbar (see toolbar below), and macOS aligns it
+            // with the window buttons itself. Snapshots have no toolbar — we draw a copy of it.
             if snap {
                 HStack { Color.clear.frame(width: 70, height: 1); brand; Spacer(); controls }
                     .padding(.horizontal, 14).frame(height: 52)
@@ -42,9 +42,9 @@ struct ContentView: View {
         .foregroundStyle(p.text)
         .font(AppFont.body())
         .overlay(alignment: .bottom) { ToastView().padding(.bottom, 150) }
-        // облачко маскота — прямо под ним, хвостиком вверх
+        // the mascot's bubble — right below it, tail up
         .overlay(alignment: .topLeading) { MascotBubble().padding(.leading, snap ? 84 : 76).padding(.top, snap ? 46 : 0) }
-        // маскот радуется новому устройству и грустит, когда кабель выдернули (переключение вкладок — не повод)
+        // the mascot cheers for a new device and is sad when the cable is pulled (switching tabs isn't a reason)
         .onChange(of: state.devices.map(\.info.key)) { old, new in
             if let added = state.devices.first(where: { !old.contains($0.info.key) }) {
                 Mascot.shared.react(.connected(console: added.info.kind == .console))
@@ -57,7 +57,7 @@ struct ContentView: View {
             if new > old, new > 0 { Mascot.shared.react(.newPhotos(new)) }
         }
         .onChange(of: state.errorMessage) { _, e in if e != nil { Mascot.shared.react(.error) } }
-        // телефон садится — маскот зевает; зарядили или отключили — бодрый
+        // the phone is running low — the mascot yawns; charged or disconnected — perky again
         .onChange(of: state.device?.battery) { old, new in
             if let new, new < 15, old == nil || old! >= 15 { Mascot.shared.react(.lowBattery(new)) }
             else if new == nil || new! >= 20 { Mascot.shared.react(.batteryOK) }
@@ -79,7 +79,7 @@ struct ContentView: View {
         }
     }
 
-    /// Слева в шапке: логотип и название.
+    /// Left side of the header: logo and name.
     private var brand: some View {
         HStack(spacing: 10) {
             HeaderMascot()
@@ -89,7 +89,7 @@ struct ContentView: View {
         .fixedSize()
     }
 
-    /// Справа в шапке: панель Mac и тема.
+    /// Right side of the header: Mac pane and theme.
     private var controls: some View {
         HStack(spacing: 10) {
             IconButton(systemName: "sidebar.left", help: showMac ? L("Скрыть панель Mac") : L("Показать панель Mac"),
@@ -109,7 +109,7 @@ struct ContentView: View {
         .fixedSize()
     }
 
-    /// Вкладки разделов (SD Card, Nand USER…), избранное и быстрые папки телефона.
+    /// Storage tabs (SD Card, Nand USER…), favorites and the phone's quick folders.
     private func tabs(_ device: DeviceInfo) -> some View {
         Scrollable(axis: .horizontal) {
             HStack(spacing: 6) {
@@ -154,7 +154,7 @@ struct ContentView: View {
     }
 }
 
-/// Короткое сообщение внизу окна.
+/// A short message at the bottom of the window.
 struct ToastView: View {
     @EnvironmentObject private var state: AppState
     @Environment(\.palette) private var p
@@ -230,7 +230,7 @@ struct DeviceCard: View {
         .animation(.spring(response: 0.35), value: state.newPhotos.count)
     }
 
-    /// Быстрые действия для подключённого устройства.
+    /// Quick actions for the connected device.
     @ViewBuilder
     private func actions(_ info: DeviceInfo) -> some View {
         HStack(spacing: 6) {
@@ -306,7 +306,7 @@ struct DeviceCard: View {
     }
 }
 
-/// Вкладки устройств: телефон и Switch подключены одновременно — переключаемся одним кликом.
+/// Device tabs: phone and Switch connected at the same time — switch with one click.
 struct DeviceTabs: View {
     @EnvironmentObject private var state: AppState
     @Environment(\.palette) private var p

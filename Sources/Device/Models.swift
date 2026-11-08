@@ -19,7 +19,7 @@ struct StorageInfo: Equatable, Identifiable, Hashable {
     let capacity: UInt64
     let free: UInt64
 
-    /// Иконка по названию раздела (DBI на Switch отдаёт 9 разделов).
+    /// An icon by storage name (DBI on a Switch exposes 9 storages).
     var icon: String {
         let n = name.lowercased()
         if n.contains("installed") { return "gamecontroller" }
@@ -51,17 +51,17 @@ struct DeviceInfo: Equatable {
     var kind: DeviceKind
     var storages: [StorageInfo]
     var battery: Int?
-    /// Чтобы помнить устройство между подключениями (избранное, синхронизация, импорт).
+    /// Remembers the device between connections (favorites, sync, import).
     var serial: String = ""
     var transport: Transport = .mtp
 
-    // Первый раздел — для мест, где важна «основная» память.
+    // The first storage — for places where the "main" memory matters.
     var storageID: UInt32 { storages[0].id }
     var storageName: String { storages[0].name }
     var capacity: UInt64 { storages[0].capacity }
     var free: UInt64 { storages[0].free }
 
-    /// Ключ для настроек, привязанных к устройству.
+    /// The key for per-device settings.
     var key: String { serial.isEmpty ? name : serial }
 
     func storage(where match: (StorageInfo) -> Bool) -> StorageInfo? { storages.first(where: match) }
@@ -72,7 +72,7 @@ enum MTPError: LocalizedError, Equatable {
     case busy
     case locked
     case cancelled
-    /// Кабель отошёл посреди передачи — передачу можно продолжить.
+    /// The cable came out mid-transfer — the transfer can be resumed.
     case interrupted
     case noSpace(needed: UInt64, free: UInt64)
     case failed(String)
@@ -90,14 +90,14 @@ enum MTPError: LocalizedError, Equatable {
     }
 }
 
-/// Флаг отмены, который читается с очереди устройства и пишется с главного потока.
+/// A cancel flag read from the device queue and written from the main thread.
 final class CancelToken: @unchecked Sendable {
     private let lock = NSLock()
     private var flag = false
     private var checked = 0
     var isCancelled: Bool { lock.lock(); defer { lock.unlock() }; return flag }
     func cancel() { lock.lock(); flag = true; lock.unlock() }
-    /// Сколько файлов этой передачи сверено после копирования.
+    /// How many files of this transfer were verified after copying.
     var verified: Int { lock.lock(); defer { lock.unlock() }; return checked }
     func noteVerified() { lock.lock(); checked += 1; lock.unlock() }
 }
@@ -107,7 +107,7 @@ func localSize(_ url: URL) -> UInt64 {
     var isDir: ObjCBool = false
     guard fm.fileExists(atPath: url.path, isDirectory: &isDir) else { return 0 }
     if !isDir.boolValue {
-        // Не resourceValues: URL кэширует размер, и после дописывания файла вернулся бы старый.
+        // Not resourceValues: URL caches the size, and after appending to the file we'd get the old one.
         return (try? fm.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.uint64Value ?? 0
     }
     var sum: UInt64 = 0
@@ -121,7 +121,7 @@ func localSize(_ url: URL) -> UInt64 {
     return sum
 }
 
-/// «Фото.jpg» → «Фото 2.jpg», если такое имя уже занято.
+/// "Photo.jpg" → "Photo 2.jpg" if that name is taken.
 func uniqueURL(_ url: URL) -> URL {
     let fm = FileManager.default
     guard fm.fileExists(atPath: url.path) else { return url }
@@ -137,7 +137,7 @@ func uniqueURL(_ url: URL) -> URL {
     }
 }
 
-/// SHA-256 файла на Mac, читаем кусками по 1 МБ.
+/// SHA-256 of a file on the Mac, read in 1 MB chunks.
 func sha256Hex(of url: URL) -> String? {
     guard let h = try? FileHandle(forReadingFrom: url) else { return nil }
     defer { try? h.close() }

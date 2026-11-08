@@ -1,6 +1,6 @@
 import Foundation
 
-/// Запись истории: что, куда и когда копировалось.
+/// A history entry: what was copied, where and when.
 struct HistoryEntry: Codable, Identifiable, Equatable {
     var id = UUID()
     var date: Date
@@ -8,7 +8,7 @@ struct HistoryEntry: Codable, Identifiable, Equatable {
     var toMac: Bool
     var bytes: UInt64
     var device: String
-    /// Где лежит результат на Mac (для «Показать в Finder»).
+    /// Where the result is on the Mac (for "Show in Finder").
     var macPath: String?
     var ok: Bool
     var note: String?
@@ -38,7 +38,7 @@ final class HistoryStore: ObservableObject {
         file.save(entries)
     }
 
-    /// Сводка по дням для заголовков списка.
+    /// Totals per day for the list headers.
     var grouped: [(day: Date, items: [HistoryEntry])] {
         let cal = Calendar.current
         let groups = Dictionary(grouping: entries) { cal.startOfDay(for: $0.date) }

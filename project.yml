@@ -39,7 +39,7 @@ targets:
         ATSApplicationFontsPath: Fonts
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "14.0"
-        # Автообновления (Sparkle): список версий лежит в репозитории.
+        # Automatic updates (Sparkle): the version list lives in the repository.
         SUFeedURL: https://raw.githubusercontent.com/Q7N3T/shuttle/main/appcast.xml
         SUPublicEDKey: OQkMHjKc/6xCJsLy7qUifmQ41D+OVyLJf1hB25fUHuE=
         SUEnableAutomaticChecks: true
@@ -51,22 +51,22 @@ targets:
         SWIFT_VERSION: "5.0"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_OBJC_BRIDGING_HEADER: Sources/Shuttle-Bridging-Header.h
-        # libmtp и libusb собраны статически скриптом scripts/build-deps.sh —
-        # приложению не нужен Homebrew у пользователя.
+        # libmtp and libusb are built statically by scripts/build-deps.sh —
+        # the app doesn't need Homebrew on the user's Mac.
         HEADER_SEARCH_PATHS: $(SRCROOT)/build/deps/include
         LIBRARY_SEARCH_PATHS: $(SRCROOT)/build/deps/lib
         OTHER_LDFLAGS: -lmtp -lusb-1.0 -liconv -lobjc -framework IOKit -framework CoreFoundation -framework Security
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         ENABLE_HARDENED_RUNTIME: YES
-        # Постоянная подпись: macOS запоминает выданные разрешения
-        # (доступ к «Загрузкам» и т.д.) по сертификату, а не по хешу сборки.
+        # A stable signature: macOS remembers granted permissions
+        # (access to Downloads, etc.) by certificate, not by build hash.
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: HDYY45A296
         MACOSX_DEPLOYMENT_TARGET: "14.0"
       configs:
         Debug:
-          # Автотесты подгружают тестовый бандл в приложение — в Debug без Hardened Runtime.
+          # Tests load the test bundle into the app — so Debug has no Hardened Runtime.
           ENABLE_HARDENED_RUNTIME: NO
 
   ShuttleTests:

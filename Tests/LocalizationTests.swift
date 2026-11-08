@@ -1,7 +1,7 @@
 import XCTest
 @testable import Shuttle
 
-/// Все строки L("…") из кода переведены, и подстановки совпадают.
+/// Every L("…") string in the code is translated, and the format specifiers match.
 final class LocalizationTests: XCTestCase {
     func keysInSources() throws -> Set<String> {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
@@ -22,7 +22,7 @@ final class LocalizationTests: XCTestCase {
         let keys = try keysInSources().filter { !$0.hasPrefix("http") }
         XCTAssertGreaterThan(keys.count, 300)
         let missing = keys.filter { English.table[$0] == nil }
-        XCTAssertTrue(missing.isEmpty, "Нет перевода: \(missing.sorted())")
+        XCTAssertTrue(missing.isEmpty, "Missing translations: \(missing.sorted())")
     }
 
     func testFormatSpecifiersMatch() throws {
@@ -38,6 +38,6 @@ final class LocalizationTests: XCTestCase {
     func testNoUnusedTranslations() throws {
         let keys = try keysInSources()
         let unused = English.table.keys.filter { !keys.contains($0) }
-        XCTAssertTrue(unused.isEmpty, "Лишние переводы: \(unused.sorted())")
+        XCTAssertTrue(unused.isEmpty, "Unused translations: \(unused.sorted())")
     }
 }

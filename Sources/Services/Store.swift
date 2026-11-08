@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-/// Папка данных приложения: ~/Library/Application Support/Shuttle.
+/// The app's data folder: ~/Library/Application Support/Shuttle.
 enum AppFolders {
     static var support: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -17,7 +17,7 @@ enum AppFolders {
         return u
     }
 
-    /// Запущены автотесты — не трогаем настоящие данные.
+    /// Automated tests are running — don't touch real data.
     static var testing: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
 
     static func documents(_ sub: String) -> URL {
@@ -28,7 +28,7 @@ enum AppFolders {
     }
 }
 
-/// Простое хранение Codable-значения в JSON-файле.
+/// Simple storage of a Codable value in a JSON file.
 struct JSONFile<T: Codable> {
     let url: URL
     init(_ name: String, in dir: URL = AppFolders.support) { url = dir.appendingPathComponent(name) }
@@ -48,22 +48,22 @@ struct JSONFile<T: Codable> {
     }
 }
 
-/// Настройки, которые меняются в окне ⌘, и в меню.
+/// Settings changed in the ⌘, window and in the menu.
 @MainActor
 final class AppSettings: ObservableObject {
     static let shared = AppSettings()
-    /// Автотесты пишут в свои настройки, а не в настоящие настройки пользователя.
+    /// Automated tests write to their own settings, not the user's real ones.
     static let defaults: UserDefaults = AppFolders.testing ? UserDefaults(suiteName: "com.vadimgrekov.shuttle.tests")! : .standard
     private let d = AppSettings.defaults
 
     @Published var notifications: Bool { didSet { d.set(notifications, forKey: "notifications") } }
     @Published var heicToJPEG: Bool { didSet { d.set(heicToJPEG, forKey: "heicToJPEG") } }
     @Published var menuBarIcon: Bool { didSet { d.set(menuBarIcon, forKey: "menuBarIcon") } }
-    /// Маскот в шапке сам комментирует подключения и передачи.
+    /// The mascot in the header comments on connections and transfers by itself.
     @Published var mascotTalks: Bool { didSet { d.set(mascotTalks, forKey: "mascotTalks") } }
-    /// Без окна: Shuttle живёт в строке меню, передачи и автоимпорт идут дальше.
+    /// Without a window: Shuttle lives in the menu bar, transfers and auto-import keep going.
     @Published var menuBarMode: Bool { didSet { d.set(menuBarMode, forKey: "menuBarMode") } }
-    /// Забирать новые фото сами при подключении телефона.
+    /// Import new photos automatically when the phone connects.
     @Published var autoImport: Bool { didSet { d.set(autoImport, forKey: "autoImport") } }
     @Published var adbEnabled: Bool {
         didSet { d.set(adbEnabled, forKey: "adbEnabled"); DeviceHub.shared.reload() }

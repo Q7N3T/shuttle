@@ -24,7 +24,7 @@ struct ShuttleApp: App {
             .environmentObject(state)
             .environmentObject(updates)
             .frame(minWidth: 860, minHeight: 580)
-            // Смена языка — пересобираем интерфейс.
+            // The language changed — rebuild the interface.
             .id(settings.language)
         }
         .windowToolbarStyle(.unified(showsTitle: false))
@@ -42,9 +42,9 @@ struct ShuttleApp: App {
                 .id(settings.language)
         }
 
-        // SwiftUI записывает isInserted при каждой перестройке; запись того же значения
-        // шлёт objectWillChange и зацикливает обновление — пишем только настоящие изменения.
-        // В режиме строки меню значок нужен всегда — иначе до Shuttle не добраться.
+        // SwiftUI writes isInserted on every rebuild; writing the same value
+        // sends objectWillChange and loops the update — write only real changes.
+        // In menu bar mode the icon is always needed — otherwise there's no way to reach Shuttle.
         MenuBarExtra(isInserted: Binding(get: { settings.menuBarIcon || settings.menuBarMode },
                                          set: { if !settings.menuBarMode, settings.menuBarIcon != $0 { settings.menuBarIcon = $0 } })) {
             MenuBarView().environmentObject(state)
@@ -54,11 +54,11 @@ struct ShuttleApp: App {
     }
 }
 
-/// Подставляет палитру под текущую (или выбранную) тему.
+/// Provides the palette for the current (or chosen) theme.
 ///
-/// В режиме «Авто» тему системы читаем сами и задаём окну явно:
-/// если отдать её системе (`preferredColorScheme(nil)`), окно перекрашивается
-/// мгновенно, а наши цвета догоняют с анимацией — получается рывок.
+/// In Auto mode we read the system theme ourselves and set it on the window explicitly:
+/// if we leave it to the system (`preferredColorScheme(nil)`), the window recolors
+/// instantly while our colors catch up with an animation — it looks jerky.
 struct ThemedRoot<Content: View>: View {
     let theme: ThemeMode
     @ViewBuilder var content: Content
@@ -68,15 +68,15 @@ struct ThemedRoot<Content: View>: View {
         let scheme = theme.scheme ?? (system.isDark ? .dark : .light)
         content
             .environment(\.palette, Palette.of(scheme))
-            // Плавный переход: цвета фона, панелей и текста перетекают,
-            // а не переключаются рывком.
+            // A smooth transition: background, pane and text colors blend,
+            // instead of switching abruptly.
             .animation(.easeInOut(duration: 0.4), value: scheme)
             .preferredColorScheme(scheme)
             .tint(Palette.of(scheme).accent)
     }
 }
 
-/// Тема macOS, независимо от темы, выставленной нашему окну.
+/// The macOS theme, regardless of the theme set on our window.
 final class SystemAppearance: ObservableObject {
     @Published private(set) var isDark = SystemAppearance.read()
     private var observer: NSObjectProtocol?
@@ -102,8 +102,8 @@ final class SystemAppearance: ObservableObject {
     }
 }
 
-/// Режим строки меню: когда закрыто последнее окно, Shuttle уходит из Dock,
-/// а когда окно снова открыли — возвращается.
+/// Menu bar mode: when the last window closes, Shuttle leaves the Dock,
+/// and comes back when the window is opened again.
 @MainActor
 enum MenuBarMode {
     private static var observers: [NSObjectProtocol] = []
@@ -124,7 +124,7 @@ enum MenuBarMode {
         })
     }
 
-    /// Показать окно Shuttle (из меню): вернуть значок в Dock и вывести окно вперёд.
+    /// Show the Shuttle window (from the menu): bring back the Dock icon and the window to the front.
     static func showWindow(open: () -> Void) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)

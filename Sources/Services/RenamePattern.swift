@@ -1,8 +1,8 @@
 import Foundation
 
-/// Пакетное переименование по шаблону.
-/// Метки: {name} — имя без расширения, {n} — номер, {date} — дата изменения, {ext} — расширение.
-/// Расширение сохраняется само, если в шаблоне нет {ext}.
+/// Batch rename by pattern.
+/// Tokens: {name} — name without extension, {n} — number, {date} — modification date, {ext} — extension.
+/// The extension is kept automatically if the pattern has no {ext}.
 struct RenamePattern {
     var template: String = "{date} {name}"
     var start: Int = 1
@@ -32,7 +32,7 @@ struct RenamePattern {
                 .trimmingCharacters(in: .whitespaces)
             if out.isEmpty { out = base }
             if !template.contains("{ext}"), !ext.isEmpty { out += "." + ext }
-            // Одинаковые имена в одной папке — добавляем номер.
+            // Same names in one folder — add a number.
             var candidate = out
             var k = 2
             while used.contains(candidate.lowercased()) {

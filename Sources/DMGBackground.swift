@@ -1,8 +1,8 @@
 #if DEBUG
 import SwiftUI
 
-/// Фон окна DMG 640×400: логотип, подсказка и стрелка от приложения к «Программам».
-/// Координаты иконок должны совпадать с scripts/dmg-settings.py.
+/// DMG window background 640×400: logo, hint and an arrow from the app to Applications.
+/// Icon positions must match scripts/dmg-settings.py.
 struct DMGBackground: View {
     static let size = CGSize(width: 640, height: 400)
     static let appX: CGFloat = 160, appsX: CGFloat = 480, iconY: CGFloat = 196
@@ -15,7 +15,7 @@ struct DMGBackground: View {
             LinearGradient(colors: [Color(hex: 0x241B28), Color(hex: 0x17121A)],
                            startPoint: .top, endPoint: .bottom)
 
-            // Тёплый отсвет за стрелкой.
+            // A warm glow behind the arrow.
             Ellipse().fill(gold.opacity(0.10))
                 .frame(width: 420, height: 180).blur(radius: 60)
                 .position(x: 320, y: Self.iconY)
@@ -35,7 +35,7 @@ struct DMGBackground: View {
 
             arrow.position(x: 320, y: Self.iconY)
 
-            // Плашки под подписями Finder: читаются и белые, и чёрные буквы.
+            // Plates under Finder labels: both white and black text stay readable.
             ForEach([Self.appX, Self.appsX], id: \.self) { x in
                 Capsule().fill(Color(hex: 0x7A6C76).opacity(0.9))
                     .frame(width: 128, height: 26)

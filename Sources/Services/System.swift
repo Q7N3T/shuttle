@@ -4,7 +4,7 @@ import Quartz
 import UserNotifications
 import Photos
 
-// MARK: - Уведомления
+// MARK: - Notifications
 
 @MainActor
 enum Notifier {
@@ -16,7 +16,7 @@ enum Notifier {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    /// Только если Shuttle не на переднем плане — иначе и так видно.
+    /// Only when Shuttle isn't frontmost — otherwise it's visible anyway.
     static func post(_ title: String, _ body: String) {
         guard AppSettings.shared.notifications, !NSApp.isActive, !AppFolders.testing else { return }
         let c = UNMutableNotificationContent()
@@ -27,7 +27,7 @@ enum Notifier {
     }
 }
 
-// MARK: - Быстрый просмотр
+// MARK: - Quick Look
 
 final class QuickLook: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {
     static let shared = QuickLook()
@@ -54,7 +54,7 @@ final class QuickLook: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegat
     func previewPanel(_ panel: QLPreviewPanel!, previewItemAt index: Int) -> QLPreviewItem! { urls[index] as NSURL }
 }
 
-/// Временная папка для файлов, которые открываем с устройства (просмотр, превью).
+/// A temp folder for files we open from the device (viewing, thumbnails).
 enum PreviewCache {
     static var dir: URL {
         let u = AppFolders.caches.appendingPathComponent("Preview", isDirectory: true)
@@ -72,10 +72,10 @@ enum PreviewCache {
     static func clear() { try? FileManager.default.removeItem(at: dir) }
 }
 
-// MARK: - Фото
+// MARK: - Photos
 
 enum PhotosExport {
-    /// Добавить фото и видео в «Фото».
+    /// Add photos and videos to Photos.
     static func add(_ urls: [URL]) async throws -> Int {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
@@ -95,10 +95,10 @@ enum PhotosExport {
     }
 }
 
-// MARK: - Превью
+// MARK: - Thumbnails
 
-/// Миниатюры: из устройства (если умеет), а в сетке — скачиваем небольшие картинки в кэш.
-/// Очередь ограничена: превью не должны мешать передачам на единственной очереди устройства.
+/// Thumbnails: from the device (if it can), and in the grid — small images are downloaded into a cache.
+/// The queue is limited: thumbnails must not get in the way of transfers on the device's single queue.
 @MainActor
 final class Thumbnails: ObservableObject {
     static let shared = Thumbnails()
@@ -109,7 +109,7 @@ final class Thumbnails: ObservableObject {
     static let maxDownload: UInt64 = 3_000_000
     static let parallel = 2
     var isBusy: () -> Bool = { false }
-    /// Сервис устройства по его ключу: превью берём именно у того устройства, для которого просили.
+    /// A device's service by its key: the thumbnail comes from exactly the device it was requested for.
     var service: (String) -> DeviceService? = { _ in nil }
 
     func key(_ item: RemoteItem, _ device: String) -> String { "\(device)#\(item.id)#\(item.size)" }
@@ -124,7 +124,7 @@ final class Thumbnails: ObservableObject {
 
     private func diskURL(_ k: String) -> URL { diskDir.appendingPathComponent(k.replacingOccurrences(of: "/", with: "_") + ".jpg") }
 
-    /// `download` — можно ли скачать сам файл, если устройство не отдаёт превью (только в сетке).
+    /// `download` — whether the file itself may be downloaded if the device gives no thumbnail (grid only).
     func request(_ item: RemoteItem, device: String, download: Bool) {
         let k = key(item, device)
         guard images[k] == nil, !inFlight.contains(k), !failed.contains(k),
@@ -141,15 +141,15 @@ final class Thumbnails: ObservableObject {
         pump()
     }
 
-    /// Передачи закончились — продолжить отложенные превью.
+    /// Transfers are over — continue the postponed thumbnails.
     func resume() { pump() }
 
-    /// Ушли из папки — непоказанные превью больше не нужны.
+    /// Left the folder — thumbnails not shown yet are no longer needed.
     func cancelQueued() { queued.removeAll() }
 
     private func pump() {
         while inFlight.count < Self.parallel, !queued.isEmpty, !isBusy() {
-            // Свежие запросы важнее: это то, что сейчас на экране.
+            // Fresh requests matter more: that's what is on screen now.
             let job = queued.removeLast()
             inFlight.insert(job.key)
             Task { await run(job) }

@@ -2,9 +2,9 @@ import Foundation
 import IOKit
 import IOKit.usb
 
-// MARK: - Имена игр DBI
+// MARK: - DBI game names
 
-/// «Mario Kart 8 Deluxe [0100152000022000][v0]» → название, ID и версия.
+/// "Mario Kart 8 Deluxe [0100152000022000][v0]" → title, ID and version.
 struct GameName: Equatable {
     let title: String
     let titleID: String?
@@ -28,31 +28,31 @@ struct GameName: Equatable {
     var hasID: Bool { titleID != nil }
 }
 
-// MARK: - Установка игр
+// MARK: - Installing games
 
 enum GameFiles {
     static let installable: Set<String> = ["nsp", "nsz", "xci", "xcz"]
     static func isInstallable(_ url: URL) -> Bool { installable.contains(url.pathExtension.lowercased()) }
 }
 
-// MARK: - Homebrew из архива
+// MARK: - Homebrew from an archive
 
-/// Раскладывает распакованный архив homebrew по папкам SD-карты.
+/// Lays out an unpacked homebrew archive across the SD card folders.
 enum HomebrewLayout {
-    /// Папки, которые лежат в корне SD-карты.
+    /// Folders that live at the SD card root.
     static let rootFolders: Set<String> = ["atmosphere", "bootloader", "switch", "config", "emummc",
                                            "warmboot_mariko", "nintendo", "themes", "tinfoil", "jksv", "retroarch"]
 
     struct Placement: Equatable {
         let local: URL
-        /// Куда положить на SD: путь из папок (файл попадает внутрь).
+        /// Where to put it on the SD: a path of folders (the file goes inside).
         let remoteFolder: [String]
     }
 
     static func plan(unpacked root: URL) -> [Placement] {
         let fm = FileManager.default
         var top = visible(root)
-        // Архив с единственной обёрткой «SomeTool-1.2/…» — заходим внутрь.
+        // An archive with a single wrapper "SomeTool-1.2/…" — step inside.
         while top.count == 1, isDir(top[0]), !rootFolders.contains(top[0].lastPathComponent.lowercased()) {
             let inner = visible(top[0])
             if inner.isEmpty { break }
@@ -65,7 +65,7 @@ enum HomebrewLayout {
             if isDir(u), rootFolders.contains(lower) {
                 out.append(Placement(local: u, remoteFolder: []))
             } else if !isDir(u), lower == "hbmenu.nro" {
-                // Меню homebrew загружается только из корня SD (так его кладёт и Atmosphère).
+                // The homebrew menu only loads from the SD root (that's where Atmosphère puts it too).
                 out.append(Placement(local: u, remoteFolder: []))
             } else if !isDir(u) {
                 switch u.pathExtension.lowercased() {
@@ -79,7 +79,7 @@ enum HomebrewLayout {
                     out.append(Placement(local: u, remoteFolder: []))
                 }
             } else {
-                // Незнакомая папка: если внутри .nro — это приложение для /switch.
+                // An unfamiliar folder: if it contains a .nro, it's an app for /switch.
                 let hasNRO = (fm.enumerator(at: u, includingPropertiesForKeys: nil)?.allObjects as? [URL] ?? [])
                     .contains { $0.pathExtension.lowercased() == "nro" }
                 out.append(Placement(local: u, remoteFolder: hasNRO ? ["switch"] : []))
@@ -88,7 +88,7 @@ enum HomebrewLayout {
         return out
     }
 
-    /// Распаковать zip штатным ditto во временную папку.
+    /// Unzip with the built-in ditto into a temp folder.
     static func unzip(_ zip: URL) throws -> URL {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Shuttle-zip-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -98,7 +98,7 @@ enum HomebrewLayout {
         try p.run()
         p.waitUntilExit()
         guard p.terminationStatus == 0 else { throw MTPError.failed(L("Не удалось распаковать %@", zip.lastPathComponent)) }
-        // Мусор macOS из архивов.
+        // macOS junk from archives.
         try? FileManager.default.removeItem(at: dir.appendingPathComponent("__MACOSX"))
         return dir
     }
@@ -165,10 +165,10 @@ enum Atmosphere {
     }
 }
 
-// MARK: - USB: Switch подключена, но DBI не запущен
+// MARK: - USB: a Switch is connected, but DBI isn't running
 
 enum USBProbe {
-    /// Есть ли по USB устройство Nintendo (0x057E) — даже если MTP не включён.
+    /// Is there a Nintendo device (0x057E) on USB — even if MTP isn't on.
     static func nintendoPresent() -> Bool {
         guard let match = IOServiceMatching("IOUSBHostDevice") else { return false }
         var iter: io_iterator_t = 0

@@ -1,10 +1,10 @@
 import Foundation
 
-/// Какие файлы с устройства уже забирали на Mac — для «Скачать новое» и пометки «уже на Mac».
+/// Which device files were already taken to the Mac — for "Download new" and the "already on Mac" badge.
 @MainActor
 final class ImportLedger: ObservableObject {
     static let shared = ImportLedger()
-    /// device → набор ключей «имя|размер»
+    /// device → a set of "name|size" keys
     @Published private(set) var seen: [String: Set<String>]
     private let file: JSONFile<[String: Set<String>]>
 
@@ -32,7 +32,7 @@ final class ImportLedger: ObservableObject {
     }
 }
 
-/// Поиск дублей: какие файлы устройства уже лежат в папке Mac (по имени и размеру).
+/// Finding duplicates: which device files already sit in a Mac folder (by name and size).
 enum Duplicates {
     static func localIndex(_ dir: URL, recursive: Bool = true) -> Set<String> {
         var out = Set<String>()
@@ -43,7 +43,7 @@ enum Duplicates {
                 let v = try? u.resourceValues(forKeys: Set(keys))
                 if v?.isRegularFile == true {
                     out.insert(ImportLedger.key(u.lastPathComponent, UInt64(v?.fileSize ?? 0)))
-                    // После конвертации HEIC → JPG сравниваем и по исходному имени.
+                    // After HEIC → JPG conversion we also compare by the original name.
                     if u.pathExtension.lowercased() == "jpg" {
                         out.insert("heic-base|" + u.deletingPathExtension().lastPathComponent.lowercased())
                     }
@@ -68,7 +68,7 @@ enum Duplicates {
     }
 }
 
-/// Фото и видео: что считать «снимками камеры».
+/// Photos and videos: what counts as "camera shots".
 enum MediaKind {
     static let images: Set<String> = ["jpg", "jpeg", "png", "heic", "heif", "webp", "gif", "dng", "raw"]
     static let videos: Set<String> = ["mp4", "mov", "3gp", "mkv", "webm"]
