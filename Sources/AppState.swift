@@ -562,7 +562,9 @@ final class AppState: ObservableObject {
             ok: t.state == .done, note: { if case .failed(let m) = t.state { return m }; return nil }()))
         if t.state == .done { batchCount += 1; batchBytes += t.total }
         if !hasActiveTransfers { Thumbnails.shared.resume() }
+        if case .failed = t.state { Mascot.shared.react(.failed) }
         if !transfers.contains(where: { $0.state.isActive }), batchCount > 0 {
+            Mascot.shared.react(.done(batchCount))
             Notifier.post(L("Shuttle: готово"), L("Передано: %d · %@", batchCount, formatBytes(batchBytes)))
             batchCount = 0
             batchBytes = 0

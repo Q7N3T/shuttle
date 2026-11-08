@@ -38,6 +38,16 @@ struct ContentView: View {
         .foregroundStyle(p.text)
         .font(AppFont.body())
         .overlay(alignment: .bottom) { ToastView().padding(.bottom, 150) }
+        // облачко маскота — прямо под ним, хвостиком вверх
+        .overlay(alignment: .topLeading) { MascotBubble().padding(.leading, snap ? 84 : 76).padding(.top, snap ? 46 : 0) }
+        .onChange(of: state.device?.key) { old, new in
+            if let new, new != old { Mascot.shared.react(.connected(console: state.device?.kind == .console)) }
+            else if new == nil, old != nil { Mascot.shared.react(.disconnected) }
+        }
+        .onChange(of: state.newPhotos.count) { old, new in
+            if new > old, new > 0 { Mascot.shared.react(.newPhotos(new)) }
+        }
+        .onChange(of: state.errorMessage) { _, e in if e != nil { Mascot.shared.react(.error) } }
         .toolbar {
             ToolbarItem(placement: .navigation) { brand }.withoutGlass()
             if #available(macOS 26.0, *) { ToolbarSpacer(.flexible) }
@@ -58,7 +68,7 @@ struct ContentView: View {
     /// Слева в шапке: логотип и название.
     private var brand: some View {
         HStack(spacing: 10) {
-            DroidMark(size: 24)
+            HeaderMascot()
             Text("Shuttle").font(AppFont.display(16, .bold)).foregroundStyle(p.text)
         }
         .padding(.leading, 6)

@@ -59,6 +59,8 @@ final class AppSettings: ObservableObject {
     @Published var notifications: Bool { didSet { d.set(notifications, forKey: "notifications") } }
     @Published var heicToJPEG: Bool { didSet { d.set(heicToJPEG, forKey: "heicToJPEG") } }
     @Published var menuBarIcon: Bool { didSet { d.set(menuBarIcon, forKey: "menuBarIcon") } }
+    /// Маскот в шапке сам комментирует подключения и передачи.
+    @Published var mascotTalks: Bool { didSet { d.set(mascotTalks, forKey: "mascotTalks") } }
     @Published var adbEnabled: Bool {
         didSet { d.set(adbEnabled, forKey: "adbEnabled"); DeviceService.shared.reloadDrivers() }
     }
@@ -70,10 +72,11 @@ final class AppSettings: ObservableObject {
     }
 
     private init() {
-        d.register(defaults: ["notifications": true, "thumbnails": true, "menuBarIcon": false])
+        d.register(defaults: ["notifications": true, "thumbnails": true, "menuBarIcon": false, "mascotTalks": true])
         notifications = d.bool(forKey: "notifications")
         heicToJPEG = d.bool(forKey: "heicToJPEG")
         menuBarIcon = d.bool(forKey: "menuBarIcon")
+        mascotTalks = d.bool(forKey: "mascotTalks")
         adbEnabled = d.bool(forKey: "adbEnabled")
         autoSync = d.bool(forKey: "autoSync")
         thumbnails = d.bool(forKey: "thumbnails")

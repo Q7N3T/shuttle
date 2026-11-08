@@ -53,6 +53,13 @@ enum AppFont {
     static func body(_ size: CGFloat = 13, _ weight: Font.Weight = .regular) -> Font {
         hasGolos ? .custom("Golos Text", size: size).weight(weight) : .system(size: size, weight: weight)
     }
+
+    private static let hasDeparture = NSFontManager.shared.availableMembers(ofFontFamily: "Departure Mono") != nil
+
+    /// Пиксельный Departure Mono — для реплик маскота, как на сайте.
+    static func pixel(_ size: CGFloat = 12) -> Font {
+        hasDeparture ? .custom("Departure Mono", size: size) : .system(size: size, design: .monospaced)
+    }
 }
 
 enum ThemeMode: String, CaseIterable, Identifiable {

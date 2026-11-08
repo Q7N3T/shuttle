@@ -75,6 +75,9 @@ struct SettingsView: View {
                               hint: L("Только если Shuttle в фоне."), isOn: $settings.notifications)
                 SettingToggle(title: L("Иконка в строке меню"),
                               hint: L("Устройство, свободное место и быстрые действия."), isOn: $settings.menuBarIcon)
+                SettingToggle(title: L("Маскот комментирует"),
+                              hint: L("Шаттл в шапке шутит о подключениях и передачах. По клику говорит всегда."),
+                              isOn: $settings.mascotTalks)
             }
             section(L("Оформление")) {
                 HStack(spacing: 6) {
