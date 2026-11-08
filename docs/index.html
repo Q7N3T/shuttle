@@ -39,7 +39,7 @@
 @font-face{font-family:"Departure Mono";src:url(fonts/DepartureMono-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
 *,*::before,*::after{box-sizing:border-box}
 .no-trans,.no-trans *{transition:none!important}
-html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:70px;overflow-x:clip}
+html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:96px;overflow-x:clip}
 body{font-stretch:87.5%;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;padding-bottom:34px;transition:background .4s,color .4s}
 a{color:inherit}
 img{max-width:100%;display:block}
@@ -75,10 +75,13 @@ img{max-width:100%;display:block}
 /* Шапка */
 header.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);
   background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid var(--line)}
-header .wrap{display:flex;align-items:center;gap:18px;height:62px}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-weight:400;font-size:17px}
-.logo img{width:30px;height:30px;border-radius:8px;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
-.logo:hover img{transform:rotate(-12deg) scale(1.08)}
+header .wrap{display:flex;align-items:center;gap:18px;height:84px}
+.logo{display:flex;align-items:center;gap:16px;text-decoration:none;font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:.01em;text-shadow:2px 0 0 rgba(139,92,246,.45),-2px 0 0 rgba(233,185,73,.35)}
+/* место маскота в шапке: пока он внизу, остаётся тусклый силуэт */
+.logo-slot{--hs:2.8px;display:block;flex:none;width:calc(20 * var(--hs));height:calc(23 * var(--hs))}
+.logo-slot svg{display:block;width:100%;height:100%;fill:var(--line);opacity:0;transition:opacity .4s}
+body.m-away .logo-slot svg{opacity:.7}
+@media (max-width:560px){header .wrap{height:66px;gap:10px}.logo{font-size:21px;gap:8px}.logo-slot{--hs:2px}nav a.gh{white-space:nowrap;padding:6px 6px}}
 nav{display:flex;gap:4px;margin-left:auto;align-items:center}
 nav a{font-family:var(--mono);font-size:13px;text-decoration:none;color:var(--muted);padding:6px 10px;border-radius:8px;transition:color .2s,background .2s}
 nav a:hover{color:var(--text);background:var(--hover)}
@@ -331,37 +334,45 @@ html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{displa
 @media (max-width:900px),(pointer:coarse){.rail{display:none}}
 @media (prefers-reduced-motion:reduce){.boot{display:none}.toasts{display:none}}
 
-/* Маскот: сверху висит на кабеле, ниже — с ручками и ножками */
-.mascot{--x:-200px;--y:-200px;--s:3px;position:fixed;left:0;top:0;z-index:55;width:calc(24 * var(--s));height:calc(21 * var(--s));
-  transform:translate(var(--x),var(--y));pointer-events:none}
-.mascot.ready.fall{transition:transform .75s cubic-bezier(.55,0,.85,.35)}
-.mascot.ready.rise{transition:transform .6s cubic-bezier(.2,.9,.3,1.15)}
+/* Маскот: сидит в шапке вместо значка, ниже — бегает внизу с ручками и ножками */
+@property --s{syntax:"<length>";inherits:true;initial-value:3px}
+.mascot{--x:-300px;--y:-300px;--s:2.8px;position:fixed;left:0;top:0;z-index:55;width:calc(32 * var(--s));height:calc(30 * var(--s));
+  transform:translateX(var(--x));pointer-events:none}
+.m-fly{width:100%;height:100%;transform:translateY(var(--y))}
+/* полёт по дуге: по горизонтали плавно, по вертикали — с ускорением, как падение */
+.mascot.ready.fall{transition:transform .8s cubic-bezier(.3,.6,.4,1),--s .8s ease}
+.mascot.ready.fall .m-fly{transition:transform .8s cubic-bezier(.6,-0.35,.9,.55)}
+.mascot.ready.rise{transition:transform .7s cubic-bezier(.5,0,.4,1),--s .7s ease}
+.mascot.ready.rise .m-fly{transition:transform .7s cubic-bezier(.15,.75,.3,1.12)}
+.mascot.fly .m-sprite svg{animation:tumble .8s cubic-bezier(.4,0,.4,1)}
+@keyframes tumble{to{transform:rotate(360deg)}}
+.mascot.bottom{--s:3.6px}
 .m-sprite{all:unset;display:block;width:100%;height:100%;cursor:pointer;pointer-events:auto;transform-origin:50% 100%;-webkit-tap-highlight-color:transparent}
 .m-sprite:focus-visible{outline:2px dashed var(--accent);outline-offset:4px}
-.m-sprite svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 4px 0 rgba(0,0,0,.28))}
-.m-body{fill:#E9B949}.m-body .shade{fill:#C48F2C}.m-body .shine{fill:#F8DC8B}
-.m-ant{fill:#E9B949}
-.m-eyes,.m-mouth{fill:#1F1822;transition:transform .12s steps(1)}
-.m-mouth{opacity:0}
-.mascot.talk .m-mouth{opacity:1;animation:mouth .22s steps(1) infinite}
+.m-sprite svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 calc(1.5 * var(--s)) 0 rgba(0,0,0,.28))}
+.m-body{fill:#E9B949}.m-body .shade{fill:#C99632}.m-body .shine{fill:#F8DC8B}
+.m-ant .stem{fill:#C99632}.m-ant .ball{fill:#E9B949}.m-ant .glint{fill:#FFF1C4}
+.m-eyes,.m-smile,.m-talk{fill:#1F1822}
+.m-talk .tongue{fill:#E8796E}
+.m-cheeks{fill:#E8796E;opacity:.55}
+.m-eyes{transition:transform .12s steps(1);transform-box:fill-box;transform-origin:center}
+.m-talk{opacity:0}
+.mascot.talk .m-smile{opacity:0}
+.mascot.talk .m-talk{opacity:1;animation:mouth .24s steps(1) infinite}
 @keyframes mouth{50%{opacity:0}}
-.m-arm,.m-leg{fill:#C48F2C}
-.m-arm .glove{fill:#F2EAE0}.m-leg .shoe{fill:#3A2A3F}
-/* ручки и ножки спрятаны в корпус, пока маскот наверху или летит */
-.m-arm.l{transform-origin:4px 10px}.m-arm.r{transform-origin:20px 10px}
-.m-leg{transform-origin:12px 16px}
-.m-arm,.m-leg{transition:transform .32s cubic-bezier(.2,1.6,.4,1),opacity .2s}
-.mascot.top .m-arm,.mascot.top .m-leg,.mascot.fly .m-arm,.mascot.fly .m-leg{transform:scale(0);opacity:0}
-.mascot:not(.top):not(.fly) .m-leg.r,.mascot:not(.top):not(.fly) .m-arm.r{transition-delay:.08s}
-/* сверху: кабель и покачивание */
-.m-cord{position:absolute;left:50%;bottom:calc(100% - 3 * var(--s) - 18px);width:2px;height:var(--cord,40px);margin-left:-1px;
-  background:repeating-linear-gradient(var(--accent) 0 4px,transparent 4px 6px);opacity:0;transition:opacity .2s;pointer-events:none}
-.m-cord::before{content:"";position:absolute;left:-4px;top:-2px;width:10px;height:7px;background:var(--muted);box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
-.mascot.top .m-cord{opacity:.9}
-.mascot.top .m-sprite{animation:swing 3.2s ease-in-out infinite;transform-origin:50% calc(-1 * var(--cord,40px))}
-@keyframes swing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
-.mascot.top .m-ant{animation:antW 1.6s steps(2) infinite}
+.m-arm .limb,.m-leg .limb{fill:#C99632}
+.m-arm .cuff{fill:#D9CFC2}.m-arm .glove{fill:#F6F0E6}.m-arm .finger{fill:#CFC3B4}
+.m-leg .sock{fill:#F6F0E6}.m-leg .shoe{fill:#3A2A3F}.m-leg .sole{fill:#6B5470}.m-leg .toe{fill:#8A7390}
+/* в шапке ручки и ножки спрятаны в корпус */
+.m-arm.l{transform-origin:6px 12px}.m-arm.r{transform-origin:26px 12px}
+.m-leg.l{transform-origin:13px 22px}.m-leg.r{transform-origin:19px 22px}
+.m-arm,.m-leg{transition:transform .34s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+.mascot.top .m-arm,.mascot.top .m-leg{transform:scale(0);opacity:0}
+.mascot.bottom .m-leg.r,.mascot.bottom .m-arm.r{transition-delay:.09s}
+.mascot.top .m-ant{animation:antW 1.8s steps(2) infinite}
 @keyframes antW{50%{transform:translateY(-1px)}}
+.mascot.top .m-sprite:hover svg{animation:peek .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes peek{40%{transform:rotate(-8deg) translateY(-2px)}}
 /* внизу: дышит, переступает, иногда машет */
 .mascot.idle .m-sprite{animation:bob 1.1s steps(2) infinite}
 @keyframes bob{50%{transform:translateY(calc(-1 * var(--s)))}}
@@ -369,25 +380,25 @@ html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{displa
 .mascot.idle .m-leg.r{animation:step 1.1s steps(1) .55s infinite}
 @keyframes step{50%{transform:translateY(-1px)}}
 .mascot.wave .m-arm.r{animation:wave .7s steps(2) 2}
-@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-55deg) translateY(-1px)}}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-60deg) translateY(-1px)}}
 .mascot.land .m-sprite{animation:land .45s cubic-bezier(.2,1.6,.4,1)}
 @keyframes land{0%{transform:scale(1.25,.7)}60%{transform:scale(.92,1.1)}100%{transform:none}}
 .mascot.hop .m-sprite{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 @keyframes hop{40%{transform:translateY(calc(-5 * var(--s))) scale(.95,1.06)}100%{transform:none}}
-.mascot.blink .m-eyes{transform:translateY(10px) scaleY(.1)!important;transform-origin:12px 10px}
+.mascot.blink .m-eyes{transform:scaleY(.2)!important}
 /* ретро-облачко */
-.m-bubble{position:absolute;right:calc(100% - 30px);bottom:calc(100% + 16px);width:max-content;max-width:min(250px,72vw);
+.m-bubble{position:absolute;right:calc(50% - 30px);bottom:calc(100% + 12px);width:max-content;max-width:min(260px,72vw);
   opacity:0;transform:translateY(6px) scale(.9);transform-origin:90% 100%;transition:opacity .18s,transform .25s cubic-bezier(.2,1.6,.4,1);pointer-events:none}
 .m-box{padding:3px;background:var(--accent);clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px),0 6px,3px 6px,3px 3px,6px 3px);filter:drop-shadow(4px 4px 0 rgba(0,0,0,.3))}
 .m-box span{display:block;padding:10px 13px;background:var(--surface);color:var(--text);font-family:var(--display);font-size:14px;line-height:1.35;clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px),0 4px,2px 4px,2px 2px,4px 2px)}
 .m-box span::after{content:"";display:inline-block;width:.55em;height:1em;margin-left:3px;vertical-align:-.15em;background:var(--accent);animation:blink 1s steps(1) infinite}
 .m-bubble.on{opacity:1;transform:none}
-/* пиксельный хвостик облачка */
-.m-bubble i{position:absolute;right:14px;top:calc(100% - 1px);width:12px;height:9px;background:var(--accent);
+.m-bubble i{position:absolute;right:16px;top:calc(100% - 1px);width:12px;height:9px;background:var(--accent);
   clip-path:polygon(0 0,100% 0,100% 3px,67% 3px,67% 6px,33% 6px,33% 9px,0 9px)}
-.mascot.top .m-bubble{bottom:auto;top:calc(100% + 16px);transform-origin:90% 0}
-.mascot.top .m-bubble i{top:auto;bottom:calc(100% - 1px);transform:scaleY(-1)}
-@media (max-width:560px){.mascot{--s:2.4px}.m-box span{font-size:13px}}
+/* в шапке облачко — снизу справа от маскота */
+.mascot.top .m-bubble{right:auto;left:calc(50% - 20px);bottom:auto;top:calc(100% + 8px);transform-origin:10% 0}
+.mascot.top .m-bubble i{right:auto;left:16px;top:auto;bottom:calc(100% - 1px);transform:scaleY(-1)}
+@media (max-width:560px){.mascot{--s:2px}.mascot.bottom{--s:2.6px}.m-box span{font-size:13px}}
 @media (prefers-reduced-motion:reduce){.mascot *{animation:none!important}}
 
 /* Перелив и гранж */
@@ -476,18 +487,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <body>
 <div class="boot" id="boot" aria-hidden="true"><img src="icon-256.png" alt=""><div class="bar"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i></div></div>
 <nav class="rail" id="rail" aria-hidden="true"></nav>
-<div class="mascot top" id="mascot">
-  <i class="m-cord" aria-hidden="true"></i>
+<div class="mascot top" id="mascot"><div class="m-fly">
   <div class="m-bubble" id="m-bubble" role="status" aria-live="polite"><div class="m-box"><span></span></div><i></i></div>
-  <button class="m-sprite" id="m-sprite" type="button" aria-label="Маскот Shuttle"><svg viewBox="0 0 24 21" shape-rendering="crispEdges" aria-hidden="true"><g class="m-ant"><g><rect x="6" y="1" width="2" height="2"/><rect x="16" y="1" width="2" height="2"/><rect x="8" y="3" width="1" height="1"/><rect x="9" y="4" width="1" height="2"/><rect x="15" y="3" width="1" height="1"/><rect x="14" y="4" width="1" height="2"/></g></g><g class="m-legs"><g class="m-leg l"><g><rect x="8" y="16" width="1" height="3"/></g><g class="shoe"><rect x="6" y="19" width="3" height="2"/></g></g><g class="m-leg r"><g><rect x="15" y="16" width="1" height="3"/></g><g class="shoe"><rect x="15" y="19" width="3" height="2"/></g></g></g><g class="m-arm l"><g><rect x="3" y="10" width="1" height="1"/><rect x="2" y="11" width="1" height="1"/></g><g class="glove"><rect x="0" y="11" width="2" height="2"/></g></g><g class="m-arm r"><g><rect x="20" y="10" width="1" height="1"/><rect x="21" y="11" width="1" height="1"/></g><g class="glove"><rect x="22" y="11" width="2" height="2"/></g></g><g class="m-body"><g><rect x="6" y="6" width="12" height="1"/><rect x="5" y="7" width="14" height="1"/><rect x="4" y="8" width="16" height="6"/><rect x="5" y="14" width="14" height="1"/><rect x="6" y="15" width="12" height="1"/></g><g class="shade"><rect x="4" y="13" width="16" height="1"/><rect x="5" y="14" width="14" height="1"/><rect x="6" y="15" width="12" height="1"/></g><g class="shine"><rect x="6" y="7" width="3" height="1"/><rect x="5" y="8" width="1" height="2"/></g></g><g class="m-eyes"><g><rect x="9" y="9" width="1" height="1"/><rect x="8" y="10" width="1" height="1"/><rect x="9" y="11" width="1" height="1"/><rect x="14" y="9" width="1" height="1"/><rect x="15" y="10" width="1" height="1"/><rect x="14" y="11" width="1" height="1"/></g></g><g class="m-mouth"><rect x="11" y="13" width="2" height="1"/></g></svg></button>
-</div>
+  <button class="m-sprite" id="m-sprite" type="button" aria-label="Маскот Shuttle"><svg viewBox="0 0 32 30" shape-rendering="crispEdges" aria-hidden="true"><g class="m-leg l"><g class="limb"><rect x="12" y="23" width="2" height="3"/></g><g class="sock"><rect x="12" y="26" width="2" height="1"/></g><g class="shoe"><rect x="9" y="27" width="5" height="2"/></g><g class="sole"><rect x="9" y="29" width="5" height="1"/></g><g class="toe"><rect x="10" y="27" width="1" height="1"/></g></g><g class="m-leg r"><g class="limb"><rect x="18" y="23" width="2" height="3"/></g><g class="sock"><rect x="18" y="26" width="2" height="1"/></g><g class="shoe"><rect x="18" y="27" width="5" height="2"/></g><g class="sole"><rect x="18" y="29" width="5" height="1"/></g><g class="toe"><rect x="21" y="27" width="1" height="1"/></g></g><g class="m-arm l"><g class="limb"><rect x="5" y="12" width="1" height="2"/><rect x="4" y="13" width="1" height="2"/><rect x="3" y="14" width="1" height="2"/></g><g class="cuff"><rect x="2" y="16" width="3" height="1"/></g><g class="glove"><rect x="1" y="17" width="4" height="3"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="20" width="2" height="1"/></g><g class="finger"><rect x="2" y="18" width="2" height="1"/></g></g><g class="m-arm r"><g class="limb"><rect x="26" y="12" width="1" height="2"/><rect x="27" y="13" width="1" height="2"/><rect x="28" y="14" width="1" height="2"/></g><g class="cuff"><rect x="27" y="16" width="3" height="1"/></g><g class="glove"><rect x="27" y="17" width="4" height="3"/><rect x="31" y="18" width="1" height="1"/><rect x="28" y="20" width="2" height="1"/></g><g class="finger"><rect x="28" y="18" width="2" height="1"/></g></g><g class="m-ant"><g class="stem"><rect x="10" y="4" width="1" height="1"/><rect x="11" y="5" width="1" height="2"/><rect x="21" y="4" width="1" height="1"/><rect x="20" y="5" width="1" height="2"/></g><g class="ball"><rect x="7" y="1" width="3" height="3"/><rect x="22" y="1" width="3" height="3"/></g><g class="glint"><rect x="8" y="1" width="1" height="1"/><rect x="23" y="1" width="1" height="1"/></g></g><g class="m-body"><g><rect x="10" y="7" width="12" height="1"/><rect x="8" y="8" width="16" height="1"/><rect x="7" y="9" width="18" height="1"/><rect x="6" y="10" width="20" height="10"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shade"><rect x="6" y="18" width="20" height="2"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shine"><rect x="10" y="8" width="4" height="1"/><rect x="8" y="9" width="2" height="1"/><rect x="7" y="10" width="1" height="3"/></g></g><g class="m-cheeks"><rect x="8" y="16" width="2" height="1"/><rect x="22" y="16" width="2" height="1"/></g><g class="m-eyes"><rect x="13" y="11" width="2" height="1"/><rect x="12" y="12" width="2" height="1"/><rect x="11" y="13" width="2" height="1"/><rect x="12" y="14" width="2" height="1"/><rect x="13" y="15" width="2" height="1"/><rect x="17" y="11" width="2" height="1"/><rect x="18" y="12" width="2" height="1"/><rect x="19" y="13" width="2" height="1"/><rect x="18" y="14" width="2" height="1"/><rect x="17" y="15" width="2" height="1"/></g><g class="m-smile"><rect x="14" y="17" width="1" height="1"/><rect x="15" y="18" width="2" height="1"/><rect x="17" y="17" width="1" height="1"/></g><g class="m-talk"><g><rect x="14" y="17" width="4" height="2"/></g><g class="tongue"><rect x="15" y="18" width="2" height="1"/></g></g></svg></button>
+</div></div>
 <div class="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 <div class="cur-ring" aria-hidden="true"><i></i></div><div class="cur-dot" aria-hidden="true"></div>
 
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="#"><img src="icon-256.png" alt="">Shuttle</a>
+    <a class="logo" href="#"><span class="logo-slot" aria-hidden="true"><svg viewBox="6 0 20 23" shape-rendering="crispEdges" aria-hidden="true"><g><rect x="10" y="4" width="1" height="1"/><rect x="11" y="5" width="1" height="2"/><rect x="21" y="4" width="1" height="1"/><rect x="20" y="5" width="1" height="2"/><rect x="7" y="1" width="3" height="3"/><rect x="22" y="1" width="3" height="3"/></g><g><rect x="10" y="7" width="12" height="1"/><rect x="8" y="8" width="16" height="1"/><rect x="7" y="9" width="18" height="1"/><rect x="6" y="10" width="20" height="10"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g></svg></span><span class="logo-text">Shuttle</span></a>
     <nav>
       <a href="#features" class="hide-m" data-i18n="nav.features">Возможности</a>
       <a href="#switch" class="hide-m">Switch</a>
@@ -915,7 +925,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
 
 /* ---------- Маскот ---------- */
 (() => {
-  const m = $('#mascot'), sprite = $('#m-sprite'), bubble = $('#m-bubble'), text = bubble.querySelector('span');
+  const m = $('#mascot'), sprite = $('#m-sprite'), bubble = $('#m-bubble'), text = bubble.querySelector('span'), slot = $('.logo-slot');
   const PH = [
     ['Я не облако. Я лучше.', 'I’m not a cloud. I’m better.'],
     ['Кабель — это любовь. Wi‑Fi — отношения на расстоянии.', 'A cable is love. Wi‑Fi is long distance.'],
@@ -937,40 +947,46 @@ document.fonts && document.fonts.ready.then(fitTitle);
   const SPECIAL = { 7: ['Семь кликов. Это рекорд. Наверное.', 'Seven clicks. That’s a record. Probably.'], 15: ['Всё, я на перерыв. Шучу. Тыкай.', 'I’m on a break. Kidding. Keep clicking.'] };
   let mode = '', last = -1, clicks = 0, typing = 0, hideT = 0, busy = 0;
 
-  const S = () => parseFloat(getComputedStyle(m).getPropertyValue('--s')) || 3;
+  const px = v => parseFloat(v) || 0;
   function place(){
-    const s = S(), w = 24 * s, h = 21 * s, head = $('header.top').getBoundingClientRect().bottom;
-    const narrow = innerWidth < 900;
     if (mode === 'top') {
-      const cord = narrow ? 10 : 30;
-      m.style.setProperty('--cord', cord + 'px');
-      m.style.setProperty('--x', (innerWidth - w - (narrow ? 14 : 30)) + 'px');
-      m.style.setProperty('--y', (head + cord - 4 * s) + 'px');
+      // ровно на место значка в шапке: корпус и антенны совпадают со слотом
+      const r = slot.getBoundingClientRect(), hs = px(getComputedStyle(slot).getPropertyValue('--hs'));
+      m.style.setProperty('--s', hs + 'px');
+      m.style.setProperty('--x', (r.left - 6 * hs) + 'px');
+      m.style.setProperty('--y', r.top + 'px');
     } else {
-      m.style.setProperty('--x', (innerWidth - w - (narrow ? 12 : 26)) + 'px');
-      m.style.setProperty('--y', (innerHeight - 30 - 8 - h) + 'px');
+      m.style.removeProperty('--s');
+      const s = innerWidth <= 560 ? 2.6 : 3.6, w = 32 * s, h = 30 * s; // целевой размер, а не промежуточный из анимации
+      m.style.setProperty('--x', (innerWidth - w - (innerWidth < 900 ? 10 : 34)) + 'px');
+      m.style.setProperty('--y', (innerHeight - 30 - 6 - h) + 'px');
     }
   }
   function setMode(next){
     if (next === mode) return;
     const first = !mode; mode = next; clearTimeout(busy);
     hideBubble();
-    m.classList.remove('idle', 'land', 'fall', 'rise');
+    m.classList.remove('idle', 'land', 'fall', 'rise', 'fly');
     if (next === 'bottom') {
-      // кабель отстёгивается, маскот падает, на лету вырастают ручки и ножки
-      m.classList.remove('top'); m.classList.add('fly', 'fall');
+      // выпрыгивает из шапки, кувыркается по дуге, на лету отращивает ручки и ножки
+      document.body.classList.add('m-away');
+      m.classList.remove('top'); m.classList.add('bottom', 'fall');
+      if (!first && !reduced) m.classList.add('fly');
       place();
-      busy = setTimeout(() => { m.classList.remove('fly'); m.classList.add('land', 'idle'); setTimeout(() => m.classList.remove('land'), 460); }, reduced || first ? 0 : 760);
+      busy = setTimeout(() => { m.classList.remove('fly'); m.classList.add('land', 'idle'); setTimeout(() => m.classList.remove('land'), 460); }, reduced || first ? 0 : 820);
     } else {
-      // ручки и ножки прячутся, маскот прыгает обратно на кабель
-      m.classList.add('fly', 'rise');
-      busy = setTimeout(() => { place(); m.classList.add('top'); m.classList.remove('fly'); }, reduced || first ? 0 : 220);
+      // прячет ручки и ножки и запрыгивает обратно в шапку
+      m.classList.remove('bottom'); m.classList.add('top', 'rise');
+      if (!first && !reduced) m.classList.add('fly');
+      place();
+      busy = setTimeout(() => { m.classList.remove('fly'); document.body.classList.remove('m-away'); }, reduced || first ? 0 : 720);
     }
-    if (first) { place(); requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add('ready'))); }
+    if (first) requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add('ready')));
   }
-  const check = () => setMode(scrollY > 260 ? 'bottom' : (scrollY < 120 || !mode) ? 'top' : mode);
+  const check = () => setMode(scrollY > 220 ? 'bottom' : (scrollY < 100 || !mode) ? 'top' : mode);
   addEventListener('scroll', check, { passive: true });
   addEventListener('resize', place);
+  document.fonts && document.fonts.ready.then(place);
   check();
 
   // моргает и иногда машет
@@ -982,7 +998,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
   const eyes = sprite.querySelector('.m-eyes');
   addEventListener('mousemove', e => {
     const r = sprite.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-    eyes.style.transform = `translate(${Math.abs(dx) > 40 ? Math.sign(dx) : 0}px, ${Math.abs(dy) > 60 ? Math.sign(dy) : 0}px)`;
+    eyes.style.transform = `translate(${Math.abs(dx) > 40 ? Math.sign(dx) : 0}px, ${Math.abs(dy) > 50 ? Math.sign(dy) : 0}px)`;
   }, { passive: true });
 
   function hideBubble(){ bubble.classList.remove('on'); m.classList.remove('talk'); clearInterval(typing); clearTimeout(hideT); }
@@ -1366,7 +1382,7 @@ applyLang(); typeCmd();
     e.preventDefault(); rail.setPointerCapture(e.pointerId); rail.classList.add('drag');
     const tr = thumb.getBoundingClientRect();
     grab = e.target === thumb ? e.clientY - tr.top : thumb.offsetHeight / 2;
-    if (e.target.closest('.tick') && e.target !== thumb) { const e2 = el(e.target.closest('.tick').dataset.id); grab = null; rail.classList.remove('drag'); if (e2) scrollTo({ top: e2 === document.body ? 0 : e2.getBoundingClientRect().top + scrollY - 70, behavior: 'smooth' }); return; }
+    if (e.target.closest('.tick') && e.target !== thumb) { const e2 = el(e.target.closest('.tick').dataset.id); grab = null; rail.classList.remove('drag'); if (e2) scrollTo({ top: e2 === document.body ? 0 : e2.getBoundingClientRect().top + scrollY - 96, behavior: 'smooth' }); return; }
     go(e.clientY, grab);
   });
   rail.addEventListener('pointermove', e => { if (grab !== null) go(e.clientY, grab); });
