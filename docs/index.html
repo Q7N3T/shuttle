@@ -343,7 +343,7 @@ html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{displa
 .mascot.ready.fall{transition:transform .8s cubic-bezier(.3,.6,.4,1),--s .8s ease}
 .mascot.ready.fall .m-fly{transition:transform .8s cubic-bezier(.6,-0.35,.9,.55)}
 .mascot.ready.rise{transition:transform .7s cubic-bezier(.5,0,.4,1),--s .7s ease}
-.mascot.ready.rise .m-fly{transition:transform .7s cubic-bezier(.15,.75,.3,1.12)}
+.mascot.ready.rise .m-fly{transition:transform .7s cubic-bezier(.15,.75,.3,1)}
 .mascot.fly .m-sprite svg{animation:tumble .8s cubic-bezier(.4,0,.4,1)}
 @keyframes tumble{to{transform:rotate(360deg)}}
 .mascot.bottom{--s:3.6px}
@@ -1053,7 +1053,17 @@ document.fonts && document.fonts.ready.then(fitTitle);
   }
   const check = () => setMode(scrollY > 220 ? 'bottom' : (scrollY < 100 || !mode) ? 'top' : mode);
   // шапка уезжает вместе со страницей — наверху маскот держится за своё место в ней
-  addEventListener('scroll', () => { check(); if (mode === 'top') place(); }, { passive: true });
+  addEventListener('scroll', check, { passive: true });
+  // наверху маскот каждый кадр сверяется со слотом в шапке: шапка едет со страницей,
+  // шрифты догружаются, инерция докручивает — он всё равно садится ровно на место
+  let lastSlot = '';
+  (function sync(){
+    if (mode === 'top') {
+      const r = slot.getBoundingClientRect(), key = r.left + ',' + r.top;
+      if (key !== lastSlot) { lastSlot = key; place(); }
+    } else lastSlot = '';
+    requestAnimationFrame(sync);
+  })();
   addEventListener('resize', place);
   document.fonts && document.fonts.ready.then(place);
   check();
