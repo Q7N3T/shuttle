@@ -6,6 +6,16 @@
     <description>Обновления Shuttle</description>
     <language>ru</language>
     <item>
+      <title>Shuttle 0.5.1</title>
+      <pubDate>Sun, 08 Nov 2026 14:36:03 +0300</pubDate>
+      <sparkle:version>10</sparkle:version>
+      <sparkle:shortVersionString>0.5.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.5.1</link>
+      <description><![CDATA[<ul><li>Окно настроек помещается на экран 13-дюймового Mac: вкладки прокручиваются внутри окна</li><li>Дата последней проверки обновлений — на языке интерфейса</li><li>Обновления и кнопка «Скачать» берут DMG с сайта Shuttle — работает и там, где github.com недоступен</li></ul>]]></description>
+      <enclosure url="https://q7n3t.github.io/shuttle/dl/Shuttle-0.5.1.dmg" sparkle:edSignature="RUHXoF2lus+0H3SOtZturUAxrD6sxwNJ6Lfe35nrrM0+J6PLtkQgBRlQmSbmjEhdAxCVJ6OcxsR0RHWbuLtUCg==" length="6546294" type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Shuttle 0.5.0</title>
       <pubDate>Sun, 08 Nov 2026 14:00:54 +0300</pubDate>
       <sparkle:version>9</sparkle:version>
