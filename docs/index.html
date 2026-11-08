@@ -390,7 +390,7 @@ html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{displa
 .m-bubble{position:absolute;right:calc(50% - 30px);bottom:calc(100% + 12px);width:max-content;max-width:min(260px,72vw);
   opacity:0;transform:translateY(6px) scale(.9);transform-origin:90% 100%;transition:opacity .18s,transform .25s cubic-bezier(.2,1.6,.4,1);pointer-events:none}
 .m-box{padding:3px;background:var(--accent);clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px),0 6px,3px 6px,3px 3px,6px 3px);filter:drop-shadow(4px 4px 0 rgba(0,0,0,.3))}
-.m-box span{display:block;padding:10px 13px;background:var(--surface);color:var(--text);font-family:var(--display);font-size:14px;line-height:1.35;clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px),0 4px,2px 4px,2px 2px,4px 2px)}
+.m-box span{display:block;white-space:pre-line;padding:10px 13px;background:var(--surface);color:var(--text);font-family:var(--display);font-size:14px;line-height:1.35;clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px),0 4px,2px 4px,2px 2px,4px 2px)}
 .m-box span::after{content:"";display:inline-block;width:.55em;height:1em;margin-left:3px;vertical-align:-.15em;background:var(--accent);animation:blink 1s steps(1) infinite}
 .m-bubble.on{opacity:1;transform:none}
 .m-bubble i{position:absolute;right:16px;top:calc(100% - 1px);width:12px;height:9px;background:var(--accent);
@@ -400,6 +400,22 @@ html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{displa
 .mascot.top .m-bubble i{right:auto;left:16px;top:auto;bottom:calc(100% - 1px);transform:scaleY(-1)}
 @media (max-width:560px){.mascot{--s:2px}.mascot.bottom{--s:2.6px}.m-box span{font-size:13px}}
 @media (prefers-reduced-motion:reduce){.mascot *{animation:none!important}}
+
+/* маскот: перегрев, «синий экран», перезагрузка */
+.mascot.hot .m-sprite svg{filter:drop-shadow(0 calc(1.5 * var(--s)) 0 rgba(0,0,0,.28)) hue-rotate(-28deg) saturate(1.7);animation:shake .09s steps(2) infinite}
+@keyframes shake{50%{transform:translateX(2px)}}
+.mascot.crashed .m-eyes{opacity:0}
+.mascot.crashed .m-sprite svg{filter:grayscale(.6) brightness(.8)}
+.mascot.rebooting .m-sprite svg{animation:reboot 1.3s steps(8) forwards}
+@keyframes reboot{0%{opacity:1;filter:none}15%{opacity:0}30%{opacity:1;filter:invert(1)}45%{opacity:.2;transform:scaleY(.1)}60%{opacity:1;transform:none;filter:hue-rotate(90deg)}80%{opacity:.4}100%{opacity:1;filter:none}}
+.m-bubble.bsod{pointer-events:auto}
+.m-bubble.bsod .m-box{background:#3B6FE0}
+.m-bubble.bsod .m-box span{background:#1F4FB8;color:#fff}
+.m-bubble.bsod .m-box span::after{display:none}
+.m-bubble.bsod b{display:block;font-size:30px;line-height:1;margin-bottom:6px;font-weight:400}
+.m-bubble.bsod i{background:#3B6FE0}
+.m-reboot{all:unset;display:block;margin-top:10px;padding:6px 10px;background:#fff;color:#1F4FB8;font:400 13px var(--display);cursor:pointer;text-align:center}
+.m-reboot:hover{background:#E9B949;color:#1F1822}
 
 /* Перелив и гранж */
 header.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
@@ -926,26 +942,78 @@ document.fonts && document.fonts.ready.then(fitTitle);
 /* ---------- Маскот ---------- */
 (() => {
   const m = $('#mascot'), sprite = $('#m-sprite'), bubble = $('#m-bubble'), text = bubble.querySelector('span'), slot = $('.logo-slot');
-  const PH = [
-    ['Я не облако. Я лучше.', 'I’m not a cloud. I’m better.'],
-    ['Кабель — это любовь. Wi‑Fi — отношения на расстоянии.', 'A cable is love. Wi‑Fi is long distance.'],
-    ['Тащи файл. Я подержу.', 'Drag a file. I’ll hold it.'],
-    ['Android File Transfer? Не слышал о таком.', 'Android File Transfer? Never heard of it.'],
-    ['Кабель выдернули? Я докачаю. Я упрямый.', 'Cable pulled? I’ll resume. I’m stubborn.'],
-    ['Сейвы сохранены. Твоя честь — нет.', 'Saves backed up. Your dignity — not so much.'],
-    ['Не трогай кабель во время установки. Я серьёзно.', 'Don’t touch the cable during installs. I mean it.'],
-    ['Я на 90% состою из МБ/с.', 'I’m 90% made of MB/s.'],
-    ['Мои антенны ловят только USB.', 'My antennas only pick up USB.'],
-    ['DBI, MTP, ADB… я знаю буквы!', 'DBI, MTP, ADB… I know letters!'],
-    ['Клик засчитан. Награда: ничего.', 'Click registered. Reward: nothing.'],
-    ['Я вешу 6 МБ. Почти ничего не ем.', 'I weigh 6 MB. I barely eat.'],
-    ['Пиксели не жмут. Спасибо, что спросил.', 'The pixels fit fine. Thanks for asking.'],
-    ['12 новых фото. 11 из них — еда.', '12 new photos. 11 of them are food.'],
-    ['Скачай меня. Я буду хорошим.', 'Download me. I’ll be good.'],
-    ['Облака — для погоды, а не для файлов.', 'Clouds are for weather, not files.'],
+  /* Юмор маскота. Приёмы из трёх книг:
+     Hurley, «Inside Jokes» — смешно, когда тебя подвели к неверному выводу и тут же его опровергли (пауза ‖ перед панчлайном);
+     Бергсон, «Смех» — механическое в живом: повторы, зацикливание, чёртик из табакерки, снежный ком (серия кликов);
+     Фрейд, «Остроумие…» — сгущение (слова-гибриды), двусмысленность, изображение через противоположное, осмысленная бессмыслица. */
+  const JOKES = [
+    // ложный вывод → поправка
+    ['Я перенёс 4000 фото за минуту. ‖ Во сне. Но очень быстро.', 'I moved 4,000 photos in a minute. ‖ In a dream. But really fast.'],
+    ['Что общего у меня и облака? ‖ Ничего. В этом весь смысл.', 'What do I have in common with a cloud? ‖ Nothing. That’s the point.'],
+    ['Мой любимый вид связи — ‖ проводной. Я старомодный. И быстрый.', 'My favorite kind of connection? ‖ Wired. Old-fashioned. And fast.'],
+    ['Говорят, всё уходит в облако. ‖ Пусть уходит. Файлы остаются со мной.', 'They say everything is moving to the cloud. ‖ Let it. The files stay with me.'],
+    ['Я прочитал три книги о юморе. ‖ Теперь я точно знаю, почему шутки не работают. Смотри: ‖ …вот.', 'I read three books on humor. ‖ Now I know exactly why jokes fail. Watch: ‖ …see?'],
+    ['Фрейд сказал бы, что я подавляю желание жить в облаке. ‖ Фрейд не видел мою скорость.', 'Freud would say I’m repressing a wish to live in the cloud. ‖ Freud never saw my speed.'],
+    ['Бергсон: смешно, когда живое ведёт себя как механизм. ‖ Я механизм, который ведёт себя как живое. Двойной смех.', 'Bergson: it’s funny when the living act like machines. ‖ I’m a machine acting alive. Double laugh.'],
+    // сгущение: слова-гибриды
+    ['Скачать + счастье = ‖ скачастье. Запатентовал.', 'Gigabytes + delight = ‖ gigadelight. Patent pending.'],
+    ['У тебя облакобесие? ‖ Лечится кабелем. Один USB перед сном.', 'Got cloud-itis? ‖ Treatment: one USB cable before bed.'],
+    ['Я не тормоз. ‖ Я терпеливый буфер.', 'I’m not slow. ‖ I’m a patient buffer.'],
+    // двусмысленность
+    ['Сохранил твои сейвы. ‖ Тебя самого спасти не смогу.', 'I saved your saves. ‖ Can’t save you, though.'],
+    ['Я разбираюсь в портах. ‖ Корабли не принимаю.', 'I know everything about ports. ‖ No ships, sorry.'],
+    ['Нашёл у тебя в телефоне баг. ‖ А, нет, это муха на камере.', 'Found a bug on your phone. ‖ Oh wait, it’s an actual fly on the lens.'],
+    ['Почистил кэш. ‖ Кэша в кошельке не прибавилось.', 'Cleared the cache. ‖ Still no cash.'],
+    // через противоположное
+    ['Обожаю облака. ‖ Особенно когда их нет.', 'I love clouds. ‖ Especially when there aren’t any.'],
+    ['Скромность — моё главное достоинство. ‖ Я в ней лучший.', 'Modesty is my best quality. ‖ I’m the best at it.'],
+    // опечатка → исправление (механическое + ложный вывод)
+    ['Я никогда не делаю {ошипок|ошибок}.', 'I never make {mistaeks|mistakes}.'],
+    ['Работаю абсолютно {нестабильно|стабильно}. ‖ Это была опечатка. Наверное.', 'Running totally {unstable|stable}. ‖ That was a typo. Probably.'],
+    ['Удаляю все {фото…|…шучу}. ‖ Синхронизация только добавляет, ничего не стирает.', 'Deleting all {photos…|…kidding}. ‖ Sync only adds. Never deletes.'],
+    // самоирония, безопасное нарушение
+    ['Я вешу 6 МБ. ‖ Это меньше одного твоего селфи.', 'I weigh 6 MB. ‖ Less than one of your selfies.'],
+    ['12 новых фото. ‖ 11 — еда. 12-е — тоже еда, но размытая.', '12 new photos. ‖ 11 are food. The 12th is also food, blurry.'],
+    ['Ручки и ножки мне дорисовали позже. ‖ Как и чувство юмора.', 'They drew my arms and legs later. ‖ Same with my sense of humor.'],
+    ['У меня по 10 пикселей на глаз. ‖ И всё равно вижу, что ты ещё не скачал.', 'I have 10 pixels per eye. ‖ Still enough to see you haven’t downloaded me.'],
+    // осмысленная бессмыслица и антишутки
+    ['Почему файл перешёл дорогу? ‖ Его перетащили.', 'Why did the file cross the road? ‖ Someone dragged it.'],
+    ['Тук-тук. ‖ — Кто там? ‖ — MTP. ‖ — MTP кто? ‖ — Разблокируй телефон — узнаешь.', 'Knock knock. ‖ Who’s there? ‖ MTP. ‖ MTP who? ‖ Unlock your phone and find out.'],
+    ['Сколько Шаттлов нужно, чтобы вкрутить лампочку? ‖ Ни одного. Лампочка не видна по MTP.', 'How many Shuttles to change a light bulb? ‖ None. Bulbs don’t show up over MTP.'],
+    // повторение (Бергсон)
+    ['Повторяю: кабель. ‖ Повторяю: кабель. ‖ Кажется, я зациклился. ‖ Повторяю…', 'Repeat: cable. ‖ Repeat: cable. ‖ I think I’m looping. ‖ Repeat…'],
   ];
-  const SPECIAL = { 7: ['Семь кликов. Это рекорд. Наверное.', 'Seven clicks. That’s a record. Probably.'], 15: ['Всё, я на перерыв. Шучу. Тыкай.', 'I’m on a break. Kidding. Keep clicking.'] };
-  let mode = '', last = -1, clicks = 0, typing = 0, hideT = 0, busy = 0;
+  // у каждого раздела своя реплика — сказать один раз, когда маскот рядом
+  const PLACES = {
+    top: ['Я тут логотип. ‖ Но с амбициями.', 'I’m the logo here. ‖ With ambitions.'],
+    features: ['Тут перечислено, что я умею. ‖ Из скромности не всё.', 'Here’s what I can do. ‖ Not all of it. I’m modest.'],
+    switch: ['Это DBI. ‖ Не путать с DVD, ДВП и BBQ.', 'That’s DBI. ‖ Not DVD. Not BBQ.'],
+    android: ['«Передача файлов», ‖ а не «Только зарядка». Это частая драма.', '“File transfer”, ‖ not “Charging only”. A classic drama.'],
+    download: ['Тащи меня в «Программы». ‖ Я лёгкий. Эмоционально тоже.', 'Drag me to Applications. ‖ I’m light. Emotionally too.'],
+    faq: ['Ответы на вопросы. ‖ Кроме «зачем я это читаю в три ночи».', 'Answers to questions. ‖ Except “why am I reading this at 3 AM”.'],
+    changes: ['История версий. ‖ Мой фотоальбом. Вот я в 0.2.0 — совсем пиксельный.', 'Version history. ‖ My photo album. That’s me in 0.2.0, very pixelated.'],
+  };
+  // реакции на события
+  const EV = {
+    hello: ['Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает.', 'Hi! I’m Shuttle. ‖ I carry files by cable. Not clouds — I get airsick.'],
+    again: ['Снова ты! ‖ Я скучал. Ровно {n} мин.', 'You’re back! ‖ I missed you. Exactly {n} min.'],
+    light: ['А-а-а, свет! ‖ Мои пиксели!', 'Aaah, light! ‖ My pixels!'],
+    dark: ['Так-то лучше. ‖ Родной сливовый.', 'Much better. ‖ Home sweet plum.'],
+    toEN: ['Switching to English. ‖ My accent is 8-bit.', 'Switching to English. ‖ My accent is 8-bit.'],
+    toRU: ['Переключаюсь на русский. ‖ Падежи загружаются…', 'Переключаюсь на русский. ‖ Падежи загружаются…'],
+    dl: ['Ура! ‖ У меня будет дом. Не забудь «Всё равно открыть».', 'Yay! ‖ I’m getting a home. Remember “Open Anyway”.'],
+    copy: ['Ctrl+C засчитан. ‖ Вообще-то копировать — моя работа.', 'Copy detected. ‖ Copying is literally my job.'],
+    back: ['О, вернулся! ‖ Я ничего не трогал. Почти.', 'Oh, you’re back! ‖ I didn’t touch anything. Mostly.'],
+    idle: ['ping… ‖ ping… ‖ Ты тут? Время ответа: ∞ мс.', 'ping… ‖ ping… ‖ Hello? Response time: ∞ ms.'],
+    night: ['Три часа ночи — ‖ лучшее время перекинуть мемы с телефона. Уважаю.', '3 AM. ‖ Peak meme-transfer hours. Respect.'],
+    fast: ['Вжух! ‖ Скроллишь быстрее, чем я копирую.', 'Whoa! ‖ You scroll faster than I copy.'],
+    // снежный ком: серия кликов подряд
+    s5: ['Эй, я не кнопка «Скачать». ‖ Хотя сходство есть.', 'Hey, I’m not the Download button. ‖ I see the resemblance, though.'],
+    s8: ['Перегрев! ‖ Включаю кулер… ‖ А, у меня нет кулера.', 'Overheating! ‖ Turning on the fan… ‖ Oh. I don’t have a fan.'],
+    reboot: ['…Привет! Я Шаттл. ‖ Мы знакомы? Кэш чистый.', '…Hi! I’m Shuttle. ‖ Have we met? My cache is empty.'],
+  };
+  const BSOD = ['Маскот столкнулся с проблемой и будет перезапущен. Собрано 0% юмора.', 'Your mascot ran into a problem and needs to restart. 0% humor collected.'];
+  let mode = '', clicks = 0, hideT = 0, busy = 0, timer = 0, speaking = false, lastAuto = 0, lastUser = 0, bag = [];
 
   const px = v => parseFloat(v) || 0;
   function place(){
@@ -965,7 +1033,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
   function setMode(next){
     if (next === mode) return;
     const first = !mode; mode = next; clearTimeout(busy);
-    hideBubble();
+    if (!bubble.classList.contains('bsod')) hideBubble();
     m.classList.remove('idle', 'land', 'fall', 'rise', 'fly');
     if (next === 'bottom') {
       // выпрыгивает из шапки, кувыркается по дуге, на лету отращивает ручки и ножки
@@ -979,12 +1047,13 @@ document.fonts && document.fonts.ready.then(fitTitle);
       m.classList.remove('bottom'); m.classList.add('top', 'rise');
       if (!first && !reduced) m.classList.add('fly');
       place();
-      busy = setTimeout(() => { m.classList.remove('fly'); document.body.classList.remove('m-away'); }, reduced || first ? 0 : 720);
+      busy = setTimeout(() => { m.classList.remove('fly', 'rise'); document.body.classList.remove('m-away'); place(); }, reduced || first ? 0 : 720);
     }
     if (first) requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add('ready')));
   }
   const check = () => setMode(scrollY > 220 ? 'bottom' : (scrollY < 100 || !mode) ? 'top' : mode);
-  addEventListener('scroll', check, { passive: true });
+  // шапка уезжает вместе со страницей — наверху маскот держится за своё место в ней
+  addEventListener('scroll', () => { check(); if (mode === 'top') place(); }, { passive: true });
   addEventListener('resize', place);
   document.fonts && document.fonts.ready.then(place);
   check();
@@ -1001,25 +1070,115 @@ document.fonts && document.fonts.ready.then(fitTitle);
     eyes.style.transform = `translate(${Math.abs(dx) > 40 ? Math.sign(dx) : 0}px, ${Math.abs(dy) > 50 ? Math.sign(dy) : 0}px)`;
   }, { passive: true });
 
-  function hideBubble(){ bubble.classList.remove('on'); m.classList.remove('talk'); clearInterval(typing); clearTimeout(hideT); }
-  function say(str){
-    hideBubble(); text.textContent = ''; bubble.classList.add('on'); m.classList.add('talk');
-    if (reduced) { text.textContent = str; m.classList.remove('talk'); hideT = setTimeout(hideBubble, 4200); return; }
-    let i = 0;
-    typing = setInterval(() => {
-      text.textContent = str.slice(0, ++i);
-      if (i >= str.length) { clearInterval(typing); m.classList.remove('talk'); hideT = setTimeout(hideBubble, 3800); }
-    }, 28);
+  // ---------- движок реплик: печать, паузы, опечатки ----------
+  function parse(str){
+    const ops = [];
+    str.split('‖').forEach((part, i) => {
+      part = part.trim();
+      // после паузы — пробел, а реплика диалога («— Кто там?») с новой строки
+      if (i) { ops.push(['p', 650]); part = (part.startsWith('—') ? '\n' : ' ') + part; }
+      part.split(/(\{[^}]*\})/).forEach(chunk => {
+        const m2 = chunk.match(/^\{([^|]*)\|([^}]*)\}$/);
+        if (m2) ops.push(['typo', m2[1], m2[2]]); else if (chunk) ops.push(['t', chunk]);
+      });
+    });
+    return ops;
   }
+  function hideBubble(){ bubble.classList.remove('on', 'bsod'); m.classList.remove('talk'); clearTimeout(timer); clearTimeout(hideT); speaking = false; }
+  function say(str, after){
+    hideBubble(); text.textContent = ''; bubble.classList.add('on'); m.classList.add('talk'); speaking = true;
+    const ops = parse(str); let out = '';
+    if (reduced) { text.textContent = ops.map(o => o[0] === 't' ? o[1] : o[0] === 'typo' ? o[2] : '').join(''); return done(); }
+    const typeOut = (s2, k, next) => { if (k >= s2.length) return next(); out += s2[k]; text.textContent = out; timer = setTimeout(() => typeOut(s2, k + 1, next), /[.,!?…]/.test(s2[k]) ? 140 : 26 + Math.random() * 18); };
+    const erase = (n, next) => { if (!n) return next(); out = out.slice(0, -1); text.textContent = out; timer = setTimeout(() => erase(n - 1, next), 45); };
+    (function step(i){
+      if (i >= ops.length) return done();
+      const o = ops[i];
+      if (o[0] === 't') typeOut(o[1], 0, () => step(i + 1));
+      else if (o[0] === 'p') { m.classList.remove('talk'); timer = setTimeout(() => { m.classList.add('talk'); step(i + 1); }, o[1]); }
+      else typeOut(o[1], 0, () => { m.classList.remove('talk'); timer = setTimeout(() => { m.classList.add('talk'); erase(o[1].length, () => typeOut(o[2], 0, () => step(i + 1))); }, 420); });
+    })(0);
+    function done(){ m.classList.remove('talk'); speaking = false; hideT = setTimeout(hideBubble, Math.max(3600, text.textContent.length * 55)); after && after(); }
+  }
+  const pick = pair => T(pair[0], pair[1]);
+  function nextJoke(){
+    // мешок без повторов: пока не прозвучат все шутки, одна и та же не вернётся
+    if (!bag.length) bag = JOKES.map((_, i) => i).sort(() => Math.random() - .5);
+    return pick(JOKES[bag.pop()]);
+  }
+  // автоматические реплики — не чаще раза в 18 с и не поверх разговора
+  function auto(pair, force){
+    const now = Date.now();
+    if (!force && (speaking || bubble.classList.contains('on') || now - lastAuto < 18000 || now - lastUser < 6000)) return false;
+    lastAuto = now; say(pick(pair)); return true;
+  }
+  function hop(){ m.classList.remove('hop'); void m.offsetWidth; m.classList.add('hop'); setTimeout(() => m.classList.remove('hop'), 460); }
+
+  // ---------- клики: снежный ком → перегрев → «синий экран» ----------
+  let streak = 0, streakT = 0, seenHello = false, saidPlace = {};
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
+  const lastVisit = +store('m-last') || 0; store('m-last', Date.now());
   sprite.addEventListener('click', () => {
-    clicks++;
-    let ph = SPECIAL[clicks];
-    if (!ph) { let i; do { i = Math.random() * PH.length | 0; } while (i === last); last = i; ph = PH[i]; }
-    say(T(ph[0], ph[1]));
-    m.classList.remove('hop'); void m.offsetWidth; m.classList.add('hop'); setTimeout(() => m.classList.remove('hop'), 460);
+    if (m.classList.contains('rebooting')) return;
+    lastUser = Date.now(); clicks++; streak++;
+    clearTimeout(streakT); streakT = setTimeout(() => streak = 0, 2200);
+    hop();
+    if (streak >= 12) return bsod();
+    if (streak === 8) { m.classList.add('hot'); setTimeout(() => m.classList.remove('hot'), 4200); return say(pick(EV.s8)); }
+    if (streak === 5) return say(pick(EV.s5));
+    if (!seenHello) {
+      seenHello = true;
+      const mins = Math.round((Date.now() - lastVisit) / 60000);
+      if (lastVisit && mins >= 1) return say(pick(EV.again).replace('{n}', mins.toLocaleString(lang === 'en' ? 'en-US' : 'ru-RU')));
+      return say(pick(EV.hello));
+    }
+    // иногда — реплика про раздел, где маскот сейчас
+    const here = currentPlace();
+    if (here && !saidPlace[here] && Math.random() < .4) { saidPlace[here] = 1; return say(pick(PLACES[here])); }
+    say(nextJoke());
   });
+  function bsod(){
+    streak = 0; hideBubble();
+    bubble.classList.add('on', 'bsod');
+    text.innerHTML = `<b>:(</b> ${pick(BSOD)}<button type="button" class="m-reboot">${T('Перезапустить', 'Restart')}</button>`;
+    m.classList.add('crashed');
+  }
+  bubble.addEventListener('click', e => {
+    if (!e.target.closest('.m-reboot')) return;
+    hideBubble(); m.classList.remove('crashed', 'hot'); m.classList.add('rebooting');
+    setTimeout(() => { m.classList.remove('rebooting'); bag = []; saidPlace = {}; say(pick(EV.reboot)); }, 1300);
+  });
+  function currentPlace(){
+    if (mode === 'top') return 'top';
+    const mid = innerHeight * .5; let cur = null;
+    ['features', 'switch', 'android', 'download', 'faq', 'changes'].forEach(id => { const e = document.getElementById(id); if (e && e.getBoundingClientRect().top < mid) cur = id; });
+    return cur;
+  }
+
+  // ---------- реакции на то, что происходит на странице ----------
+  $('#theme').addEventListener('click', () => setTimeout(() => auto(document.documentElement.dataset.theme === 'light' ? EV.light : EV.dark, true), 250));
+  $('#lang').addEventListener('click', () => { label(); setTimeout(() => auto(lang === 'en' ? EV.toEN : EV.toRU, true), 350); });
+  document.addEventListener('click', e => { if (e.target.closest('.dl-link,#drag-icon')) auto(EV.dl, true); });
+  document.addEventListener('copy', () => auto(EV.copy, true));
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => { if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt && Date.now() - hiddenAt > 15000) setTimeout(() => auto(EV.back), 600); });
+  // бездействие
+  let lastAct = Date.now(); ['mousemove', 'keydown', 'scroll', 'touchstart'].forEach(ev => addEventListener(ev, () => lastAct = Date.now(), { passive: true }));
+  setInterval(() => { if (!document.hidden && Date.now() - lastAct > 30000 && mode === 'bottom') { lastAct = Date.now(); auto(EV.idle); } }, 5000);
+  // быстрый скролл
+  let sy = scrollY, st = performance.now();
+  addEventListener('scroll', () => {
+    const now = performance.now(), v = Math.abs(scrollY - sy) / Math.max(1, now - st);
+    sy = scrollY; st = now;
+    if (v > 9 && mode === 'bottom') auto(EV.fast);
+  }, { passive: true });
+  // ночью — особая реплика, один раз
+  const h = new Date().getHours();
+  if (h >= 0 && h < 5) setTimeout(() => auto(EV.night), 9000);
+  // привет для тех, кто открыл консоль
+  console.log('%c ‹ › %c Привет, разработчик. Я тоже из байтов. / Hi, dev. I’m made of bytes too.', 'background:#E9B949;color:#1F1822;font:bold 14px monospace;padding:4px 6px', 'color:#E9B949;font:12px monospace');
+
   const label = () => sprite.setAttribute('aria-label', T('Маскот Shuttle — нажми', 'Shuttle mascot — click me'));
-  $('#lang').addEventListener('click', () => { label(); hideBubble(); });
   label();
 })();
 
