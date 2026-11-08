@@ -498,6 +498,22 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 }
 @media (max-width:560px){.stat{padding:16px}.stat b{font-size:26px}.dropzone{gap:18px}.app-icon,.apps{width:84px;height:84px}.apps{border-radius:20px}.apps svg{width:40px;height:40px}.arrow{font-size:16px;letter-spacing:3px}nav a:not(.gh){display:none}.status .hide-m{display:none}h1{min-height:auto}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+/* Под капотом: бенто-карточки с пиксельными 3D-объектами и потоком точек */
+.bento-stage{position:relative;padding:40px 32px;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--bg2)}
+.bento-stage .flow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.bento{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.bento .big{grid-column:span 2}
+.bcard{padding:0;display:flex;flex-direction:column;cursor:crosshair}
+.bcard::before{content:"+";position:absolute;top:6px;right:12px;font-family:var(--mono);font-size:13px;color:var(--dim);pointer-events:none}
+.bcard canvas{display:block;width:100%;height:230px;border-bottom:1px dashed var(--line)}
+.bcard .txt{padding:16px 22px 22px}
+.bcard .k{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.bcard .k::before{content:"";width:6px;height:6px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.bcard h3{font-family:var(--display);font-weight:400;font-size:18px;line-height:1.35;color:var(--dim);margin:10px 0 0}
+.bcard h3 b{color:var(--text);font-weight:400}
+.bento .big h3{font-size:21px;max-width:34ch}
+@media (max-width:900px){.bento{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.bento-stage{padding:20px 12px;border-radius:16px}.bento{grid-template-columns:1fr}.bento .big{grid-column:auto}.bcard canvas{height:200px}.bento .big h3,.bcard h3{font-size:17px}}
 </style>
 </head>
 <body>
@@ -603,13 +619,32 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
     </div>
   </section>
   <div class="close" aria-hidden="true">} }</div>
+  <section id="how" class="node">
+    <div class="sec-head rv">
+      <div class="num">04 / <span data-i18n="n.h">под капотом</span></div>
+      <div class="code">under { <i>the</i> hood {</div>
+      <h2 class="glitch" data-i18n="h.title">Под капотом</h2>
+      <p class="sub" data-i18n="h.sub">Пять вещей, которые Shuttle тихо делает, пока вы просто перетаскиваете файлы.</p>
+    </div>
+    <div class="bento-stage rv">
+      <canvas class="flow" aria-hidden="true"></canvas>
+      <div class="bento">
+        <article class="card bcard big"><canvas data-obj="cloud" aria-hidden="true"></canvas><div class="txt"><div class="k" data-i18n="h.k1">Без облака</div><h3 data-i18n-html="h.t1"><b>Файлы идут по кабелю,</b> а не через чужие серверы. Ни аккаунтов, ни лимитов, ни ожидания загрузки.</h3></div></article>
+        <article class="card bcard"><canvas data-obj="loop" aria-hidden="true"></canvas><div class="txt"><div class="k" data-i18n="h.k2">Докачка</div><h3 data-i18n-html="h.t2"><b>Кабель отошёл?</b> Shuttle продолжит с того же места.</h3></div></article>
+        <article class="card bcard"><canvas data-obj="check" aria-hidden="true"></canvas><div class="txt"><div class="k" data-i18n="h.k3">Проверка копий</div><h3 data-i18n-html="h.t3"><b>Каждый файл сверяется</b> после копирования. Целые получают галочку.</h3></div></article>
+        <article class="card bcard"><canvas data-obj="card" aria-hidden="true"></canvas><div class="txt"><div class="k" data-i18n="h.k4">Освободить место</div><h3 data-i18n-html="h.t4"><b>С телефона удаляется только то,</b> что точно лежит на Mac.</h3></div></article>
+        <article class="card bcard"><canvas data-obj="dev" aria-hidden="true"></canvas><div class="txt"><div class="k" data-i18n="h.k5">Два устройства</div><h3 data-i18n-html="h.t5"><b>Телефон и Switch сразу,</b> каждый в своей вкладке.</h3></div></article>
+      </div>
+    </div>
+  </section>
+  <div class="close" aria-hidden="true">} }</div>
 </div>
 <div class="ticker warn" aria-hidden="true"><div id="ticker2"></div></div>
 <div class="wrap">
 
   <section id="download">
     <div class="dl rv" id="dl">
-      <div class="num" style="justify-content:center">04 / <span data-i18n="n.d">скачать</span></div>
+      <div class="num" style="justify-content:center">05 / <span data-i18n="n.d">скачать</span></div>
       <div class="code">install { <i>drag</i> → /Applications }</div>
       <h2 class="glitch" data-i18n="dl.title">Перетащите Shuttle в «Программы»</h2>
       <p class="sub" style="margin:0 auto" data-i18n="dl.sub">Прямо здесь, как в DMG. Или нажмите кнопку — скачивание начнётся сразу.</p>
@@ -634,7 +669,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
   <section id="faq" class="node">
     <div class="sec-head rv">
-      <div class="num">05 / <span data-i18n="n.q">вопросы</span></div>
+      <div class="num">06 / <span data-i18n="n.q">вопросы</span></div>
       <div class="code">faq { <i>before</i> --install {</div>
       <h2 class="glitch" data-i18n="q.title">Коротко о главном</h2>
       <p class="sub" data-i18n="q.sub">То, что спрашивают до установки.</p>
@@ -645,7 +680,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
   <section id="changes" class="node">
     <div class="sec-head rv">
-      <div class="num">06 / <span data-i18n="n.c">версии</span></div>
+      <div class="num">07 / <span data-i18n="n.c">версии</span></div>
       <div class="code">changelog { <i>releases</i> --all {</div>
       <h2 class="glitch" data-i18n="ch.title">Что нового</h2>
       <p class="sub" data-i18n="ch.sub">Каждая версия — с описанием и своим DMG. Старые тоже можно скачать.</p>
@@ -694,6 +729,12 @@ const EN = {
   'st3':'<b>Plug in the cable.</b> Android: “File transfer”. Switch: DBI → “Run MTP responder”.',
   'ch.title':'What’s new','ch.sub':'Every version with notes and its own DMG. Older ones stay downloadable.',
   'n.f':'features','n.d':'download','n.c':'releases',
+  'n.h':'under the hood','h.title':'Under the hood','h.sub':'Five things Shuttle quietly does while you just drag files around.',
+  'h.k1':'No cloud','h.t1':'<b>Files travel over the cable,</b> not through someone else’s servers. No accounts, no limits, no waiting for uploads.',
+  'h.k2':'Resume','h.t2':'<b>Cable came out?</b> Shuttle picks up right where it stopped.',
+  'h.k3':'Verified copies','h.t3':'<b>Every file gets checked</b> after copying. Complete ones get a tick.',
+  'h.k4':'Free up space','h.t4':'<b>Only what’s safely on your Mac</b> gets deleted from the phone.',
+  'h.k5':'Two devices','h.t5':'<b>A phone and a Switch at once,</b> each in its own tab.',
   'tape':'NOT NINTENDO · NOT GOOGLE',
   'ft.all':'All releases','ft.issue':'Report an issue','sb.palette':'palette','sb.theme':'theme'
 };
@@ -1380,6 +1421,289 @@ document.fonts && document.fonts.ready.then(fitTitle);
   host.addEventListener('pointerleave', () => { px = py = -1; });
 })();
 
+/* ---------- Под капотом: 3D-объекты из точек, растр Байера и поток пикселей вокруг ---------- */
+(() => {
+  const stage = $('#how .bento-stage'); if (!stage) return;
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + .5) / 16);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let C = {};
+  const palette = () => { C = { a: css('--accent'), b: css('--accent2'), t: css('--text'), d: css('--dim') }; };
+  palette();
+  let sd = 11; const rnd = () => (sd = sd * 16807 % 2147483647) / 2147483647;
+  const clamp = (v, a = 0, b = 1) => v < a ? a : v > b ? b : v;
+  const ease = v => v * v * (3 - 2 * v);
+
+  /* Геометрия. Точка: x y z, нормаль, яркость k, параметр u, три случайных числа */
+  const P = (x, y, z, nx, ny, nz, k = 1, u = 0) => [x, y, z, nx, ny, nz, k, u, rnd(), rnd() - .5, rnd() - .5];
+  function inPoly(poly, x, y){
+    let c = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, yi] = poly[i], [xj, yj] = poly[j];
+      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  }
+  // Плоская фигура с толщиной: лицо, спина и боковые стенки
+  function extrude(poly, depth, step, kf = () => 1){
+    const out = [];
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, area = 0;
+    poly.forEach(([x, y], i) => { const [bx, by] = poly[(i + 1) % poly.length]; area += x * by - bx * y; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+    const o = area > 0 ? 1 : -1, U = x => (x - x0) / (x1 - x0);
+    for (let y = y0; y <= y1; y += step) for (let x = x0; x <= x1; x += step) {
+      const jx = x + (rnd() - .5) * step * .5, jy = y + (rnd() - .5) * step * .5;
+      if (!inPoly(poly, jx, jy)) continue;
+      out.push(P(jx, jy, depth / 2, 0, 0, 1, kf(jx, jy), U(jx)), P(jx, jy, -depth / 2, 0, 0, -1, 1, U(jx)));
+    }
+    poly.forEach(([ax, ay], i) => {
+      const [bx, by] = poly[(i + 1) % poly.length], L = Math.hypot(bx - ax, by - ay);
+      const nx = (by - ay) / L * o, ny = -(bx - ax) / L * o;
+      for (let d = 0; d < L; d += step) for (let z = -depth / 2; z <= depth / 2 + 1e-6; z += step) {
+        const x = ax + (bx - ax) * d / L, y = ay + (by - ay) * d / L;
+        out.push(P(x, y, z, nx, ny, 0, 1, U(x)));
+      }
+    });
+    return out;
+  }
+  function rrect(w, h, r, n = 6){
+    const p = [];
+    [[w / 2 - r, h / 2 - r, 0], [-w / 2 + r, h / 2 - r, .5], [-w / 2 + r, -h / 2 + r, 1], [w / 2 - r, -h / 2 + r, 1.5]].forEach(([cx, cy, a0]) => {
+      for (let i = 0; i <= n; i++) { const a = (a0 + i / n * .5) * Math.PI; p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); }
+    });
+    return p;
+  }
+
+  // Облако из четырёх шаров
+  function cloud(){
+    const out = [], B = [[-.58, -.1, 0, .4], [-.08, .16, .04, .56], [.5, -.06, 0, .42], [.04, -.2, .12, .38]];
+    B.forEach(b => {
+      const [cx, cy, cz, r] = b, n = Math.round(10500 * r * r);
+      for (let i = 0; i < n; i++) {
+        const y = 1 - 2 * (i + .5) / n, rr = Math.sqrt(1 - y * y), th = i * 2.39996;
+        const nx = Math.cos(th) * rr, nz = Math.sin(th) * rr, x = cx + nx * r, yy = cy + y * r, z = cz + nz * r * .8;
+        if (yy < -.42) continue;
+        if (B.some(o => o !== b && Math.hypot(x - o[0], yy - o[1], z - o[2]) < o[3] * .97)) continue;
+        out.push(P(x, yy, z, nx, y, nz, 1, (x + 1) / 2));
+      }
+    });
+    return out;
+  }
+  // Кольцо из двух стрелок, которые гонятся друг за другом
+  function loop(){
+    const out = [], R = .78, W = .3, T = .12, span = Math.PI * .8, head = .5;
+    for (const a0 of [0, Math.PI]) for (let th = a0; th < a0 + span; th += .014) {
+      const d = th - a0, w = d < span - head ? W : W * 2.2 * (1 - (d - span + head) / head);
+      const c = Math.cos(th), s = Math.sin(th);
+      for (let v = -w / 2; v <= w / 2; v += .02) {
+        out.push(P((R + T / 2) * c, v, (R + T / 2) * s, c, 0, s, 1, th), P((R - T / 2) * c, v, (R - T / 2) * s, -c, 0, -s, .8, th));
+      }
+      for (let r = R - T / 2; r <= R + T / 2; r += .022) {
+        out.push(P(r * c, w / 2, r * s, 0, 1, 0, 1, th), P(r * c, -w / 2, r * s, 0, -1, 0, 1, th));
+      }
+    }
+    return out;
+  }
+  const check = () => extrude([[-.78, .06], [-.56, .28], [-.2, -.08], [.58, .7], [.8, .48], [-.2, -.5]].map(([x, y]) => [x, y + .02]), .3, .02);
+  const sdcard = () => extrude([[-.5, -.68], [.5, -.68], [.5, .68], [-.18, .68], [-.5, .36]], .1, .022, (x, y) =>
+    y > .4 && y < .62 && x > -.12 && (x + .12) % .13 < .07 ? 1.25 : y < .22 && y > -.52 && Math.abs(x) < .36 ? .5 : 1);
+  const phone = () => extrude(rrect(.8, 1.5, .16), .12, .022, (x, y) =>
+    Math.hypot(x, y - .64) < .035 ? 1.3 : Math.abs(x) < .33 && y > -.62 && y < .6 ? .42 : 1);
+  function joycon(){
+    const p = [[.24, -.72], [.24, .72]];
+    for (let i = 0; i <= 8; i++) { const a = (.5 + i / 16) * Math.PI; p.push([-.04 + .3 * Math.cos(a), .42 + .3 * Math.sin(a)]); }
+    for (let i = 0; i <= 8; i++) { const a = (1 + i / 16) * Math.PI; p.push([-.04 + .3 * Math.cos(a), -.42 + .3 * Math.sin(a)]); }
+    return extrude(p, .22, .022, (x, y) =>
+      Math.hypot(x + .04, y - .3) < .13 ? 1.3 :
+      [[0, -.08], [0, -.32], [-.12, -.2], [.12, -.2]].some(([bx, by]) => Math.hypot(x + .04 - bx, y - by) < .05) ? 1.3 :
+      x > .19 ? .45 : .8);
+  }
+  // Пара для превращения: одинаковое число точек, порядок по высоте и ширине, чтобы форма перетекала
+  function pair(a, b){
+    const n = Math.min(a.length, b.length), pick = arr => arr.slice().sort(() => rnd() - .5).slice(0, n);
+    const key = p => (p[5] < -.5 ? 100 : 0) + Math.round((p[1] + 1) * 24) + p[0] * .3;
+    const A = pick(a).sort((p, q) => key(p) - key(q)), B = pick(b).sort((p, q) => key(p) - key(q));
+    A.forEach((p, i) => p.b = B[i]);
+    return A;
+  }
+
+  /* Поведение каждого объекта: поворот, смещения точек до поворота (pre) и после (post, в экранных осях) */
+  const OBJ = {
+    cloud: {
+      pts: cloud(), size: .42,
+      rot: t => [Math.sin(t * .4) * .6, .28 + Math.sin(t * .3) * .08],
+      post(p, V, t){
+        const ph = (t % 8) / 8, a = ph < .3 ? 0 : ph < .55 ? ease((ph - .3) / .25) : ph < .6 ? 1 : 1 - ease((ph - .6) / .3);
+        const own = clamp(a * 1.8 - (p[8] * .5 + (1 - p[7]) * .3));
+        if (!own) return;
+        V[0] += own * own * 2.6 + own * .2; V[1] += p[9] * own * .7 - own * own * .35 + Math.sin(t * 6 + p[8] * 9) * own * .05;
+        V[6] *= 1 - own * own; V[7] = 1;
+      }
+    },
+    loop: {
+      pts: loop(), size: .44,
+      rot: t => [-t * 1.1, .62 + Math.sin(t * .5) * .1],
+      pre(p, V, t){ const d = Math.cos(p[7] + t * 1.1 * 2 - 1); V[6] *= 1 + .6 * Math.pow(Math.max(0, d), 12); }
+    },
+    check: {
+      pts: check(), size: .4,
+      rot: t => [Math.sin(t * .8) * .55, .18],
+      pre(p, V, t){
+        const ph = (t % 6) / 6, r = clamp(ph / .25), out = clamp((ph - .82) / .18);
+        const own = clamp((r * 1.15 - p[7]) * 7);
+        V[2] += (1 - own) * 1.4; V[1] += (1 - own) * .25; V[6] *= own;
+        const o2 = clamp(out * 1.6 - p[8] * .6);
+        if (o2) { V[1] += o2 * o2 * 1.6; V[0] += p[9] * o2; V[6] *= 1 - o2; V[7] = 1; }
+      }
+    },
+    card: {
+      pts: sdcard(), size: .4,
+      rot: t => [Math.sin(t * .5) * .9, .2 + Math.sin(t * .7) * .1],
+      post(p, V, t){
+        const ph = (t % 7) / 7, c = ph < .3 ? 0 : ph < .62 ? ease((ph - .3) / .32) : ph < .78 ? 1 : 1 - ease((ph - .78) / .22);
+        const f = clamp(((-.7 + c * .8) - p[1] - p[8] * .12) * 2.6);
+        if (!f) return;
+        V[1] -= f * f * 1.8; V[0] += p[9] * f * .5; V[6] *= 1 - f * f; V[7] = 1;
+      }
+    },
+    dev: {
+      pts: pair(phone(), joycon()), size: .4,
+      rot: t => [Math.sin(t * .55) * .8 + .3, .14],
+      pre(p, V, t){
+        const ph = (t % 8) / 8, m = ph < .38 ? 0 : ph < .5 ? ease((ph - .38) / .12) : ph < .88 ? 1 : 1 - ease((ph - .88) / .12);
+        if (!m) return;
+        const b = p.b, bump = Math.sin(Math.PI * m) * .45;
+        for (let j = 0; j < 6; j++) V[j] = p[j] + (b[j] - p[j]) * m;
+        V[0] += p[9] * bump; V[1] += p[10] * bump; V[2] += (p[8] - .5) * bump;
+        V[6] = p[6] + (b[6] - p[6]) * m;
+        if (bump > .1) V[7] = 1;
+      }
+    }
+  };
+
+  const L = (() => { const v = [-.42, .5, .76], n = Math.hypot(...v); return v.map(x => x / n); })();
+  const views = $$('#how canvas[data-obj]').map(cv => {
+    const def = OBJ[cv.dataset.obj], ctx = cv.getContext('2d'), card = cv.closest('.bcard');
+    const v = { cv, def, ctx, visible: false, hov: 0, hovT: 0, mx: -1, my: -1, spin: 0, last: 0 };
+    v.resize = () => {
+      const r = cv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+      v.W = r.width; v.H = r.height; cv.width = Math.round(v.W * dpr); cv.height = Math.round(v.H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      v.cell = v.W < 340 ? 3 : 4; v.gw = Math.ceil(v.W / v.cell); v.gh = Math.ceil(v.H / v.cell);
+      v.val = new Float32Array(v.gw * v.gh); v.zb = new Float32Array(v.gw * v.gh);
+    };
+    card.addEventListener('pointerenter', () => v.hovT = 1);
+    card.addEventListener('pointerleave', () => { v.hovT = 0; v.mx = v.my = -1; });
+    card.addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); v.mx = e.clientX - r.left; v.my = e.clientY - r.top; }, { passive: true });
+    return v;
+  });
+
+  const V = new Float32Array(8);
+  function render(v, t, dt){
+    const { def, ctx, W, H, cell, gw, gh, val, zb } = v;
+    if (!W) return;
+    v.hov += (v.hovT - v.hov) * Math.min(1, dt * 5);
+    v.spin += dt * (1 + v.hov * 2.2);
+    const T = v.spin, [ry, rx] = def.rot(T), cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+    const S = Math.min(W * .7, H * .86) * def.size * 1.55, ox = W / 2, oy = H / 2, scat = v.hov * .16;
+    const mx = v.mx, my = v.my, rad = 54;
+    val.fill(0); zb.fill(-1e9);
+    for (const p of def.pts) {
+      for (let j = 0; j < 6; j++) V[j] = p[j];
+      V[6] = p[6]; V[7] = 0;
+      if (def.pre) def.pre(p, V, T);
+      if (V[6] <= .01) continue;
+      if (scat) { const w = Math.sin(t * 3 + p[8] * 20) * .5 + .5; V[0] += p[9] * scat * w; V[1] += p[10] * scat * w; V[2] += (p[8] - .5) * scat * w; }
+      const x1 = V[0] * cy + V[2] * sy, z1 = -V[0] * sy + V[2] * cy, y1 = V[1] * cx - z1 * sx, z2 = V[1] * sx + z1 * cx;
+      const nx1 = V[3] * cy + V[5] * sy, nz1 = -V[3] * sy + V[5] * cy, ny2 = V[4] * cx - nz1 * sx, nz2 = V[4] * sx + nz1 * cx;
+      V[0] = x1; V[1] = y1; V[2] = z2;
+      if (def.post) def.post(p, V, T);
+      if (V[6] <= .01) continue;
+      if (nz2 < -.12 && !V[7]) continue;
+      const f = 3.2 / (3.2 - V[2]);
+      let px = ox + V[0] * S * f, py = oy - V[1] * S * f;
+      if (mx >= 0) { const dx = px - mx, dy = py - my, d = Math.hypot(dx, dy); if (d < rad && d > .1) { const k = (rad - d) / rad; px += dx / d * k * 26; py += dy / d * k * 26; } }
+      const gx = px / cell | 0, gy = py / cell | 0;
+      if (gx < 0 || gy < 0 || gx >= gw || gy >= gh) continue;
+      const i = gx + gy * gw;
+      if (V[2] <= zb[i]) continue;
+      zb[i] = V[2];
+      const lam = Math.max(0, nx1 * L[0] + ny2 * L[1] + nz2 * L[2]);
+      const spec = Math.pow(Math.max(0, nz2 * .4 + lam * .6), 18) * .5;
+      val[i] = Math.min(1.3, (.2 + .95 * lam + spec) * V[6]);
+    }
+    ctx.clearRect(0, 0, W, H);
+    const sz = cell - 1, ds = Math.max(1, cell - 3), off = (cell - ds) / 2;
+    ctx.globalAlpha = .55; ctx.fillStyle = C.d;
+    for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
+      const a = val[gx + gy * gw]; if (a > .03 && a <= BAYER[(gx & 3) + (gy & 3) * 4]) ctx.fillRect(gx * cell + off, gy * cell + off, ds, ds);
+    }
+    ctx.globalAlpha = 1; ctx.fillStyle = C.a;
+    for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
+      const a = val[gx + gy * gw]; if (a > BAYER[(gx & 3) + (gy & 3) * 4] && a <= .95) ctx.fillRect(gx * cell, gy * cell, sz, sz);
+    }
+    ctx.fillStyle = C.b;
+    for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
+      if (val[gx + gy * gw] > .95) ctx.fillRect(gx * cell, gy * cell, sz, sz);
+    }
+  }
+
+  /* Фон: диагональные полосы пикселей текут, как данные по кабелю; у курсора вспыхивают */
+  const fc = stage.querySelector('.flow'), fx = fc.getContext('2d');
+  const F = { mx: -1, my: -1 };
+  const hash = (x, y) => { let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  function noise(x, y){
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), w = yf * yf * (3 - 2 * yf);
+    const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+    return a + (b - a) * u + (c - a) * w + (a - b - c + d) * u * w;
+  }
+  function fresize(){
+    const r = stage.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    F.W = r.width; F.H = r.height; fc.width = Math.round(F.W * dpr); fc.height = Math.round(F.H * dpr);
+    fx.setTransform(dpr, 0, 0, dpr, 0, 0); F.cell = F.W < 600 ? 8 : 10;
+  }
+  function flow(t){
+    const { W, H, cell } = F; if (!W) return;
+    const gw = Math.ceil(W / cell), gh = Math.ceil(H / cell), s = cell - 4, mx = F.mx / cell, my = F.my / cell;
+    fx.clearRect(0, 0, W, H);
+    const hi = [];
+    fx.fillStyle = C.t; fx.globalAlpha = .2;
+    for (let gy = 0; gy < gh; gy++) for (let gx = 0; gx < gw; gx++) {
+      const n = noise(gx * .06 + t * .3, gy * .06 - t * .1);
+      let v = Math.sin((gx * .8 + gy) * .085 - t * .9 + n * 3.4) * .5 + .5;
+      v = v * v * (.4 + n * .9);
+      if (mx >= 0) { const d = Math.hypot(gx - mx, gy - my); if (d < 9) v += (1 - d / 9) * (.6 + .4 * Math.sin(t * 8 - d)); }
+      if (v <= BAYER[(gx & 3) + (gy & 3) * 4]) continue;
+      if (v > .9) hi.push(gx, gy); else fx.fillRect(gx * cell + 2, gy * cell + 2, s, s);
+    }
+    fx.fillStyle = C.a; fx.globalAlpha = .65;
+    for (let i = 0; i < hi.length; i += 2) fx.fillRect(hi[i] * cell + 2, hi[i + 1] * cell + 2, s, s);
+    fx.globalAlpha = 1;
+  }
+  stage.addEventListener('pointermove', e => { const r = stage.getBoundingClientRect(); F.mx = e.clientX - r.left; F.my = e.clientY - r.top; }, { passive: true });
+  stage.addEventListener('pointerleave', () => F.mx = F.my = -1);
+
+  /* Цикл: рисуем только видимое, ~30 кадров в секунду */
+  let stageVisible = false, running = false, prev = 0, last = 0;
+  const all = () => { fresize(); views.forEach(v => v.resize()); };
+  function still(){ palette(); all(); flow(4); views.forEach(v => { v.spin = 2.2; render(v, 2.2, 0); }); }
+  function frame(now){
+    if (!stageVisible || document.hidden) { running = false; return; }
+    requestAnimationFrame(frame);
+    if (now - last < 32) return;
+    const dt = Math.min(.1, (now - (prev || now)) / 1000); prev = now; last = now;
+    const t = now / 1000;
+    flow(t);
+    views.forEach(v => v.visible && render(v, t, dt));
+  }
+  function wake(){ if (!running && stageVisible && !document.hidden && !reduced) { running = true; prev = 0; requestAnimationFrame(frame); } }
+  const vio = new IntersectionObserver(es => es.forEach(e => { const v = views.find(v => v.cv === e.target); if (v) v.visible = e.isIntersecting; }));
+  views.forEach(v => vio.observe(v.cv));
+  new IntersectionObserver(es => { stageVisible = es[0].isIntersecting; wake(); }, { rootMargin: '100px 0px' }).observe(stage);
+  document.addEventListener('visibilitychange', wake);
+  new MutationObserver(() => { palette(); if (reduced) still(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => reduced ? still() : all(), 120); });
+  if (reduced) still(); else all();
+})();
+
 /* ---------- Терминал ---------- */
 let cmdIdx = 0, cmdTimer;
 function typeCmd(){
@@ -1659,7 +1983,7 @@ applyLang(); typeCmd();
 /* ---------- Свой ползунок: перетаскивание, клик по дорожке, отметки разделов ---------- */
 (() => {
   const rail = $('#rail');
-  const SECS = [['top', 'старт', 'top'], ['features', 'возможности', 'features'], ['switch', 'switch', 'switch'], ['android', 'android', 'android'], ['download', 'скачать', 'download'], ['faq', 'вопросы', 'faq'], ['changes', 'версии', 'releases']];
+  const SECS = [['top', 'старт', 'top'], ['features', 'возможности', 'features'], ['switch', 'switch', 'switch'], ['android', 'android', 'android'], ['how', 'капот', 'hood'], ['download', 'скачать', 'download'], ['faq', 'вопросы', 'faq'], ['changes', 'версии', 'releases']];
   rail.innerHTML = SECS.map(([id]) => `<i class="tick" data-id="${id}"><b></b></i>`).join('') + '<i class="thumb"></i>';
   const thumb = rail.querySelector('.thumb'), ticks = [...rail.querySelectorAll('.tick')];
   const el = id => id === 'top' ? document.body : document.getElementById(id);
