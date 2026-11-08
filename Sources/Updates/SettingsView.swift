@@ -9,6 +9,7 @@ struct SettingsView: View {
     @State private var wifiAddress = ""
     @State private var wifiResult: String?
     @State private var tab: Int
+    @Environment(\.isSnapshot) private var snap
 
     init(startTab: Int = 0) { _tab = State(initialValue: startTab) }
 
@@ -31,16 +32,16 @@ struct SettingsView: View {
             }
             .fixedSize()
             UpdateCheckRow()
-            Group {
-                switch tab {
-                case 1: devices
-                case 2: updatesSection
-                case 3: AchievementsView()
-                default: general
-                }
+            // Вкладка прокручивается в своей рамке: окно настроек одной высоты
+            // и помещается даже на 13-дюймовом экране.
+            if snap {
+                // Снимок экрана не рисует содержимое ScrollView — показываем вкладку целиком.
+                tabContent
+            } else {
+                ScrollView { tabContent.padding(.bottom, 4) }
+                    .scrollIndicators(.automatic)
+                    .frame(height: 430)
             }
-            .transition(.opacity.combined(with: .offset(y: 4)))
-            .id(tab)
         }
         .padding(22)
         .frame(width: 560)
@@ -49,6 +50,19 @@ struct SettingsView: View {
         .foregroundStyle(p.text)
         .tint(p.accent)
         .onAppear { updates.refreshSkipped() }
+    }
+
+    private var tabContent: some View {
+        Group {
+            switch tab {
+            case 1: devices
+            case 2: updatesSection
+            case 3: AchievementsView()
+            default: general
+            }
+        }
+        .transition(.opacity.combined(with: .offset(y: 4)))
+        .id(tab)
     }
 
     private func tabChip(_ i: Int, _ title: String, _ icon: String) -> some View {
@@ -317,6 +331,11 @@ struct UpdateCheckRow: View {
         }
         if busy { return nil }
         guard let d = updates.lastCheck else { return L("Ещё не проверяли") }
-        return L("Последняя проверка: %@", d.formatted(date: .abbreviated, time: .shortened))
+        // Дата и время на языке интерфейса, а не системы: без «2:21 PM» посреди русского текста.
+        let f = DateFormatter()
+        f.locale = Locale(identifier: L10n.english ? "en_US" : "ru_RU")
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return L("Последняя проверка: %@", f.string(from: d))
     }
 }

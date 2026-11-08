@@ -1,4 +1,7 @@
 {
+  "0.5.1": ["Settings fit on a 13-inch Mac screen: tabs scroll inside the window",
+            "The last update check date follows the app language",
+            "Updates and the Download button get the DMG from the Shuttle site — works even where github.com is blocked"],
   "0.5.0": ["Shuttle the mascot lives in the window header: blinks, jokes in a retro bubble, cheers for new devices and finished transfers",
             "The mascot runs along the transfer bar and sits down to wait if the cable drops; yawns when the phone battery is low",
             "Badges with pixel icons and “past the cloud” stats — the Badges tab in Settings",
