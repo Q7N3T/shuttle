@@ -1,4 +1,12 @@
 {
+  "0.5.0": ["Shuttle the mascot lives in the window header: blinks, jokes in a retro bubble, cheers for new devices and finished transfers",
+            "The mascot runs along the transfer bar and sits down to wait if the cable drops; yawns when the phone battery is low",
+            "Badges with pixel icons and “past the cloud” stats — the Badges tab in Settings",
+            "Seasonal hats, a birthday and the secret ↑↑↓↓←→←→BA code",
+            "Phone and Switch at the same time: each device in its own tab, transfers run in parallel",
+            "Verification after copying: every verified file gets a ✓",
+            "Free up space: delete from the phone only what’s definitely on the Mac, with content verification",
+            "Run from the menu bar: close the window and transfers and photo auto-import keep going"],
   "0.4.2": ["“From camera” button instead of “New photos”: it fetches both photos and videos",
             "Camera downloads are labeled by file type: “New photo” or “New video”"],
   "0.4.1": ["Settings: a “Check for updates” button in the header, visible from any tab",

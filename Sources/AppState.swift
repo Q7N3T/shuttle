@@ -71,12 +71,43 @@ struct QuickFolder: Identifiable {
     ] }
 }
 
+/// Подключённое устройство — вкладка над панелями.
+struct DeviceTab: Identifiable, Equatable {
+    /// Место на шине (`DeviceHub.Slot.id`).
+    let slot: String
+    var info: DeviceInfo
+    let service: DeviceService
+    var id: String { slot }
+    static func == (a: DeviceTab, b: DeviceTab) -> Bool { a.slot == b.slot && a.info == b.info }
+}
+
+/// Что было открыто на устройстве — возвращаем, когда снова переключаемся на его вкладку.
+private struct DeviceView {
+    var storageID: UInt32?
+    var androidPath: [Crumb]
+    var cache: [FolderKey: [RemoteItem]]
+    var expanded: Set<FolderKey>
+    var activeQuick: String?
+    var viewMode: ViewMode
+    var newPhotos: [RemoteItem]
+}
+
 @MainActor
 final class AppState: ObservableObject {
-    let svc: DeviceService
+    /// Сервис устройства на текущей вкладке. Передачи запоминают свой сервис сами.
+    private(set) var svc: DeviceService
+    private let hub: DeviceHub
 
     // Устройство
     @Published var connection: Connection = .searching
+    /// Все подключённые устройства — вкладки, если их больше одного.
+    @Published private(set) var devices: [DeviceTab] = []
+    @Published private(set) var selectedSlot: String?
+    private var views: [String: DeviceView] = [:]
+    /// Для каких устройств уже отработало «подключилось» (фото, синхронизация) в этот раз.
+    private var introduced: Set<String> = []
+    /// Места на шине, где тот же телефон виден второй раз (по MTP, когда он уже есть по ADB).
+    private var shadowed: [String: String] = [:]
     @Published var storageID: UInt32?
     @Published var androidPath: [Crumb] = []
     @Published var androidSelection: Set<UInt32> = []
@@ -135,6 +166,7 @@ final class AppState: ObservableObject {
     @Published var showHistory = false
     @Published var showSync = false
     @Published var showDuplicates = false
+    @Published var showCleanup = false
     @Published var duplicates: [RemoteItem] = []
     @Published var newPhotos: [RemoteItem] = []
 
@@ -144,11 +176,20 @@ final class AppState: ObservableObject {
     private var monitor: Task<Void, Never>?
     private var lastDeviceKey: String?
 
-    init(preview: Bool = false, service: DeviceService = .shared) {
-        svc = service
+    /// `service`/`services` — заданные устройства (автотесты); без них — все, что найдёт `DeviceHub`.
+    init(preview: Bool = false, service: DeviceService? = nil, services: [DeviceService] = []) {
+        let given = (service.map { [$0] } ?? []) + services
+        if let first = given.first {
+            svc = first
+            hub = DeviceHub(fixed: given.enumerated().map { .init(id: "fixed\($0.offset)", service: $0.element) })
+        } else {
+            svc = DeviceService(drivers: [])
+            hub = .shared
+        }
         if preview || AppFolders.testing { return }
         // Превью ждут, пока идут передачи; при уходе из папки очередь превью сбрасывается.
         Thumbnails.shared.isBusy = { [weak self] in self?.hasActiveTransfers ?? false }
+        Thumbnails.shared.service = { [weak self] key in self?.service(for: key) }
         loadMac()
         monitor = Task { [weak self] in
             while !Task.isCancelled {
@@ -234,35 +275,117 @@ final class AppState: ObservableObject {
 
     // MARK: Подключение
 
+    /// Опрос раз в 2 секунды: какие устройства на связи, что с текущей вкладкой.
     func tick() async {
-        // Во время передачи очередь занята, лишние запросы не шлём.
-        if hasActiveTransfers || !loadingKeys.isEmpty { return }
-        let wasConnected = device != nil
-        do {
-            let info = try await svc.run { try $0.connectIfNeeded() }
-            setConnection(.connected(info))
+        // Пока идёт передача, шину USB не опрашиваем — поиск новых устройств может ей помешать.
+        let slots = await hub.refresh(scan: !hasActiveTransfers)
+        var found: [DeviceTab] = []
+        var trouble: Connection?
+        for slot in slots {
+            // Дубль уже подключённого телефона (тот же, что по ADB) — не открываем заново каждые 2 секунды.
+            if let key = shadowed[slot.id], found.contains(where: { $0.info.key == key }) { continue }
+            // Пока устройство занято передачей или чтением папки, его не дёргаем — берём прошлые сведения.
+            if let known = devices.first(where: { $0.slot == slot.id }), isBusy(known) {
+                found.append(known)
+                continue
+            }
+            do {
+                let info = try await slot.service.run { try $0.connectIfNeeded() }
+                // Один и тот же телефон по ADB и по MTP — оставляем первый (ADB).
+                if found.contains(where: { $0.info.key == info.key }) {
+                    shadowed[slot.id] = info.key
+                    slot.service.runDetached { $0.release() }
+                    continue
+                }
+                shadowed[slot.id] = nil
+                found.append(DeviceTab(slot: slot.id, info: info, service: slot.service))
+            } catch let e as MTPError {
+                if e == .busy { trouble = .busy } else if e == .locked, trouble == nil { trouble = .locked }
+            } catch {}
+        }
+        apply(found, trouble: trouble)
+    }
+
+    private func isBusy(_ tab: DeviceTab) -> Bool {
+        transfers.contains { $0.state.isActive && $0.deviceKey == tab.info.key }
+            || (tab.slot == selectedSlot && !loadingKeys.isEmpty)
+    }
+
+    private func apply(_ found: [DeviceTab], trouble: Connection?) {
+        let gone = devices.filter { d in !found.contains { $0.slot == d.slot } }
+        for d in gone {
+            views[d.slot] = nil
+            introduced.remove(d.info.key)
+        }
+        if devices != found { devices = found }
+        // Кабель могли переподключить быстрее, чем прошёл один опрос, — продолжаем оборванное всегда.
+        for d in found { resumeWaiting(for: d.info.key) }
+
+        if let sel = selectedSlot, let tab = found.first(where: { $0.slot == sel }) {
+            svc = tab.service
+            setConnection(.connected(tab.info))
             if nintendoWithoutMTP { nintendoWithoutMTP = false }
-            if !wasConnected || !info.storages.contains(where: { $0.id == storageID }) {
+            if !tab.info.storages.contains(where: { $0.id == storageID }), let first = tab.info.storages.first {
                 cache = [:]
                 expanded = []
-                selectStorage(info.storages[0].id)
-                deviceConnected(info)
-                lastDeviceKey = info.key
+                selectStorage(first.id)
             }
-            // Кабель могли переподключить быстрее, чем прошёл один опрос, — продолжаем оборванное всегда.
-            resumeWaiting(for: info.key)
-        } catch let e as MTPError {
-            switch e {
-            case .busy: setConnection(.busy)
-            case .locked: setConnection(.locked)
-            default: setConnection(.searching)
-            }
+        } else if let first = found.first {
+            // Текущее устройство пропало (или его не было) — переходим на первое из оставшихся.
+            if selectedSlot != nil { resetDevice() }
+            show(first)
+        } else {
+            let wasConnected = device != nil
+            selectedSlot = nil
+            setConnection(trouble ?? .searching)
             if wasConnected { resetDevice() }
             let nintendo = connection == .searching && USBProbe.nintendoPresent()
             if nintendo != nintendoWithoutMTP { nintendoWithoutMTP = nintendo }
-        } catch {
-            setConnection(.searching)
         }
+    }
+
+    /// Переключиться на вкладку устройства.
+    func selectDevice(_ slot: String) {
+        guard slot != selectedSlot, let tab = devices.first(where: { $0.slot == slot }) else { return }
+        // Запомнить, что было открыто на прежнем устройстве.
+        if let cur = selectedSlot {
+            views[cur] = DeviceView(storageID: storageID, androidPath: androidPath, cache: cache, expanded: expanded,
+                                    activeQuick: activeQuick, viewMode: viewMode, newPhotos: newPhotos)
+        }
+        clearSearch()
+        androidSelection = []
+        Thumbnails.shared.cancelQueued()
+        show(tab)
+    }
+
+    private func show(_ tab: DeviceTab) {
+        selectedSlot = tab.slot
+        svc = tab.service
+        setConnection(.connected(tab.info))
+        if nintendoWithoutMTP { nintendoWithoutMTP = false }
+        if let v = views[tab.slot] {
+            storageID = v.storageID
+            androidPath = v.androidPath
+            cache = v.cache
+            expanded = v.expanded
+            activeQuick = v.activeQuick
+            viewMode = v.viewMode
+            newPhotos = v.newPhotos
+        } else {
+            cache = [:]
+            expanded = []
+            newPhotos = []
+            if let first = tab.info.storages.first { selectStorage(first.id) }
+        }
+        if introduced.insert(tab.info.key).inserted {
+            lastDeviceKey = tab.info.key
+            deviceConnected(tab.info)
+        }
+    }
+
+    /// Сервис устройства по его ключу — передача после обрыва продолжается на нём, где бы он ни был.
+    func service(for key: String) -> DeviceService? {
+        devices.first { $0.info.key == key }?.service
     }
 
     /// Не публиковать одно и то же каждые 2 секунды — иначе всё окно перерисовывается без нужды.
@@ -289,11 +412,14 @@ final class AppState: ObservableObject {
 
     /// Устройство подключилось: продолжить оборванные передачи, проверить новые фото, синхронизировать.
     private func deviceConnected(_ info: DeviceInfo) {
+        Achievements.shared.recordDevice(console: info.kind == .console)
         if info.kind == .phone {
             // Сначала индекс папки фото, потом подсчёт новых — иначе уже скачанное посчитается новым.
             Task {
                 await refreshPhotosIndexNow()
                 await refreshNewPhotos()
+                // Автоимпорт: новые фото скачиваются сами, даже если окно закрыто.
+                if AppSettings.shared.autoImport, !newPhotos.isEmpty { importNewPhotos() }
             }
             if AppSettings.shared.autoSync { runSyncs(SyncStore.shared.rules(for: info.key).filter(\.enabled)) }
         }
@@ -526,18 +652,20 @@ final class AppState: ObservableObject {
              work: @escaping (DeviceService, Transfer) throws -> URL?) {
         transfers.insert(t, at: 0)
         Notifier.prepare()
+        let started = svc
         t.restart = { [weak self, weak t] in
             guard let self, let t else { return }
-            self.execute(t, completion: completion, work: work)
+            // После обрыва то же устройство могло вернуться на другом месте шины — ищем его по ключу.
+            self.execute(t, on: self.service(for: t.deviceKey) ?? started, completion: completion, work: work)
         }
-        execute(t, completion: completion, work: work)
+        execute(t, on: started, completion: completion, work: work)
     }
 
-    private func execute(_ t: Transfer, completion: (@MainActor (Transfer) -> Void)?,
+    private func execute(_ t: Transfer, on service: DeviceService, completion: (@MainActor (Transfer) -> Void)?,
                          work: @escaping (DeviceService, Transfer) throws -> URL?) {
         Task {
             do {
-                let url = try await svc.run { svc -> URL? in
+                let url = try await service.run { svc -> URL? in
                     if t.token.isCancelled { throw MTPError.cancelled }
                     t.began()
                     return try work(svc, t)
@@ -560,7 +688,10 @@ final class AppState: ObservableObject {
             date: Date(), name: (t.label.map { $0 + ": " } ?? "") + t.name, toMac: t.direction == .toMac,
             bytes: t.total, device: device?.name ?? "", macPath: t.resultURL?.path,
             ok: t.state == .done, note: { if case .failed(let m) = t.state { return m }; return nil }()))
-        if t.state == .done { batchCount += 1; batchBytes += t.total }
+        if t.state == .done {
+            batchCount += 1; batchBytes += t.total
+            Achievements.shared.recordTransfer(bytes: t.total, label: t.label, resumed: t.attempts > 0)
+        }
         if !hasActiveTransfers { Thumbnails.shared.resume() }
         if case .failed = t.state { Mascot.shared.react(.failed) }
         if !transfers.contains(where: { $0.state.isActive }), batchCount > 0 {
@@ -607,5 +738,10 @@ final class AppState: ObservableObject {
     #if DEBUG
     /// Для снимков: подложить содержимое папки без устройства.
     func previewSet(_ key: FolderKey, _ items: [RemoteItem]) { cache[key] = items }
+    /// Для снимков: вкладки нескольких устройств.
+    func previewDevices(_ list: [DeviceInfo], selected: Int) {
+        devices = list.enumerated().map { DeviceTab(slot: "p\($0.offset)", info: $0.element, service: DeviceService(drivers: [])) }
+        selectedSlot = devices[selected].slot
+    }
     #endif
 }

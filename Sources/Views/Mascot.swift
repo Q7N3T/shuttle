@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Модель: что маскот говорит и как себя чувствует
 
@@ -13,7 +14,10 @@ final class Mascot: ObservableObject {
     enum Mood { case calm, happy, sad, hot }
     enum Event {
         case connected(console: Bool), disconnected, done(Int), failed, newPhotos(Int), error
+        case lowBattery(Int), batteryOK, achievement(String)
     }
+    /// Что надето на голову: зависит от даты и времени.
+    enum Hat { case none, nightcap, newYear, party }
 
     /// Напечатанная часть реплики. nil — облачко скрыто.
     @Published private(set) var shown: String?
@@ -23,6 +27,10 @@ final class Mascot: ObservableObject {
     @Published private(set) var hops = 0
     /// Поднял ручки и машет (после удачной передачи).
     @Published private(set) var cheering = false
+    /// Телефон почти разряжен — маскот тоже клюёт носом.
+    @Published private(set) var tired = false
+    /// Танцует после секретного кода.
+    @Published private(set) var dancing = false
 
     private var task: Task<Void, Never>?
     private var bag: [Int] = []
@@ -30,6 +38,50 @@ final class Mascot: ObservableObject {
     private var streakReset: Task<Void, Never>?
     private var lastAuto = Date.distantPast
     private var greeted = false
+    private var konami: [UInt16] = []
+    private var keyMonitor: Any?
+
+    /// День рождения — дата первого выпуска Shuttle.
+    static let birthday = DateComponents(month: 11, day: 7)
+
+    init() {
+        guard !AppFolders.testing else { return }
+        // Секретный код ↑↑↓↓←→←→BA — слушаем клавиатуру, но ничего у окна не забираем.
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] e in
+            MainActor.assumeIsolated { self?.key(e.keyCode) }
+            return e
+        }
+    }
+
+    private func key(_ code: UInt16) {
+        let seq: [UInt16] = [126, 126, 125, 125, 123, 124, 123, 124, 11, 0]
+        konami.append(code)
+        if konami.count > seq.count { konami.removeFirst(konami.count - seq.count) }
+        if konami == seq { konami = []; dance() }
+    }
+
+    func dance() {
+        guard !dancing else { return }
+        dancing = true
+        say(L("Секретный код принят. ‖ Включаю режим диско!"), mood: .happy)
+        Achievements.shared.recordKonami()
+        Task { [weak self] in
+            for _ in 0..<8 {
+                try? await Task.sleep(for: .milliseconds(480))
+                self?.hop()
+            }
+            self?.dancing = false
+        }
+    }
+
+    static func hat(at date: Date = Date()) -> Hat {
+        let cal = Calendar.current
+        let c = cal.dateComponents([.month, .day, .hour], from: date)
+        if c.month == birthday.month && c.day == birthday.day { return .party }
+        if (c.month == 12 && (c.day ?? 0) >= 20) || (c.month == 1 && (c.day ?? 0) <= 10) { return .newYear }
+        if let h = c.hour, h >= 23 || h < 6 { return .nightcap }
+        return .none
+    }
 
     // MARK: Реплики
 
@@ -70,6 +122,7 @@ final class Mascot: ObservableObject {
 
     func click() {
         hop()
+        Achievements.shared.recordClick()
         streak += 1
         streakReset?.cancel()
         streakReset = Task { [weak self] in
@@ -90,7 +143,15 @@ final class Mascot: ObservableObject {
         default:
             if !greeted {
                 greeted = true
-                say(L("Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает."))
+                if Self.hat() == .party {
+                    say(L("Сегодня мой день рождения! ‖ Торт виртуальный, но поздравления настоящие."), mood: .happy)
+                } else if tired {
+                    say(L("Я немного устал. ‖ Телефон почти сел, а мы с ним на одной волне."))
+                } else {
+                    say(L("Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает."))
+                }
+            } else if let joke = Achievements.shared.monthJoke, Int.random(in: 0..<7) == 0 {
+                say(joke)
             } else {
                 if bag.isEmpty { bag = Array(jokes.indices).shuffled() }
                 say(jokes[bag.removeLast()])
@@ -114,6 +175,15 @@ final class Mascot: ObservableObject {
             auto(L("Что-то не перенеслось. ‖ Не я. Наверное."), .sad, force: true)
         case .newPhotos(let n):
             auto(L("На телефоне новые фото: %d. ‖ Одна кнопка — и они на Mac.", n), .happy)
+        case .lowBattery(let b):
+            tired = true
+            auto(L("Заряд телефона: %d%%. ‖ *зевает* Я тоже на последних процентах.", b), .calm, force: true)
+        case .batteryOK:
+            tired = false
+        case .achievement(let title):
+            cheer()
+            hop()
+            auto(L("Новое достижение: «%@»! ‖ Значок — в настройках.", title), .happy, force: true)
         case .error:
             mood = .sad
             Task { [weak self] in
@@ -220,16 +290,20 @@ final class Mascot: ObservableObject {
 // MARK: - Спрайт
 
 /// Пиксельный маскот: та же сетка 32×30, что на сайте. В шапке ручки и ножки спрятаны,
-/// ручки появляются, когда он радуется.
+/// ручки появляются, когда он радуется; ножки — когда бежит по полоске передачи.
 struct MascotSprite: View {
+    enum Arms { case hidden, down, cheer(up: Bool), dance(left: Bool) }
+
     var scale: CGFloat = 1
     var blink = false
     var antennaUp = false
     var talking = false
-    var arms: CGFloat = 0          // 0 — спрятаны, 1 — подняты
-    var waveUp = false
+    var arms: Arms = .hidden
     var mood: Mascot.Mood = .calm
-    var legs = false
+    var tired = false
+    var hat: Mascot.Hat = .none
+    /// nil — без ножек; 0/1 — шаг левой или правой.
+    var step: Int? = nil
 
     private typealias R = (Int, Int, Int, Int)
     private static func mir(_ r: [R]) -> [R] { r.map { (32 - $0.0 - $0.2, $0.1, $0.2, $0.3) } }
@@ -242,24 +316,37 @@ struct MascotSprite: View {
     private static let glint: [R] = [(8, 1, 1, 1), (23, 1, 1, 1)]
     private static let eyeL: [R] = [(13, 11, 2, 1), (12, 12, 2, 1), (11, 13, 2, 1), (12, 14, 2, 1), (13, 15, 2, 1)]
     private static let eyes = eyeL + mir(eyeL)
-    // грустные глаза — опущенные полоски
+    private static let closed: [R] = [(11, 13, 4, 1)] + mir([(11, 13, 4, 1)])
+    // сонные глаза: верхняя половина «закрыта веком»
+    private static let sleepy: [R] = [(11, 13, 4, 1), (12, 14, 2, 1), (13, 15, 2, 1)] + mir([(11, 13, 4, 1), (12, 14, 2, 1), (13, 15, 2, 1)])
     private static let sadEyes: [R] = [(11, 13, 4, 1), (12, 14, 2, 1)] + mir([(11, 13, 4, 1), (12, 14, 2, 1)])
     private static let cheeks: [R] = [(8, 16, 2, 1)] + mir([(8, 16, 2, 1)])
     private static let smile: [R] = [(14, 17, 1, 1), (15, 18, 2, 1), (17, 17, 1, 1)]
     private static let frown: [R] = [(14, 18, 1, 1), (15, 17, 2, 1), (17, 18, 1, 1)]
+    private static let yawn: [R] = [(15, 17, 2, 2)]
     private static let talk: [R] = [(14, 17, 4, 2)]
     private static let tongue: [R] = [(15, 18, 2, 1)]
+    // ручка вниз, ручка вверх
     private static let arm: [R] = [(5, 12, 1, 2), (4, 13, 1, 2), (3, 14, 1, 2)]
     private static let cuff: [R] = [(2, 16, 3, 1)]
     private static let glove: [R] = [(1, 17, 4, 3), (0, 18, 1, 1), (2, 20, 2, 1)]
-    // поднятая ручка: вверх-наружу
     private static let armUp: [R] = [(5, 11, 1, 2), (4, 9, 1, 2), (3, 7, 1, 2)]
     private static let cuffUp: [R] = [(2, 6, 3, 1)]
     private static let gloveUp: [R] = [(1, 3, 4, 3), (0, 4, 1, 1), (2, 2, 2, 1)]
+    // ножки
     private static let leg: [R] = [(12, 23, 2, 3)]
     private static let sock: [R] = [(12, 26, 2, 1)]
     private static let shoe: [R] = [(9, 27, 5, 2)]
     private static let sole: [R] = [(9, 29, 5, 1)]
+    // шапки
+    private static let nightcap: [R] = [(9, 7, 14, 1), (10, 5, 12, 2), (12, 3, 9, 2), (15, 1, 6, 2), (20, 0, 3, 1)]
+    private static let nightcapStripe: [R] = [(12, 4, 9, 1), (16, 1, 5, 1)]
+    private static let nightcapPom: [R] = [(23, 0, 2, 2)]
+    private static let santa: [R] = [(10, 5, 12, 2), (11, 3, 9, 2), (11, 1, 6, 2), (10, 0, 3, 1)]
+    private static let santaBrim: [R] = [(9, 6, 14, 2)]
+    private static let santaPom: [R] = [(7, 0, 3, 2)]
+    private static let party: [R] = [(11, 6, 10, 1), (12, 4, 8, 2), (13, 2, 6, 2), (15, 0, 2, 2)]
+    private static let partyStripe: [R] = [(12, 5, 8, 1), (14, 2, 4, 1)]
 
     private static let gold = Color(hex: 0xE9B949), goldDark = Color(hex: 0xC99632), goldLight = Color(hex: 0xF8DC8B)
     private static let ink = Color(hex: 0x1F1822), blush = Color(hex: 0xE8796E)
@@ -274,34 +361,51 @@ struct MascotSprite: View {
                                          width: CGFloat(r.2) * s, height: CGFloat(r.3) * s)), with: .color(c))
                 }
             }
-            if legs {
-                for side in [false, true] {
+            if let step {
+                for (i, side) in [false, true].enumerated() {
                     let m: ([R]) -> [R] = side ? Self.mir : { $0 }
-                    fill(m(Self.leg), Self.goldDark); fill(m(Self.sock), Self.white)
-                    fill(m(Self.shoe), Self.shoeC); fill(m(Self.sole), Self.soleC)
+                    let lift: CGFloat = step == i ? -1 : 0
+                    fill(m(Self.leg), Self.goldDark, dy: lift); fill(m(Self.sock), Self.white, dy: lift)
+                    fill(m(Self.shoe), Self.shoeC, dy: lift); fill(m(Self.sole), Self.soleC, dy: lift)
                 }
             }
-            // ручки: выдвигаются из корпуса
-            if arms > 0 {
-                let pull = (1 - arms) * 4
-                fill(Self.arm, Self.goldDark, dx: pull); fill(Self.cuff, Self.cuffC, dx: pull); fill(Self.glove, Self.white, dx: pull)
-                let up = waveUp
-                fill(Self.mir(up ? Self.armUp : Self.arm), Self.goldDark, dx: -pull)
-                fill(Self.mir(up ? Self.cuffUp : Self.cuff), Self.cuffC, dx: -pull)
-                fill(Self.mir(up ? Self.gloveUp : Self.glove), Self.white, dx: -pull)
+            func drawArm(left: Bool, up: Bool) {
+                let m: ([R]) -> [R] = left ? { $0 } : Self.mir
+                fill(m(up ? Self.armUp : Self.arm), Self.goldDark)
+                fill(m(up ? Self.cuffUp : Self.cuff), Self.cuffC)
+                fill(m(up ? Self.gloveUp : Self.glove), Self.white)
             }
-            let ay: CGFloat = antennaUp ? -1 : 0
-            fill(Self.stem, Self.goldDark, dy: ay); fill(Self.ball, Self.gold, dy: ay); fill(Self.glint, Color(hex: 0xFFF1C4), dy: ay)
-            let bodyC = mood == .hot ? Color(hex: 0xF0874A) : Self.gold
-            fill(Self.body, bodyC); fill(Self.shade, mood == .hot ? Color(hex: 0xC9622E) : Self.goldDark); fill(Self.shine, Self.goldLight)
-            if blink {
-                fill([(11, 13, 4, 1)] + Self.mir([(11, 13, 4, 1)]), Self.ink)
-            } else {
-                fill(mood == .sad ? Self.sadEyes : Self.eyes, Self.ink)
+            switch arms {
+            case .hidden: break
+            case .down: drawArm(left: true, up: false); drawArm(left: false, up: false)
+            case .cheer(let up): drawArm(left: true, up: false); drawArm(left: false, up: up)
+            case .dance(let left): drawArm(left: true, up: left); drawArm(left: false, up: !left)
             }
-            fill(Self.cheeks, Self.blush.opacity(mood == .happy || mood == .hot ? 0.9 : 0.55))
+            if hat == .none {
+                let ay: CGFloat = antennaUp ? -1 : 0
+                fill(Self.stem, Self.goldDark, dy: ay); fill(Self.ball, Self.gold, dy: ay); fill(Self.glint, Color(hex: 0xFFF1C4), dy: ay)
+            }
+            let hot = mood == .hot
+            fill(Self.body, hot ? Color(hex: 0xF0874A) : Self.gold)
+            fill(Self.shade, hot ? Color(hex: 0xC9622E) : Self.goldDark)
+            fill(Self.shine, Self.goldLight)
+            switch hat {
+            case .none: break
+            case .nightcap:
+                fill(Self.nightcap, Color(hex: 0x4F6BD8)); fill(Self.nightcapStripe, Color(hex: 0x7D95F0)); fill(Self.nightcapPom, Self.white)
+            case .newYear:
+                fill(Self.santa, Color(hex: 0xD94040)); fill(Self.santaBrim, Self.white); fill(Self.santaPom, Self.white)
+            case .party:
+                fill(Self.party, Color(hex: 0x8B5CF6)); fill(Self.partyStripe, Self.blush); fill([(15, 0, 2, 1)], Self.gold)
+            }
+            if blink { fill(Self.closed, Self.ink) }
+            else if tired { fill(Self.sleepy, Self.ink) }
+            else { fill(mood == .sad ? Self.sadEyes : Self.eyes, Self.ink) }
+            fill(Self.cheeks, Self.blush.opacity(mood == .happy || hot ? 0.9 : 0.55))
             if talking {
                 fill(Self.talk, Self.ink); fill(Self.tongue, Self.blush)
+            } else if tired {
+                fill(Self.yawn, Self.ink)
             } else {
                 fill(mood == .sad ? Self.frown : Self.smile, Self.ink)
             }
@@ -313,7 +417,7 @@ struct MascotSprite: View {
 // MARK: - Маскот в шапке
 
 /// Маленький маскот вместо значка в шапке. Моргает, шевелит антеннами,
-/// подпрыгивает от радости и отвечает в облачке по клику.
+/// подпрыгивает от радости, надевает шапку по поводу и отвечает в облачке по клику.
 struct HeaderMascot: View {
     @ObservedObject private var m = Mascot.shared
     @Environment(\.isSnapshot) private var snap
@@ -322,11 +426,17 @@ struct HeaderMascot: View {
     @State private var lift: CGFloat = 0
     @State private var wave = false
     @State private var hover = false
+    @State private var hat = Mascot.hat()
+
+    private var arms: MascotSprite.Arms {
+        if snap { return .hidden }
+        if m.dancing { return .dance(left: wave) }
+        return m.cheering ? .cheer(up: wave) : .hidden
+    }
 
     var body: some View {
         MascotSprite(scale: 1, blink: blink, antennaUp: antenna, talking: m.talking && !snap,
-                     arms: m.cheering ? 1 : 0, waveUp: wave, mood: snap ? .calm : m.mood)
-            .animation(.spring(response: 0.25, dampingFraction: 0.55), value: m.cheering)
+                     arms: arms, mood: snap ? .calm : m.mood, tired: m.tired && !snap, hat: snap ? .none : hat)
             .offset(y: lift)
             .rotationEffect(.degrees(hover && !snap ? -6 : 0), anchor: .bottom)
             .animation(.spring(response: 0.3, dampingFraction: 0.5), value: hover)
@@ -344,15 +454,16 @@ struct HeaderMascot: View {
             }
             .task {
                 guard !snap else { return }
-                // моргание и антенны — в своём ритме, пока окно живо
+                // моргание, антенны, взмахи и шапка по часам — в своём ритме, пока окно живо
                 async let b: Void = loop(every: 3.6) {
                     blink = true
                     try? await Task.sleep(for: .milliseconds(130))
                     blink = false
                 }
                 async let a: Void = loop(every: 0.9) { antenna.toggle() }
-                async let w: Void = loop(every: 0.35) { if m.cheering { wave.toggle() } else { wave = false } }
-                _ = await (b, a, w)
+                async let w: Void = loop(every: 0.3) { if m.cheering || m.dancing { wave.toggle() } else { wave = false } }
+                async let h: Void = loop(every: 60) { hat = Mascot.hat() }
+                _ = await (b, a, w, h)
             }
     }
 
@@ -361,6 +472,37 @@ struct HeaderMascot: View {
             try? await Task.sleep(for: .seconds(seconds))
             await tick()
         }
+    }
+}
+
+// MARK: - Бегун на полоске передачи
+
+/// Крошечный маскот бежит по полоске прогресса; если связь прервалась — садится и ждёт.
+struct MascotRunner: View {
+    let fraction: Double
+    let waiting: Bool
+    @Environment(\.isSnapshot) private var snap
+    @Environment(\.palette) private var p
+
+    var body: some View {
+        GeometryReader { g in
+            let w: CGFloat = 32 * 0.5
+            TimelineView(.periodic(from: .now, by: 0.16)) { tl in
+                let phase = Int(tl.date.timeIntervalSinceReferenceDate / 0.16) % 2
+                ZStack(alignment: .topTrailing) {
+                    MascotSprite(scale: 0.5, blink: waiting, arms: waiting ? .hidden : .down,
+                                 tired: waiting, step: waiting ? nil : (snap ? 0 : phase))
+                        .offset(y: waiting ? 2 : (snap || phase == 0 ? 0 : -1))
+                    if waiting {
+                        Text("z").font(AppFont.pixel(9)).foregroundStyle(p.muted).offset(x: 6, y: -8)
+                    }
+                }
+                .offset(x: max(0, min(g.size.width - w, CGFloat(fraction) * g.size.width - w / 2)),
+                        y: -14)
+                .animation(.linear(duration: 0.2), value: fraction)
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 

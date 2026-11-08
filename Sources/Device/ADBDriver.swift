@@ -132,6 +132,19 @@ final class ADBDriver: DeviceDriver {
         }
     }
 
+    // MARK: Сверка: по ADB телефон сам считает размер и SHA-256
+
+    func remoteSize(_ id: UInt32) -> UInt64? {
+        guard let p = try? path(id), let out = try? shell("stat -c %s \(ADBDriver.quote(p))") else { return nil }
+        return UInt64(out.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    func sha256(_ item: RemoteItem) -> String? {
+        guard let p = try? path(item.id), let out = try? shell("sha256sum \(ADBDriver.quote(p))", timeout: 300) else { return nil }
+        let hex = out.split(separator: " ").first.map(String.init) ?? ""
+        return hex.count == 64 ? hex : nil
+    }
+
     func download(_ item: RemoteItem, to url: URL, offset: UInt64,
                   progress: @escaping (UInt64, UInt64) -> Bool) throws {
         let remote = try path(item.id)

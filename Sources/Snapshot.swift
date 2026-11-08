@@ -51,7 +51,7 @@ enum Snapshot {
             let t1 = Transfer(name: "VID_0815.mp4", direction: .toMac, label: L("Новое видео"))
             t1.state = .running; t1.sent = 193_000_000; t1.total = 312_000_000; t1.bytesPerSecond = 31_000_000
             let t2 = Transfer(name: "IMG_2041.jpg", direction: .toMac, label: L("Новое фото"))
-            t2.state = .done; t2.sent = 4_200_000; t2.total = 4_200_000
+            t2.state = .done; t2.sent = 4_200_000; t2.total = 4_200_000; t2.verified = true
             s.transfers = [t1, t2]
         } else {
         s.macURL = URL(fileURLWithPath: NSHomeDirectory() + "/Downloads")
@@ -65,8 +65,14 @@ enum Snapshot {
         let t1 = Transfer(name: "atmosphere-1.9.5.zip", direction: .toAndroid)
         t1.state = .running; t1.sent = 3_900_000; t1.total = 6_200_000; t1.bytesPerSecond = 31_000_000
         let t2 = Transfer(name: "DBI.nro", direction: .toAndroid)
-        t2.state = .done; t2.sent = 9_400_000; t2.total = 9_400_000
+        t2.state = .done; t2.sent = 9_400_000; t2.total = 9_400_000; t2.verified = true
         s.transfers = [t1, t2]
+        }
+        if args.contains("multi"), let cur = s.device {
+            let other = cur.kind == .console
+                ? DeviceInfo(name: "HUAWEI nova 9", kind: .phone, storages: [], battery: 72)
+                : DeviceInfo(name: "Nintendo Switch", kind: .console, storages: [], battery: nil)
+            s.previewDevices(cur.kind == .console ? [other, cur] : [cur, other], selected: cur.kind == .console ? 1 : 0)
         }
 
         let updates = UpdateModel(start: false)
@@ -80,7 +86,7 @@ enum Snapshot {
         if args.contains("installed") { updates.phase = .installed("0.3.1") }
         if args.contains("settings") {
             updates.resetSkipped()
-            let v = ThemedRoot(theme: dark ? .dark : .light) { SettingsView() }
+            let v = ThemedRoot(theme: dark ? .dark : .light) { SettingsView(startTab: args.contains("badges") ? 3 : 0) }
                 .environmentObject(updates).environment(\.isSnapshot, true)
             let r = ImageRenderer(content: v)
             r.scale = 2

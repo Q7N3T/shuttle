@@ -12,6 +12,7 @@ struct ShuttleApp: App {
         SelfTest.runIfRequested()
         MainActor.assumeIsolated { Snapshot.runIfRequested() }
         #endif
+        if !AppFolders.testing { MenuBarMode.install() }
     }
 
     var body: some Scene {
@@ -43,8 +44,9 @@ struct ShuttleApp: App {
 
         // SwiftUI записывает isInserted при каждой перестройке; запись того же значения
         // шлёт objectWillChange и зацикливает обновление — пишем только настоящие изменения.
-        MenuBarExtra(isInserted: Binding(get: { settings.menuBarIcon },
-                                         set: { if settings.menuBarIcon != $0 { settings.menuBarIcon = $0 } })) {
+        // В режиме строки меню значок нужен всегда — иначе до Shuttle не добраться.
+        MenuBarExtra(isInserted: Binding(get: { settings.menuBarIcon || settings.menuBarMode },
+                                         set: { if !settings.menuBarMode, settings.menuBarIcon != $0 { settings.menuBarIcon = $0 } })) {
             MenuBarView().environmentObject(state)
         } label: {
             Image(nsImage: MenuBarIcon.image)
@@ -97,5 +99,35 @@ final class SystemAppearance: ObservableObject {
         CFPreferencesAppSynchronize(kCFPreferencesAnyApplication)
         let v = CFPreferencesCopyAppValue("AppleInterfaceStyle" as CFString, kCFPreferencesAnyApplication) as? String
         return v == "Dark"
+    }
+}
+
+/// Режим строки меню: когда закрыто последнее окно, Shuttle уходит из Dock,
+/// а когда окно снова открыли — возвращается.
+@MainActor
+enum MenuBarMode {
+    private static var observers: [NSObjectProtocol] = []
+
+    static func install() {
+        let nc = NotificationCenter.default
+        observers.append(nc.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { n in
+            MainActor.assumeIsolated {
+                guard AppSettings.shared.menuBarMode, let w = n.object as? NSWindow, w.canBecomeMain else { return }
+                let others = NSApp.windows.filter { $0 !== w && $0.canBecomeMain && $0.isVisible }
+                if others.isEmpty { NSApp.setActivationPolicy(.accessory) }
+            }
+        })
+        observers.append(nc.addObserver(forName: NSWindow.didBecomeMainNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated {
+                if NSApp.activationPolicy() != .regular { NSApp.setActivationPolicy(.regular) }
+            }
+        })
+    }
+
+    /// Показать окно Shuttle (из меню): вернуть значок в Dock и вывести окно вперёд.
+    static func showWindow(open: () -> Void) {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        if let w = NSApp.windows.first(where: { $0.canBecomeMain }) { w.makeKeyAndOrderFront(nil) } else { open() }
     }
 }

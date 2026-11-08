@@ -21,7 +21,36 @@ final class MTPDriver: DeviceDriver {
     private var vendorID: UInt16 = 0
     private var partial = false
 
-    init() { LIBMTP_Init() }
+    /// Физическое устройство на шине USB. nil — первое найденное (как раньше, для самопроверки).
+    struct RawID: Hashable, Sendable {
+        let bus: UInt32
+        let devnum: UInt8
+        let vendor: UInt16
+        var slot: String { "mtp:\(bus):\(devnum)" }
+    }
+    let target: RawID?
+
+    init(target: RawID? = nil) {
+        LIBMTP_Init()
+        self.target = target
+    }
+
+    /// Все MTP-устройства, видимые сейчас по USB.
+    static func detect() -> [RawID] {
+        LIBMTP_Init()
+        var raw: UnsafeMutablePointer<LIBMTP_raw_device_t>?
+        var count: Int32 = 0
+        let err = LIBMTP_Detect_Raw_Devices(&raw, &count)
+        guard err == LIBMTP_ERROR_NONE, count > 0, let raw else {
+            if let raw { free(raw) }
+            return []
+        }
+        defer { free(raw) }
+        return (0..<Int(count)).map { i in
+            let r = raw[i]
+            return RawID(bus: r.bus_location, devnum: r.devnum, vendor: r.device_entry.vendor_id)
+        }
+    }
 
     var supportsPartialDownload: Bool { partial }
 
@@ -37,8 +66,16 @@ final class MTPDriver: DeviceDriver {
                 throw MTPError.notConnected
             }
             defer { free(raw) }
-            vendorID = raw.pointee.device_entry.vendor_id
-            guard let dev = LIBMTP_Open_Raw_Device_Uncached(raw) else { throw MTPError.busy }
+            // Своё устройство среди найденных: по шине и номеру на ней.
+            var index = 0
+            if let target {
+                guard let i = (0..<Int(count)).first(where: { raw[$0].bus_location == target.bus && raw[$0].devnum == target.devnum })
+                else { throw MTPError.notConnected }
+                index = i
+            }
+            let entry = raw.advanced(by: index)
+            vendorID = entry.pointee.device_entry.vendor_id
+            guard let dev = LIBMTP_Open_Raw_Device_Uncached(entry) else { throw MTPError.busy }
             device = dev
             partial = LIBMTP_Check_Capability(dev, LIBMTP_DEVICECAP_GetPartialObject) != 0
         }
@@ -216,6 +253,27 @@ final class MTPDriver: DeviceDriver {
         var data: UnsafeMutablePointer<UInt8>?
         var size: UInt32 = 0
         let r = LIBMTP_Get_Thumbnail(dev, item.id, &data, &size)
+        defer { if let data { free(data) } }
+        guard r == 0, let data, size > 0 else { LIBMTP_Clear_Errorstack(dev); return nil }
+        return Data(bytes: data, count: Int(size))
+    }
+
+    // MARK: Сверка
+
+    func remoteSize(_ id: UInt32) -> UInt64? {
+        guard let dev = device, let f = LIBMTP_Get_Filemetadata(dev, id) else {
+            if let device { LIBMTP_Clear_Errorstack(device) }
+            return nil
+        }
+        defer { LIBMTP_destroy_file_t(f) }
+        return f.pointee.filesize
+    }
+
+    func readRange(_ item: RemoteItem, offset: UInt64, length: UInt32) -> Data? {
+        guard let dev = device, partial, length > 0 else { return nil }
+        var data: UnsafeMutablePointer<UInt8>?
+        var size: UInt32 = 0
+        let r = LIBMTP_GetPartialObject(dev, item.id, offset, length, &data, &size)
         defer { if let data { free(data) } }
         guard r == 0, let data, size > 0 else { LIBMTP_Clear_Errorstack(dev); return nil }
         return Data(bytes: data, count: Int(size))

@@ -8,10 +8,14 @@ import UniformTypeIdentifiers
 final class MockDriver: DeviceDriver {
     enum Kind: String { case phone, console = "switch" }
 
-    static var requestedKind: Kind? {
+    static var requestedKind: Kind? { requestedKinds?.first }
+
+    /// `--mock-device phone|switch|both` — одно тестовое устройство или сразу два.
+    static var requestedKinds: [Kind]? {
         let a = CommandLine.arguments
         guard let i = a.firstIndex(of: "--mock-device"), i + 1 < a.count else { return nil }
-        return Kind(rawValue: a[i + 1])
+        if a[i + 1] == "both" { return [.phone, .console] }
+        return Kind(rawValue: a[i + 1]).map { [$0] }
     }
 
     struct Node {
@@ -170,6 +174,14 @@ final class MockDriver: DeviceDriver {
     func children(of id: UInt32) -> [Node] { nodes.values.filter { $0.parent == id } }
 
     // MARK: Внутреннее
+
+    func remoteSize(_ id: UInt32) -> UInt64? { nodes[id].map { UInt64($0.data.count) } }
+
+    func readRange(_ item: RemoteItem, offset: UInt64, length: UInt32) -> Data? {
+        guard let d = nodes[item.id]?.data, offset < UInt64(d.count) else { return nil }
+        let end = min(d.count, Int(offset) + Int(length))
+        return d.subdata(in: Int(offset)..<end)
+    }
 
     private func check() throws {
         guard connected else { throw MTPError.interrupted }

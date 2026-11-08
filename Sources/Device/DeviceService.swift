@@ -238,6 +238,19 @@ final class DeviceService: @unchecked Sendable {
                     progress(base + sent, total)
                     return !token.isCancelled
                 }
+                // Сверка: на Mac должно лечь ровно столько, сколько на устройстве. Нет — качаем заново.
+                if it.size > 0, localSize(dest) != it.size {
+                    try? fm.removeItem(at: dest)
+                    try d.download(it, to: dest, offset: 0) { sent, _ in
+                        progress(base + sent, total)
+                        return !token.isCancelled
+                    }
+                    if localSize(dest) != it.size {
+                        try? fm.removeItem(at: dest)
+                        throw MTPError.failed(L("«%@» скачался не полностью", it.name))
+                    }
+                }
+                token.noteVerified()
             } catch MTPError.interrupted {
                 // Обрыв: недокачанное оставляем — продолжим с этого места.
                 throw MTPError.interrupted
@@ -303,10 +316,24 @@ final class DeviceService: @unchecked Sendable {
             let base = done
             partialUploads.insert(key)
             do {
-                try d.upload(url, parent: parent, storage: storage) { sent, _ in
+                var id = try d.upload(url, parent: parent, storage: storage) { sent, _ in
                     progress(base + sent, total)
                     return !token.isCancelled
                 }
+                // Сверка: устройство должно сообщить тот же размер. Файл явно обрезан — загружаем ещё раз.
+                // Больше или ноль (DBI устанавливает и убирает файл) — не трогаем: это не обрыв.
+                if let got = d.remoteSize(id), got > 0, got < size {
+                    try? d.delete(id)
+                    id = try d.upload(url, parent: parent, storage: storage) { sent, _ in
+                        progress(base + sent, total)
+                        return !token.isCancelled
+                    }
+                    if let again = d.remoteSize(id), again > 0, again < size {
+                        try? d.delete(id)
+                        throw MTPError.failed(L("«%@» загрузился не полностью", name))
+                    }
+                }
+                if d.remoteSize(id) == size { token.noteVerified() }
                 partialUploads.remove(key)
             } catch MTPError.interrupted {
                 throw MTPError.interrupted
@@ -318,5 +345,28 @@ final class DeviceService: @unchecked Sendable {
         }
         for u in urls { try send(u, parent: parent) }
         progress(total, total)
+    }
+
+    // MARK: Сверка с копией на Mac
+
+    enum Sameness { case identical, different, unknown }
+
+    /// Тот же ли это файл, что на Mac. Размер обязателен; дальше — SHA-256 на устройстве (ADB)
+    /// или три пробы содержимого по 64 КБ: начало, середина, конец (MTP).
+    func compare(_ item: RemoteItem, with url: URL) -> Sameness {
+        guard let d = active, item.size > 0, localSize(url) == item.size else { return .different }
+        if let remote = d.sha256(item) {
+            return remote.lowercased() == sha256Hex(of: url) ? .identical : .different
+        }
+        let len = UInt32(min(UInt64(64 * 1024), item.size))
+        let offsets = Set([0, (item.size - UInt64(len)) / 2, item.size - UInt64(len)])
+        guard let h = try? FileHandle(forReadingFrom: url) else { return .unknown }
+        defer { try? h.close() }
+        for off in offsets.sorted() {
+            guard let remote = d.readRange(item, offset: off, length: len) else { return .unknown }
+            try? h.seek(toOffset: off)
+            guard let local = try? h.read(upToCount: Int(len)), local == remote else { return .different }
+        }
+        return .identical
     }
 }

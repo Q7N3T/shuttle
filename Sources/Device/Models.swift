@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 let mtpRoot: UInt32 = 0xFFFF_FFFF
 
@@ -93,8 +94,12 @@ enum MTPError: LocalizedError, Equatable {
 final class CancelToken: @unchecked Sendable {
     private let lock = NSLock()
     private var flag = false
+    private var checked = 0
     var isCancelled: Bool { lock.lock(); defer { lock.unlock() }; return flag }
     func cancel() { lock.lock(); flag = true; lock.unlock() }
+    /// Сколько файлов этой передачи сверено после копирования.
+    var verified: Int { lock.lock(); defer { lock.unlock() }; return checked }
+    func noteVerified() { lock.lock(); checked += 1; lock.unlock() }
 }
 
 func localSize(_ url: URL) -> UInt64 {
@@ -102,7 +107,8 @@ func localSize(_ url: URL) -> UInt64 {
     var isDir: ObjCBool = false
     guard fm.fileExists(atPath: url.path, isDirectory: &isDir) else { return 0 }
     if !isDir.boolValue {
-        return UInt64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+        // Не resourceValues: URL кэширует размер, и после дописывания файла вернулся бы старый.
+        return (try? fm.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.uint64Value ?? 0
     }
     var sum: UInt64 = 0
     if let en = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
@@ -129,4 +135,13 @@ func uniqueURL(_ url: URL) -> URL {
         if !fm.fileExists(atPath: candidate.path) { return candidate }
         n += 1
     }
+}
+
+/// SHA-256 файла на Mac, читаем кусками по 1 МБ.
+func sha256Hex(of url: URL) -> String? {
+    guard let h = try? FileHandle(forReadingFrom: url) else { return nil }
+    defer { try? h.close() }
+    var hasher = SHA256()
+    while let chunk = try? h.read(upToCount: 1 << 20), !chunk.isEmpty { hasher.update(data: chunk) }
+    return hasher.finalize().map { String(format: "%02x", $0) }.joined()
 }

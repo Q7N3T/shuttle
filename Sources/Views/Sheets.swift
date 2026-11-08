@@ -9,6 +9,7 @@ struct AppSheets: ViewModifier {
             .sheet(isPresented: $state.showHistory) { Themed { HistorySheet() } }
             .sheet(isPresented: $state.showSync) { Themed { SyncSheet() } }
             .sheet(isPresented: $state.showDuplicates) { Themed { DuplicatesSheet() } }
+            .sheet(isPresented: $state.showCleanup) { Themed { CleanupSheet() } }
             .sheet(item: $state.renameRequest) { r in Themed { RenameSheet(request: r) } }
             .sheet(item: $state.pendingInstall) { i in Themed { InstallSheet(install: i) } }
             .sheet(isPresented: Binding(get: { state.pendingHomebrew != nil }, set: { if !$0 { state.pendingHomebrew = nil } })) {

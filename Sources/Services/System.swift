@@ -109,6 +109,8 @@ final class Thumbnails: ObservableObject {
     static let maxDownload: UInt64 = 3_000_000
     static let parallel = 2
     var isBusy: () -> Bool = { false }
+    /// Сервис устройства по его ключу: превью берём именно у того устройства, для которого просили.
+    var service: (String) -> DeviceService? = { _ in nil }
 
     func key(_ item: RemoteItem, _ device: String) -> String { "\(device)#\(item.id)#\(item.size)" }
 
@@ -156,7 +158,8 @@ final class Thumbnails: ObservableObject {
 
     private func run(_ job: (key: String, item: RemoteItem, device: String, download: Bool)) async {
         let item = job.item, device = job.device, allow = job.download
-        let data: Data? = try? await DeviceService.shared.run { svc in
+        guard let source = service(device) else { inFlight.remove(job.key); return }
+        let data: Data? = try? await source.run { svc -> Data? in
             if let t = svc.thumbnail(item) { return t }
             guard allow else { return nil }
             let tmp = PreviewCache.url(for: item, device: device)

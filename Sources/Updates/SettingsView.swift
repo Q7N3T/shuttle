@@ -8,7 +8,9 @@ struct SettingsView: View {
     @AppStorage("theme") private var theme: ThemeMode = .system
     @State private var wifiAddress = ""
     @State private var wifiResult: String?
-    @State private var tab = 0
+    @State private var tab: Int
+
+    init(startTab: Int = 0) { _tab = State(initialValue: startTab) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -19,17 +21,21 @@ struct SettingsView: View {
                     Text(L("Версия %@", updates.currentVersion)).font(AppFont.body(12)).foregroundStyle(p.muted)
                 }
                 Spacer()
-                HStack(spacing: 4) {
-                    tabChip(0, L("Основные"), "gearshape")
-                    tabChip(1, L("Устройства"), "cable.connector")
-                    tabChip(2, L("Обновления"), "arrow.triangle.2.circlepath")
-                }
             }
+            // Вкладки — отдельной строкой: четыре в одну строку с логотипом не помещаются.
+            HStack(spacing: 6) {
+                tabChip(0, L("Основные"), "gearshape")
+                tabChip(1, L("Устройства"), "cable.connector")
+                tabChip(2, L("Обновления"), "arrow.triangle.2.circlepath")
+                tabChip(3, L("Значки"), "rosette")
+            }
+            .fixedSize()
             UpdateCheckRow()
             Group {
                 switch tab {
                 case 1: devices
                 case 2: updatesSection
+                case 3: AchievementsView()
                 default: general
                 }
             }
@@ -75,6 +81,12 @@ struct SettingsView: View {
                               hint: L("Только если Shuttle в фоне."), isOn: $settings.notifications)
                 SettingToggle(title: L("Иконка в строке меню"),
                               hint: L("Устройство, свободное место и быстрые действия."), isOn: $settings.menuBarIcon)
+                SettingToggle(title: L("Работать из строки меню"),
+                              hint: L("Окно можно закрыть: Shuttle уйдёт из Dock в строку меню, передачи и автоимпорт продолжатся."),
+                              isOn: $settings.menuBarMode)
+                SettingToggle(title: L("Забирать новые фото сами"),
+                              hint: L("При подключении телефона новые фото и видео с камеры сразу скачиваются на Mac."),
+                              isOn: $settings.autoImport)
                 SettingToggle(title: L("Маскот комментирует"),
                               hint: L("Шаттл в шапке шутит о подключениях и передачах. По клику говорит всегда."),
                               isOn: $settings.mascotTalks)

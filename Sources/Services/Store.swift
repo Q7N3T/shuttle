@@ -61,8 +61,12 @@ final class AppSettings: ObservableObject {
     @Published var menuBarIcon: Bool { didSet { d.set(menuBarIcon, forKey: "menuBarIcon") } }
     /// Маскот в шапке сам комментирует подключения и передачи.
     @Published var mascotTalks: Bool { didSet { d.set(mascotTalks, forKey: "mascotTalks") } }
+    /// Без окна: Shuttle живёт в строке меню, передачи и автоимпорт идут дальше.
+    @Published var menuBarMode: Bool { didSet { d.set(menuBarMode, forKey: "menuBarMode") } }
+    /// Забирать новые фото сами при подключении телефона.
+    @Published var autoImport: Bool { didSet { d.set(autoImport, forKey: "autoImport") } }
     @Published var adbEnabled: Bool {
-        didSet { d.set(adbEnabled, forKey: "adbEnabled"); DeviceService.shared.reloadDrivers() }
+        didSet { d.set(adbEnabled, forKey: "adbEnabled"); DeviceHub.shared.reload() }
     }
     @Published var autoSync: Bool { didSet { d.set(autoSync, forKey: "autoSync") } }
     @Published var thumbnails: Bool { didSet { d.set(thumbnails, forKey: "thumbnails") } }
@@ -77,6 +81,8 @@ final class AppSettings: ObservableObject {
         heicToJPEG = d.bool(forKey: "heicToJPEG")
         menuBarIcon = d.bool(forKey: "menuBarIcon")
         mascotTalks = d.bool(forKey: "mascotTalks")
+        menuBarMode = d.bool(forKey: "menuBarMode")
+        autoImport = d.bool(forKey: "autoImport")
         adbEnabled = d.bool(forKey: "adbEnabled")
         autoSync = d.bool(forKey: "autoSync")
         thumbnails = d.bool(forKey: "thumbnails")

@@ -17,6 +17,10 @@ struct ContentView: View {
                     .padding(.horizontal, 14).frame(height: 52)
             }
             Rectangle().fill(p.line).frame(height: 1).padding(.bottom, 12)
+            if state.devices.count > 1 {
+                DeviceTabs().padding(.horizontal, 16).padding(.bottom, 10)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
             DeviceCard()
                 .padding(.horizontal, 16).padding(.bottom, 10)
             if let device = state.device {
@@ -40,14 +44,24 @@ struct ContentView: View {
         .overlay(alignment: .bottom) { ToastView().padding(.bottom, 150) }
         // облачко маскота — прямо под ним, хвостиком вверх
         .overlay(alignment: .topLeading) { MascotBubble().padding(.leading, snap ? 84 : 76).padding(.top, snap ? 46 : 0) }
-        .onChange(of: state.device?.key) { old, new in
-            if let new, new != old { Mascot.shared.react(.connected(console: state.device?.kind == .console)) }
-            else if new == nil, old != nil { Mascot.shared.react(.disconnected) }
+        // маскот радуется новому устройству и грустит, когда кабель выдернули (переключение вкладок — не повод)
+        .onChange(of: state.devices.map(\.info.key)) { old, new in
+            if let added = state.devices.first(where: { !old.contains($0.info.key) }) {
+                Mascot.shared.react(.connected(console: added.info.kind == .console))
+            } else if new.count < old.count {
+                Mascot.shared.react(.disconnected)
+            }
         }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: state.devices.count)
         .onChange(of: state.newPhotos.count) { old, new in
             if new > old, new > 0 { Mascot.shared.react(.newPhotos(new)) }
         }
         .onChange(of: state.errorMessage) { _, e in if e != nil { Mascot.shared.react(.error) } }
+        // телефон садится — маскот зевает; зарядили или отключили — бодрый
+        .onChange(of: state.device?.battery) { old, new in
+            if let new, new < 15, old == nil || old! >= 15 { Mascot.shared.react(.lowBattery(new)) }
+            else if new == nil || new! >= 20 { Mascot.shared.react(.batteryOK) }
+        }
         .toolbar {
             ToolbarItem(placement: .navigation) { brand }.withoutGlass()
             if #available(macOS 26.0, *) { ToolbarSpacer(.flexible) }
@@ -233,6 +247,8 @@ struct DeviceCard: View {
                     Chip(title: L("Снимок экрана"), icon: "camera.viewfinder") { state.takeScreenshot() }
                 }
                 Chip(title: L("Синхронизация"), icon: "arrow.triangle.2.circlepath") { state.showSync = true }
+                Chip(title: L("Освободить место"), icon: "externaldrive.badge.minus") { state.showCleanup = true }
+                    .help(L("Удалить с телефона то, что уже точно лежит на Mac"))
             } else {
                 if info.storage(where: \.isSaves) != nil {
                     Chip(title: L("Сохранить сейвы"), icon: "tray.and.arrow.down") { state.backupSaves() }
@@ -286,6 +302,40 @@ struct DeviceCard: View {
         case ..<65: "battery.50percent"
         case ..<90: "battery.75percent"
         default: "battery.100percent"
+        }
+    }
+}
+
+/// Вкладки устройств: телефон и Switch подключены одновременно — переключаемся одним кликом.
+struct DeviceTabs: View {
+    @EnvironmentObject private var state: AppState
+    @Environment(\.palette) private var p
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(state.devices) { d in
+                let on = d.slot == state.selectedSlot
+                let busy = state.transfers.contains { $0.state.isActive && $0.deviceKey == d.info.key }
+                Button { withAnimation(.easeOut(duration: 0.18)) { state.selectDevice(d.slot) } } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: d.info.kind == .console ? "gamecontroller" : "iphone.gen3")
+                            .font(.system(size: 12, weight: .medium))
+                        Text(d.info.name).font(AppFont.body(12, .medium)).lineLimit(1)
+                        if busy {
+                            ProgressView().controlSize(.mini).help(L("Идёт передача"))
+                        }
+                    }
+                    .padding(.horizontal, 12).frame(height: 28)
+                    .foregroundStyle(on ? p.ink : p.text)
+                    .background(Capsule().fill(on ? p.accent : p.surface))
+                    .overlay(Capsule().stroke(on ? Color.clear : p.line, lineWidth: 1))
+                    .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .help(d.info.kind == .console ? L("Nintendo Switch") : L("Телефон"))
+            }
+            Spacer()
+            Text(L("Устройств: %d", state.devices.count)).font(AppFont.body(11)).foregroundStyle(p.muted)
         }
     }
 }

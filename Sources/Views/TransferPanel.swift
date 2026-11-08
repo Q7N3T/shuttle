@@ -65,6 +65,12 @@ struct TransferRow: View {
             .frame(width: 220, alignment: .leading)
             ProgressTrack(value: transfer.fraction,
                           color: transfer.state == .done ? p.ok : (transfer.state == .waiting ? p.muted : nil))
+                // по полоске бежит маленький Шаттл; при обрыве садится и ждёт
+                .overlay {
+                    if transfer.state == .running || transfer.state == .waiting {
+                        MascotRunner(fraction: transfer.fraction, waiting: transfer.state == .waiting)
+                    }
+                }
             status.frame(width: 140, alignment: .trailing)
             trailing
         }
@@ -86,7 +92,13 @@ struct TransferRow: View {
             Label(L("Ждём устройство"), systemImage: "pause.circle").foregroundStyle(p.accent)
                 .help(L("Связь прервалась. Подключите то же устройство — передача продолжится сама."))
         case .done:
-            Text(formatBytes(transfer.total)).foregroundStyle(p.muted)
+            HStack(spacing: 6) {
+                if transfer.verified {
+                    Image(systemName: "checkmark.seal.fill").foregroundStyle(p.ok)
+                        .help(L("Сверено: на устройстве и на Mac одинаковый размер"))
+                }
+                Text(formatBytes(transfer.total)).foregroundStyle(p.muted)
+            }
         case .cancelled:
             Text(L("Отменено")).foregroundStyle(p.muted)
         case .failed(let m):

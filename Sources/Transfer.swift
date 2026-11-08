@@ -32,6 +32,8 @@ final class Transfer: ObservableObject, Identifiable {
     @Published var bytesPerSecond: Double = 0
     /// Куда легло на Mac, чтобы показать в Finder.
     @Published var resultURL: URL?
+    /// Файлы сверены после копирования: размеры на обоих концах совпали.
+    @Published var verified = false
 
     /// Запустить снова (после обрыва). Задаёт AppState.
     var restart: (() -> Void)?
@@ -85,6 +87,7 @@ final class Transfer: ObservableObject, Identifiable {
             state = .failed(error.localizedDescription)
         } else {
             sent = max(sent, total)
+            verified = token.verified > 0
             state = .done
         }
     }

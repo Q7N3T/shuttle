@@ -29,19 +29,23 @@ struct MenuBarView: View {
         } else {
             Text(L("Устройство не подключено"))
         }
-        let active = state.transfers.filter { $0.state.isActive }.count
-        if active > 0 {
+        let running = state.transfers.filter { $0.state.isActive || $0.state == .waiting }
+        if !running.isEmpty {
             Divider()
-            Text(L("В работе: %d", active))
+            Text(L("В работе: %d", running.count))
+            // Сами передачи с процентами — можно следить, не открывая окно.
+            ForEach(running.prefix(6)) { t in
+                Text(t.state == .waiting ? L("%@ — ждём устройство", t.name)
+                                         : "\(t.name) — \(Int(t.fraction * 100))%")
+            }
+            Button(L("Отменить все")) { running.forEach { $0.cancel() } }
         }
         Divider()
-        Button(L("Открыть Shuttle")) {
-            NSApp.activate(ignoringOtherApps: true)
-            if let w = NSApp.windows.first(where: { $0.canBecomeMain }) { w.makeKeyAndOrderFront(nil) }
-            else { openWindow(id: "main") }
-        }
+        Toggle(L("Забирать новые фото сами"), isOn: Binding(get: { AppSettings.shared.autoImport },
+                                                           set: { AppSettings.shared.autoImport = $0 }))
+        Button(L("Открыть Shuttle")) { MenuBarMode.showWindow { openWindow(id: "main") } }
         Button(L("История передач")) {
-            NSApp.activate(ignoringOtherApps: true)
+            MenuBarMode.showWindow { openWindow(id: "main") }
             state.showHistory = true
         }
         Divider()

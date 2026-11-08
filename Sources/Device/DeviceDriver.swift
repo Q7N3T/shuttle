@@ -27,9 +27,20 @@ protocol DeviceDriver: AnyObject {
 
     /// Маленькое превью (JPEG), если устройство умеет его отдавать.
     func thumbnail(_ item: RemoteItem) -> Data?
+
+    // Сверка: чем точнее умеет драйвер, тем надёжнее проверка.
+    /// Размер объекта на устройстве — после загрузки сравниваем с файлом на Mac.
+    func remoteSize(_ id: UInt32) -> UInt64?
+    /// Кусок файла с устройства — сравниваем пробы содержимого.
+    func readRange(_ item: RemoteItem, offset: UInt64, length: UInt32) -> Data?
+    /// SHA-256 файла, посчитанный на самом устройстве (ADB).
+    func sha256(_ item: RemoteItem) -> String?
 }
 
 extension DeviceDriver {
     var supportsPartialDownload: Bool { false }
     func thumbnail(_ item: RemoteItem) -> Data? { nil }
+    func remoteSize(_ id: UInt32) -> UInt64? { nil }
+    func readRange(_ item: RemoteItem, offset: UInt64, length: UInt32) -> Data? { nil }
+    func sha256(_ item: RemoteItem) -> String? { nil }
 }
