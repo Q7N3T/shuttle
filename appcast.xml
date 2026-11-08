@@ -6,6 +6,16 @@
     <description>Обновления Shuttle</description>
     <language>ru</language>
     <item>
+      <title>Shuttle 0.5.2</title>
+      <pubDate>Sun, 08 Nov 2026 14:39:47 +0300</pubDate>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>0.5.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.5.2</link>
+      <description><![CDATA[<ul><li>Новый значок Nintendo Switch в цвете Shuttle — во вкладках устройств, карточке и панели</li></ul>]]></description>
+      <enclosure url="https://q7n3t.github.io/shuttle/dl/Shuttle-0.5.2.dmg" sparkle:edSignature="c8VM1u364rcfXm9uCFU0y3l9pM1MGjrWZrM/HJYfe2Dj0W0fzQl9uCM00KMTPzVUzAQAlhCl1yJOoRENEaGOAQ==" length="6548587" type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Shuttle 0.5.1</title>
       <pubDate>Sun, 08 Nov 2026 14:36:03 +0300</pubDate>
       <sparkle:version>10</sparkle:version>
