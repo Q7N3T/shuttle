@@ -90,31 +90,39 @@ struct AppIconView: View {
 struct JoyConMark: View {
     var size: CGFloat = 18
     var color: Color = Color(hex: 0xE9B949)
-    var dot: Color = Color(hex: 0x2A1E05)
 
+    /// Значок Switch в нашем цвете: левая половина — контуром с точкой сверху,
+    /// правая — залитая, с точкой-отверстием снизу.
     var body: some View {
         Canvas { ctx, s in
             let w = s.width, h = s.height
-            let top = h * 0.06, bottom = h * 0.94, gap = w * 0.06
-            let half = (w * 0.76 - gap) / 2
-            let outer = half * 0.95, inner = w * 0.04
-            let left = CGRect(x: w * 0.12, y: top, width: half, height: bottom - top)
+            let line = w * 0.085
+            let top = h * 0.08, bottom = h * 0.92, gap = w * 0.07
+            let half = (w * 0.80 - gap) / 2
+            let outer = half * 0.9, inner = w * 0.035
+            let left = CGRect(x: w * 0.10, y: top, width: half, height: bottom - top)
             let right = CGRect(x: left.maxX + gap, y: top, width: half, height: bottom - top)
-            let l = UnevenRoundedRectangle(topLeadingRadius: outer, bottomLeadingRadius: outer,
+            // левая: контур (рисуем внутри своих границ)
+            let lIn = left.insetBy(dx: line / 2, dy: line / 2)
+            let l = UnevenRoundedRectangle(topLeadingRadius: outer - line / 2, bottomLeadingRadius: outer - line / 2,
                                            bottomTrailingRadius: inner, topTrailingRadius: inner,
-                                           style: .continuous).path(in: left)
+                                           style: .continuous).path(in: lIn)
+            ctx.stroke(l, with: .color(color), lineWidth: line)
+            let rad = half * 0.2
+            let c1 = CGPoint(x: left.midX + half * 0.04, y: top + (bottom - top) * 0.28)
+            ctx.fill(Path(ellipseIn: CGRect(x: c1.x - rad, y: c1.y - rad, width: rad * 2, height: rad * 2)),
+                     with: .color(color))
+            // правая: заливка с отверстием
             let r = UnevenRoundedRectangle(topLeadingRadius: inner, bottomLeadingRadius: inner,
                                            bottomTrailingRadius: outer, topTrailingRadius: outer,
                                            style: .continuous).path(in: right)
-            ctx.fill(l, with: .color(color))
             ctx.fill(r, with: .color(color))
-            let rad = half * 0.26
-            for c in [CGPoint(x: left.midX + half * 0.06, y: top + (bottom - top) * 0.30),
-                      CGPoint(x: right.midX - half * 0.06, y: top + (bottom - top) * 0.58)] {
-                ctx.fill(Path(ellipseIn: CGRect(x: c.x - rad, y: c.y - rad, width: rad * 2, height: rad * 2)),
-                         with: .color(dot))
-            }
+            let c2 = CGPoint(x: right.midX - half * 0.04, y: top + (bottom - top) * 0.56)
+            ctx.blendMode = .destinationOut
+            ctx.fill(Path(ellipseIn: CGRect(x: c2.x - rad, y: c2.y - rad, width: rad * 2, height: rad * 2)),
+                     with: .color(.black))
         }
         .frame(width: size, height: size)
+        .compositingGroup()
     }
 }

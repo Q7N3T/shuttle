@@ -318,8 +318,11 @@ struct DeviceTabs: View {
                 let busy = state.transfers.contains { $0.state.isActive && $0.deviceKey == d.info.key }
                 Button { withAnimation(.easeOut(duration: 0.18)) { state.selectDevice(d.slot) } } label: {
                     HStack(spacing: 8) {
-                        Image(systemName: d.info.kind == .console ? "gamecontroller" : "iphone.gen3")
-                            .font(.system(size: 12, weight: .medium))
+                        if d.info.kind == .console {
+                            JoyConMark(size: 15, color: on ? p.ink : p.accent)
+                        } else {
+                            Image(systemName: "iphone.gen3").font(.system(size: 12, weight: .medium))
+                        }
                         Text(d.info.name).font(AppFont.body(12, .medium)).lineLimit(1)
                         if busy {
                             ProgressView().controlSize(.mini).help(L("Идёт передача"))
