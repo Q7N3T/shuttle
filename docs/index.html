@@ -314,13 +314,81 @@ h1.swap{animation:pxswap .34s steps(3) 1}
 @keyframes toastIn{from{opacity:0;transform:translateX(40px) scale(.96)}}
 @keyframes toastOut{to{opacity:0;transform:translateX(30px);clip-path:inset(0 0 0 100%)}}
 @media (max-width:560px){.toasts{right:4px;top:auto;bottom:18%}.toast{min-width:0;font-size:12px}.toast em{font-size:18px}}
-/* Рейка разделов справа */
-.rail{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:40;display:grid;gap:8px}
-.rail a{display:block;width:3px;height:14px;background:var(--line);transition:height .3s,background .3s}
-.rail a:hover{background:var(--muted)}
-.rail a.on{height:34px;background:var(--accent);box-shadow:0 0 10px rgba(233,185,73,.5)}
-@media (max-width:1240px),(pointer:coarse){.rail{display:none}}
+/* Свой ползунок вместо системного: дорожка с отметками разделов и пиксельный бегунок */
+html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+.rail{position:fixed;right:14px;top:18vh;height:58vh;width:14px;z-index:40;cursor:pointer;touch-action:none;user-select:none}
+.rail::before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:repeating-linear-gradient(var(--line) 0 4px,transparent 4px 7px)}
+.rail .tick{position:absolute;left:3px;width:8px;height:2px;background:var(--muted);opacity:.6;transition:background .2s,opacity .2s,width .2s}
+.rail .tick.on{background:var(--accent);opacity:1;width:10px;left:2px}
+.rail .tick b{position:absolute;right:16px;top:50%;transform:translate(6px,-50%);opacity:0;white-space:nowrap;font:400 12px var(--display);color:var(--accent);
+  background:var(--surface);border:1px solid var(--line);padding:3px 8px;transition:opacity .15s,transform .2s;pointer-events:none}
+.rail:hover .tick b,.rail.drag .tick b{opacity:.85;transform:translate(0,-50%)}
+.rail:hover .tick b{pointer-events:auto;cursor:pointer}.rail .tick b:hover{opacity:1;border-color:var(--accent)}
+.rail .thumb{position:absolute;left:3px;width:8px;min-height:18px;background:var(--accent);box-shadow:0 0 12px rgba(233,185,73,.45);cursor:grab;
+  clip-path:polygon(2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px),0 2px,2px 2px)}
+.rail .thumb::after{content:"";position:absolute;left:2px;right:2px;top:50%;height:2px;margin-top:-1px;background:var(--ink);opacity:.5;box-shadow:0 -4px 0 var(--ink),0 4px 0 var(--ink)}
+.rail.drag .thumb{cursor:grabbing;filter:brightness(1.12)}
+@media (max-width:900px),(pointer:coarse){.rail{display:none}}
 @media (prefers-reduced-motion:reduce){.boot{display:none}.toasts{display:none}}
+
+/* Маскот: сверху висит на кабеле, ниже — с ручками и ножками */
+.mascot{--x:-200px;--y:-200px;--s:3px;position:fixed;left:0;top:0;z-index:55;width:calc(24 * var(--s));height:calc(21 * var(--s));
+  transform:translate(var(--x),var(--y));pointer-events:none}
+.mascot.ready.fall{transition:transform .75s cubic-bezier(.55,0,.85,.35)}
+.mascot.ready.rise{transition:transform .6s cubic-bezier(.2,.9,.3,1.15)}
+.m-sprite{all:unset;display:block;width:100%;height:100%;cursor:pointer;pointer-events:auto;transform-origin:50% 100%;-webkit-tap-highlight-color:transparent}
+.m-sprite:focus-visible{outline:2px dashed var(--accent);outline-offset:4px}
+.m-sprite svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 4px 0 rgba(0,0,0,.28))}
+.m-body{fill:#E9B949}.m-body .shade{fill:#C48F2C}.m-body .shine{fill:#F8DC8B}
+.m-ant{fill:#E9B949}
+.m-eyes,.m-mouth{fill:#1F1822;transition:transform .12s steps(1)}
+.m-mouth{opacity:0}
+.mascot.talk .m-mouth{opacity:1;animation:mouth .22s steps(1) infinite}
+@keyframes mouth{50%{opacity:0}}
+.m-arm,.m-leg{fill:#C48F2C}
+.m-arm .glove{fill:#F2EAE0}.m-leg .shoe{fill:#3A2A3F}
+/* ручки и ножки спрятаны в корпус, пока маскот наверху или летит */
+.m-arm.l{transform-origin:4px 10px}.m-arm.r{transform-origin:20px 10px}
+.m-leg{transform-origin:12px 16px}
+.m-arm,.m-leg{transition:transform .32s cubic-bezier(.2,1.6,.4,1),opacity .2s}
+.mascot.top .m-arm,.mascot.top .m-leg,.mascot.fly .m-arm,.mascot.fly .m-leg{transform:scale(0);opacity:0}
+.mascot:not(.top):not(.fly) .m-leg.r,.mascot:not(.top):not(.fly) .m-arm.r{transition-delay:.08s}
+/* сверху: кабель и покачивание */
+.m-cord{position:absolute;left:50%;bottom:calc(100% - 3 * var(--s) - 18px);width:2px;height:var(--cord,40px);margin-left:-1px;
+  background:repeating-linear-gradient(var(--accent) 0 4px,transparent 4px 6px);opacity:0;transition:opacity .2s;pointer-events:none}
+.m-cord::before{content:"";position:absolute;left:-4px;top:-2px;width:10px;height:7px;background:var(--muted);box-shadow:inset 0 -2px 0 rgba(0,0,0,.3)}
+.mascot.top .m-cord{opacity:.9}
+.mascot.top .m-sprite{animation:swing 3.2s ease-in-out infinite;transform-origin:50% calc(-1 * var(--cord,40px))}
+@keyframes swing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.mascot.top .m-ant{animation:antW 1.6s steps(2) infinite}
+@keyframes antW{50%{transform:translateY(-1px)}}
+/* внизу: дышит, переступает, иногда машет */
+.mascot.idle .m-sprite{animation:bob 1.1s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(calc(-1 * var(--s)))}}
+.mascot.idle .m-leg.l{animation:step 1.1s steps(1) infinite}
+.mascot.idle .m-leg.r{animation:step 1.1s steps(1) .55s infinite}
+@keyframes step{50%{transform:translateY(-1px)}}
+.mascot.wave .m-arm.r{animation:wave .7s steps(2) 2}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-55deg) translateY(-1px)}}
+.mascot.land .m-sprite{animation:land .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes land{0%{transform:scale(1.25,.7)}60%{transform:scale(.92,1.1)}100%{transform:none}}
+.mascot.hop .m-sprite{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes hop{40%{transform:translateY(calc(-5 * var(--s))) scale(.95,1.06)}100%{transform:none}}
+.mascot.blink .m-eyes{transform:translateY(10px) scaleY(.1)!important;transform-origin:12px 10px}
+/* ретро-облачко */
+.m-bubble{position:absolute;right:calc(100% - 30px);bottom:calc(100% + 16px);width:max-content;max-width:min(250px,72vw);
+  opacity:0;transform:translateY(6px) scale(.9);transform-origin:90% 100%;transition:opacity .18s,transform .25s cubic-bezier(.2,1.6,.4,1);pointer-events:none}
+.m-box{padding:3px;background:var(--accent);clip-path:polygon(6px 0,calc(100% - 6px) 0,calc(100% - 6px) 3px,calc(100% - 3px) 3px,calc(100% - 3px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 3px) calc(100% - 6px),calc(100% - 3px) calc(100% - 3px),calc(100% - 6px) calc(100% - 3px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 3px),3px calc(100% - 3px),3px calc(100% - 6px),0 calc(100% - 6px),0 6px,3px 6px,3px 3px,6px 3px);filter:drop-shadow(4px 4px 0 rgba(0,0,0,.3))}
+.m-box span{display:block;padding:10px 13px;background:var(--surface);color:var(--text);font-family:var(--display);font-size:14px;line-height:1.35;clip-path:polygon(4px 0,calc(100% - 4px) 0,calc(100% - 4px) 2px,calc(100% - 2px) 2px,calc(100% - 2px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 2px) calc(100% - 4px),calc(100% - 2px) calc(100% - 2px),calc(100% - 4px) calc(100% - 2px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 2px),2px calc(100% - 2px),2px calc(100% - 4px),0 calc(100% - 4px),0 4px,2px 4px,2px 2px,4px 2px)}
+.m-box span::after{content:"";display:inline-block;width:.55em;height:1em;margin-left:3px;vertical-align:-.15em;background:var(--accent);animation:blink 1s steps(1) infinite}
+.m-bubble.on{opacity:1;transform:none}
+/* пиксельный хвостик облачка */
+.m-bubble i{position:absolute;right:14px;top:calc(100% - 1px);width:12px;height:9px;background:var(--accent);
+  clip-path:polygon(0 0,100% 0,100% 3px,67% 3px,67% 6px,33% 6px,33% 9px,0 9px)}
+.mascot.top .m-bubble{bottom:auto;top:calc(100% + 16px);transform-origin:90% 0}
+.mascot.top .m-bubble i{top:auto;bottom:calc(100% - 1px);transform:scaleY(-1)}
+@media (max-width:560px){.mascot{--s:2.4px}.m-box span{font-size:13px}}
+@media (prefers-reduced-motion:reduce){.mascot *{animation:none!important}}
 
 /* Перелив и гранж */
 header.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
@@ -408,6 +476,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <body>
 <div class="boot" id="boot" aria-hidden="true"><img src="icon-256.png" alt=""><div class="bar"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i></div></div>
 <nav class="rail" id="rail" aria-hidden="true"></nav>
+<div class="mascot top" id="mascot">
+  <i class="m-cord" aria-hidden="true"></i>
+  <div class="m-bubble" id="m-bubble" role="status" aria-live="polite"><div class="m-box"><span></span></div><i></i></div>
+  <button class="m-sprite" id="m-sprite" type="button" aria-label="Маскот Shuttle"><svg viewBox="0 0 24 21" shape-rendering="crispEdges" aria-hidden="true"><g class="m-ant"><g><rect x="6" y="1" width="2" height="2"/><rect x="16" y="1" width="2" height="2"/><rect x="8" y="3" width="1" height="1"/><rect x="9" y="4" width="1" height="2"/><rect x="15" y="3" width="1" height="1"/><rect x="14" y="4" width="1" height="2"/></g></g><g class="m-legs"><g class="m-leg l"><g><rect x="8" y="16" width="1" height="3"/></g><g class="shoe"><rect x="6" y="19" width="3" height="2"/></g></g><g class="m-leg r"><g><rect x="15" y="16" width="1" height="3"/></g><g class="shoe"><rect x="15" y="19" width="3" height="2"/></g></g></g><g class="m-arm l"><g><rect x="3" y="10" width="1" height="1"/><rect x="2" y="11" width="1" height="1"/></g><g class="glove"><rect x="0" y="11" width="2" height="2"/></g></g><g class="m-arm r"><g><rect x="20" y="10" width="1" height="1"/><rect x="21" y="11" width="1" height="1"/></g><g class="glove"><rect x="22" y="11" width="2" height="2"/></g></g><g class="m-body"><g><rect x="6" y="6" width="12" height="1"/><rect x="5" y="7" width="14" height="1"/><rect x="4" y="8" width="16" height="6"/><rect x="5" y="14" width="14" height="1"/><rect x="6" y="15" width="12" height="1"/></g><g class="shade"><rect x="4" y="13" width="16" height="1"/><rect x="5" y="14" width="14" height="1"/><rect x="6" y="15" width="12" height="1"/></g><g class="shine"><rect x="6" y="7" width="3" height="1"/><rect x="5" y="8" width="1" height="2"/></g></g><g class="m-eyes"><g><rect x="9" y="9" width="1" height="1"/><rect x="8" y="10" width="1" height="1"/><rect x="9" y="11" width="1" height="1"/><rect x="14" y="9" width="1" height="1"/><rect x="15" y="10" width="1" height="1"/><rect x="14" y="11" width="1" height="1"/></g></g><g class="m-mouth"><rect x="11" y="13" width="2" height="1"/></g></svg></button>
+</div>
 <div class="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 <div class="cur-ring" aria-hidden="true"><i></i></div><div class="cur-dot" aria-hidden="true"></div>
@@ -840,6 +913,100 @@ document.fonts && document.fonts.ready.then(fitTitle);
   title.addEventListener('pointerleave', () => { active.forEach(c => { c.el.style.transform = ''; c.el.style.color = ''; }); active = []; });
 })();
 
+/* ---------- Маскот ---------- */
+(() => {
+  const m = $('#mascot'), sprite = $('#m-sprite'), bubble = $('#m-bubble'), text = bubble.querySelector('span');
+  const PH = [
+    ['Я не облако. Я лучше.', 'I’m not a cloud. I’m better.'],
+    ['Кабель — это любовь. Wi‑Fi — отношения на расстоянии.', 'A cable is love. Wi‑Fi is long distance.'],
+    ['Тащи файл. Я подержу.', 'Drag a file. I’ll hold it.'],
+    ['Android File Transfer? Не слышал о таком.', 'Android File Transfer? Never heard of it.'],
+    ['Кабель выдернули? Я докачаю. Я упрямый.', 'Cable pulled? I’ll resume. I’m stubborn.'],
+    ['Сейвы сохранены. Твоя честь — нет.', 'Saves backed up. Your dignity — not so much.'],
+    ['Не трогай кабель во время установки. Я серьёзно.', 'Don’t touch the cable during installs. I mean it.'],
+    ['Я на 90% состою из МБ/с.', 'I’m 90% made of MB/s.'],
+    ['Мои антенны ловят только USB.', 'My antennas only pick up USB.'],
+    ['DBI, MTP, ADB… я знаю буквы!', 'DBI, MTP, ADB… I know letters!'],
+    ['Клик засчитан. Награда: ничего.', 'Click registered. Reward: nothing.'],
+    ['Я вешу 6 МБ. Почти ничего не ем.', 'I weigh 6 MB. I barely eat.'],
+    ['Пиксели не жмут. Спасибо, что спросил.', 'The pixels fit fine. Thanks for asking.'],
+    ['12 новых фото. 11 из них — еда.', '12 new photos. 11 of them are food.'],
+    ['Скачай меня. Я буду хорошим.', 'Download me. I’ll be good.'],
+    ['Облака — для погоды, а не для файлов.', 'Clouds are for weather, not files.'],
+  ];
+  const SPECIAL = { 7: ['Семь кликов. Это рекорд. Наверное.', 'Seven clicks. That’s a record. Probably.'], 15: ['Всё, я на перерыв. Шучу. Тыкай.', 'I’m on a break. Kidding. Keep clicking.'] };
+  let mode = '', last = -1, clicks = 0, typing = 0, hideT = 0, busy = 0;
+
+  const S = () => parseFloat(getComputedStyle(m).getPropertyValue('--s')) || 3;
+  function place(){
+    const s = S(), w = 24 * s, h = 21 * s, head = $('header.top').getBoundingClientRect().bottom;
+    const narrow = innerWidth < 900;
+    if (mode === 'top') {
+      const cord = narrow ? 10 : 30;
+      m.style.setProperty('--cord', cord + 'px');
+      m.style.setProperty('--x', (innerWidth - w - (narrow ? 14 : 30)) + 'px');
+      m.style.setProperty('--y', (head + cord - 4 * s) + 'px');
+    } else {
+      m.style.setProperty('--x', (innerWidth - w - (narrow ? 12 : 26)) + 'px');
+      m.style.setProperty('--y', (innerHeight - 30 - 8 - h) + 'px');
+    }
+  }
+  function setMode(next){
+    if (next === mode) return;
+    const first = !mode; mode = next; clearTimeout(busy);
+    hideBubble();
+    m.classList.remove('idle', 'land', 'fall', 'rise');
+    if (next === 'bottom') {
+      // кабель отстёгивается, маскот падает, на лету вырастают ручки и ножки
+      m.classList.remove('top'); m.classList.add('fly', 'fall');
+      place();
+      busy = setTimeout(() => { m.classList.remove('fly'); m.classList.add('land', 'idle'); setTimeout(() => m.classList.remove('land'), 460); }, reduced || first ? 0 : 760);
+    } else {
+      // ручки и ножки прячутся, маскот прыгает обратно на кабель
+      m.classList.add('fly', 'rise');
+      busy = setTimeout(() => { place(); m.classList.add('top'); m.classList.remove('fly'); }, reduced || first ? 0 : 220);
+    }
+    if (first) { place(); requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add('ready'))); }
+  }
+  const check = () => setMode(scrollY > 260 ? 'bottom' : (scrollY < 120 || !mode) ? 'top' : mode);
+  addEventListener('scroll', check, { passive: true });
+  addEventListener('resize', place);
+  check();
+
+  // моргает и иногда машет
+  if (!reduced) {
+    setInterval(() => { m.classList.add('blink'); setTimeout(() => m.classList.remove('blink'), 140); }, 3400);
+    setInterval(() => { if (mode === 'bottom' && !bubble.classList.contains('on')) { m.classList.add('wave'); setTimeout(() => m.classList.remove('wave'), 1450); } }, 7000);
+  }
+  // глаза смотрят на курсор
+  const eyes = sprite.querySelector('.m-eyes');
+  addEventListener('mousemove', e => {
+    const r = sprite.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    eyes.style.transform = `translate(${Math.abs(dx) > 40 ? Math.sign(dx) : 0}px, ${Math.abs(dy) > 60 ? Math.sign(dy) : 0}px)`;
+  }, { passive: true });
+
+  function hideBubble(){ bubble.classList.remove('on'); m.classList.remove('talk'); clearInterval(typing); clearTimeout(hideT); }
+  function say(str){
+    hideBubble(); text.textContent = ''; bubble.classList.add('on'); m.classList.add('talk');
+    if (reduced) { text.textContent = str; m.classList.remove('talk'); hideT = setTimeout(hideBubble, 4200); return; }
+    let i = 0;
+    typing = setInterval(() => {
+      text.textContent = str.slice(0, ++i);
+      if (i >= str.length) { clearInterval(typing); m.classList.remove('talk'); hideT = setTimeout(hideBubble, 3800); }
+    }, 28);
+  }
+  sprite.addEventListener('click', () => {
+    clicks++;
+    let ph = SPECIAL[clicks];
+    if (!ph) { let i; do { i = Math.random() * PH.length | 0; } while (i === last); last = i; ph = PH[i]; }
+    say(T(ph[0], ph[1]));
+    m.classList.remove('hop'); void m.offsetWidth; m.classList.add('hop'); setTimeout(() => m.classList.remove('hop'), 460);
+  });
+  const label = () => sprite.setAttribute('aria-label', T('Маскот Shuttle — нажми', 'Shuttle mascot — click me'));
+  $('#lang').addEventListener('click', () => { label(); hideBubble(); });
+  label();
+})();
+
 /* ---------- Заголовок иногда «лагает» сам ---------- */
 (() => {
   if (reduced) return;
@@ -1167,17 +1334,49 @@ applyLang(); typeCmd();
   setTimeout(() => { push(); setInterval(push, 2600); }, 1600);
 })();
 
-/* ---------- Рейка разделов ---------- */
+/* ---------- Свой ползунок: перетаскивание, клик по дорожке, отметки разделов ---------- */
 (() => {
-  const rail = $('#rail'), ids = ['top', 'features', 'switch', 'android', 'download', 'faq', 'changes'];
-  rail.innerHTML = ids.map(id => `<a href="#${id === 'top' ? '' : id}" data-id="${id}" tabindex="-1"></a>`).join('');
-  const marks = ids.map(id => id === 'top' ? $('.hero') : document.getElementById(id));
-  function upd(){
-    const mid = innerHeight * .45; let cur = 0;
-    marks.forEach((m, i) => { if (m && m.getBoundingClientRect().top < mid) cur = i; });
-    rail.querySelectorAll('a').forEach((a, i) => a.classList.toggle('on', i === cur));
+  const rail = $('#rail');
+  const SECS = [['top', 'старт', 'top'], ['features', 'возможности', 'features'], ['switch', 'switch', 'switch'], ['android', 'android', 'android'], ['download', 'скачать', 'download'], ['faq', 'вопросы', 'faq'], ['changes', 'версии', 'releases']];
+  rail.innerHTML = SECS.map(([id]) => `<i class="tick" data-id="${id}"><b></b></i>`).join('') + '<i class="thumb"></i>';
+  const thumb = rail.querySelector('.thumb'), ticks = [...rail.querySelectorAll('.tick')];
+  const el = id => id === 'top' ? document.body : document.getElementById(id);
+  const max = () => Math.max(1, document.documentElement.scrollHeight - innerHeight);
+  function layout(){
+    const H = rail.clientHeight, doc = document.documentElement.scrollHeight;
+    ticks.forEach((t, i) => { const e = el(SECS[i][0]); t.style.top = (e ? Math.min(1, (e.getBoundingClientRect().top + scrollY) / doc) * H : 0) + 'px'; t.querySelector('b').textContent = T(SECS[i][1], SECS[i][2]); });
+    thumb.style.height = Math.max(18, innerHeight / doc * H) + 'px';
+    upd();
   }
-  addEventListener('scroll', upd, { passive: true }); upd();
+  function upd(){
+    const H = rail.clientHeight, th = thumb.offsetHeight;
+    thumb.style.top = (scrollY / max() * (H - th)) + 'px';
+    const mid = innerHeight * .45; let cur = 0;
+    SECS.forEach(([id], i) => { const e = el(id); if (e && id !== 'top' && e.getBoundingClientRect().top < mid) cur = i; });
+    ticks.forEach((t, i) => t.classList.toggle('on', i === cur));
+  }
+  // тянем бегунок или жмём по дорожке — страница едет следом
+  let grab = null;
+  function go(clientY, offset){
+    const r = rail.getBoundingClientRect(), th = thumb.offsetHeight;
+    const k = Math.min(1, Math.max(0, (clientY - r.top - offset) / (r.height - th)));
+    scrollTo({ top: k * max(), behavior: 'instant' });
+  }
+  rail.addEventListener('pointerdown', e => {
+    e.preventDefault(); rail.setPointerCapture(e.pointerId); rail.classList.add('drag');
+    const tr = thumb.getBoundingClientRect();
+    grab = e.target === thumb ? e.clientY - tr.top : thumb.offsetHeight / 2;
+    if (e.target.closest('.tick') && e.target !== thumb) { const e2 = el(e.target.closest('.tick').dataset.id); grab = null; rail.classList.remove('drag'); if (e2) scrollTo({ top: e2 === document.body ? 0 : e2.getBoundingClientRect().top + scrollY - 70, behavior: 'smooth' }); return; }
+    go(e.clientY, grab);
+  });
+  rail.addEventListener('pointermove', e => { if (grab !== null) go(e.clientY, grab); });
+  const stop = () => { grab = null; rail.classList.remove('drag'); };
+  rail.addEventListener('pointerup', stop); rail.addEventListener('pointercancel', stop);
+  addEventListener('scroll', upd, { passive: true });
+  addEventListener('resize', layout);
+  $('#lang').addEventListener('click', () => setTimeout(layout, 50));
+  new ResizeObserver(layout).observe(document.body);
+  layout();
 })();
 requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('no-trans')));
 })();
