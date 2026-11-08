@@ -980,35 +980,167 @@ document.fonts && document.fonts.ready.then(fitTitle);
     ['Почему файл перешёл дорогу? ‖ Его перетащили.', 'Why did the file cross the road? ‖ Someone dragged it.'],
     ['Тук-тук. ‖ — Кто там? ‖ — MTP. ‖ — MTP кто? ‖ — Разблокируй телефон — узнаешь.', 'Knock knock. ‖ Who’s there? ‖ MTP. ‖ MTP who? ‖ Unlock your phone and find out.'],
     ['Сколько Шаттлов нужно, чтобы вкрутить лампочку? ‖ Ни одного. Лампочка не видна по MTP.', 'How many Shuttles to change a light bulb? ‖ None. Bulbs don’t show up over MTP.'],
+    // ложный вывод → поправка
+    ["Я сегодня перенёс терабайт. ‖ Один и тот же файл. Туда-обратно. Нервы.", "Moved a terabyte today. ‖ Same file. Back and forth. Nerves."],
+    ["Мне предлагали работу в облаке. ‖ Отказался. Там высоко и сыро.", "I was offered a job in the cloud. ‖ Declined. Too high, too damp."],
+    ["Я быстрее света. ‖ Света из бухгалтерии до сих пор носит файлы на флешке.", "I’m faster than light. ‖ Faster than Larry from accounting, anyway. He still uses a flash drive."],
+    ["Врач сказал: больше движения. ‖ Теперь двигаю файлы. 30 МБ/с.", "Doctor said: move more. ‖ So I move files. 30 MB/s."],
+    ["Я дал файлу свободу. ‖ Он ушёл в «Загрузки» и не вернулся.", "I set a file free. ‖ It went into Downloads and never came back."],
+    ["Психолог спросил, что меня тревожит. ‖ Я ответил: «Только зарядка». Он не понял.", "My therapist asked what triggers me. ‖ I said “Charging only”. He didn’t get it."],
+    ["Мой стартап — облако без облака. ‖ Называется «кабель». Ищу инвесторов.", "My startup: a cloud without the cloud. ‖ It’s called “a cable”. Seeking investors."],
+    ["В детстве я хотел стать облаком. ‖ Потом увидел цены на подписку.", "As a kid I wanted to be a cloud. ‖ Then I saw the subscription prices."],
+    ["Слышал, у тебя 200 ГБ свободно. ‖ Звучит как вызов.", "Heard you’ve got 200 GB free. ‖ Sounds like a challenge."],
+    ["Я делаю бэкап каждый день. ‖ Своего хорошего настроения.", "I make a backup every day. ‖ Of my good mood."],
+    ["Медитирую. ‖ Представляю, что все фото уже на Mac. ‖ Не помогает. Иду копировать.", "Meditating. ‖ Picturing all photos already on the Mac. ‖ Doesn’t work. Off to copy."],
+    ["Знаешь, что не помещается в облако? ‖ Моя любовь к кабелям.", "You know what doesn’t fit in a cloud? ‖ My love for cables."],
+    ["Не бойся, я не ИИ. ‖ Я просто очень много заранее написанных шуток.", "Don’t worry, I’m not AI. ‖ Just a lot of pre-written jokes."],
+    ["Кабель короткий? ‖ Зато отношения длинные.", "Short cable? ‖ Long relationship."],
+    // сгущение: слова-гибриды
+    ["Мой любимый жанр — ‖ фотосинтез. Синхронизация фото, не растения.", "My favorite genre: ‖ photosynthesis. Photo sync, not plants."],
+    ["Я не перфекционист. ‖ Я перфайлционист.", "I’m not a perfectionist. ‖ I’m a per-file-ctionist."],
+    ["Ты не ленивый. ‖ Ты энергосберегающий.", "You’re not lazy. ‖ You’re in power-saving mode."],
+    ["Мемы с телефона на Mac — ‖ это мемиграция. Полностью легальная.", "Memes from phone to Mac — ‖ that’s memigration. Fully legal."],
+    ["Новое слово: «кабельно». ‖ Это когда надёжно и без Wi‑Fi.", "New word: “cabley”. ‖ Means reliable, no Wi‑Fi involved."],
+    // двусмысленность
+    ["Люблю ветки. ‖ В git. В лесу — не очень.", "I love branches. ‖ In git. In the woods, not so much."],
+    ["У меня отличная связь. ‖ С тобой. И с телефоном. Но с телефоном лучше.", "I have a great connection. ‖ With you. And your phone. Mostly your phone."],
+    ["Шаттл — это не только космос. ‖ Это ещё и маршрутка до твоих файлов.", "A shuttle isn’t just space. ‖ It’s also the bus to your files."],
+    ["Спросили, где я храню данные. ‖ На твоём диске. Это комплимент твоему диску.", "Asked where I store data. ‖ On your disk. That’s a compliment to your disk."],
+    ["Я поддерживаю Switch. ‖ Морально. И по MTP.", "I support the Switch. ‖ Emotionally. And over MTP."],
+    ["Телефон спрашивает: «Разрешить доступ к данным?» ‖ Разреши. Я милый.", "Your phone asks “Allow access to data?” ‖ Allow it. I’m adorable."],
+    // через противоположное
+    ["Ненавижу скорость. ‖ Поэтому всего 30 МБ/с. Медленнее не умею.", "I hate speed. ‖ That’s why it’s only 30 MB/s. Can’t go slower."],
+    ["Обожаю настройки. ‖ Поэтому у меня их нет.", "I love settings. ‖ That’s why I have none."],
+    ["Терпеть не могу внимание. ‖ Пожалуйста, кликни ещё раз.", "I hate attention. ‖ Please click me again."],
+    ["Я совсем не жду, что ты скачаешь. ‖ Совсем. Ни капельки. ‖ …Ну скачай.", "I’m not waiting for you to download me. ‖ At all. Not a bit. ‖ …Download me."],
+    // опечатка → исправление
+    ["Перетаскивание работает {идиально|идеально}.", "Drag and drop works {perfecly|perfectly}."],
+    ["Мой IQ — {404|140}. ‖ Это был код ошибки, не обращай внимания.", "My IQ is {404|140}. ‖ That was an error code, ignore it."],
+    ["Копирую «{отчёт|отчёт_финал_ТОЧНО_финал_2}.pdf». ‖ Кого мы обманываем.", "Copying “{report|report_final_FINAL_v2}.pdf”. ‖ Who are we kidding."],
+    ["Все сейвы {удал…|сохранены}. ‖ Фух. Чуть не опечатался.", "All saves {delet…|saved}. ‖ Phew. Almost a typo."],
+    ["Свободно: {0 Б|141 ГБ}. ‖ Не пугайся, это я так шучу.", "Free space: {0 B|141 GB}. ‖ Relax, just my little joke."],
+    // самоирония
+    ["Мне говорят, я похож на пчелу. ‖ Я не жужжу. Я копирую.", "People say I look like a bee. ‖ I don’t buzz. I copy."],
+    ["Мои антенны ничего не ловят. ‖ Они для красоты. Как и я.", "My antennas don’t pick up anything. ‖ They’re decorative. Like me."],
+    ["У меня нет носа. ‖ Поэтому я не сую его в твои файлы.", "I don’t have a nose. ‖ So I never poke it into your files."],
+    ["Я ношу перчатки, ‖ чтобы не оставлять отпечатков на твоих фото.", "I wear gloves ‖ so I don’t leave fingerprints on your photos."],
+    ["Мои ботинки на два размера больше. ‖ На вырост. До версии 1.0.", "My shoes are two sizes too big. ‖ Growing into them. Until 1.0."],
+    ["Меня нарисовали дюжиной цветов. ‖ Я экономный.", "They drew me with a dozen colors. ‖ I’m frugal."],
+    ["Маленький, но гордый. ‖ 6 МБ чистой гордости.", "Small but proud. ‖ 6 MB of pure pride."],
+    // бессмыслица и антишутки
+    ["Заходят в бар .nsp, .nsz и .xci. ‖ Бармен: «Вам в DBI».", "An .nsp, an .nsz and an .xci walk into a bar. ‖ Bartender: “You want DBI.”"],
+    ["Что сказал файл папке? ‖ Ничего. Файлы не разговаривают. ‖ А я разговариваю. Странно, да?", "What did the file say to the folder? ‖ Nothing. Files don’t talk. ‖ I do. Weird, right?"],
+    ["Почему фото не пошло на вечеринку? ‖ Не могло сфокусироваться.", "Why didn’t the photo go to the party? ‖ It couldn’t focus."],
+    ["Почему видео опоздало? ‖ Буферизировалось.", "Why was the video late? ‖ It was buffering."],
+    ["Тук-тук. ‖ — Кто там? ‖ — Сейв. ‖ — Какой сейв? ‖ — Который ты не сделал.", "Knock knock. ‖ Who’s there? ‖ Save. ‖ Save who? ‖ The one you forgot to make."],
+    ["Тук-тук. ‖ — Кто там? ‖ — Облако. ‖ — … ‖ Правильно, не открывай. Это была проверка.", "Knock knock. ‖ Who’s there? ‖ The cloud. ‖ … ‖ Good, don’t open. That was a test."],
+    ["Сколько программистов нужно, чтобы перенести фото? ‖ Ни одного. Нужен я. И кабель.", "How many programmers to move a photo? ‖ None. Just me. And a cable."],
+    ["Встречаются Android и Switch. ‖ — Ты тоже по MTP? ‖ — Только с DBI. ‖ Любовь.", "Android meets Switch. ‖ “You do MTP too?” ‖ “Only with DBI.” ‖ Love."],
+    ["Мой любимый фильм — ‖ «Унесённые облаком». Трагедия. Все файлы пропали.", "My favorite movie: ‖ “Gone with the Cloud”. A tragedy. All files lost."],
+    ["Котиков в галерее: 312. ‖ Это не вопрос. Это статистика.", "Cats in your gallery: 312. ‖ Not a question. A statistic."],
+    // механическое в живом
+    ["Перетащи. ‖ Перетащи. ‖ Перетащи. ‖ Это мантра. Работает.", "Drag. ‖ Drag. ‖ Drag. ‖ It’s a mantra. It works."],
+    ["Загружаю шутку… 10%… ‖ 60%… ‖ 99%… ‖ 99%… ‖ Шутка не найдена.", "Loading joke… 10%… ‖ 60%… ‖ 99%… ‖ 99%… ‖ Joke not found."],
+    ["Анекдот на 30 МБ/с: ‖ я.", "A joke at 30 MB/s: ‖ me."],
+    ["Я робот. ‖ Бип. Буп. ‖ Извини, это было предустановлено.", "I’m a robot. ‖ Beep. Boop. ‖ Sorry, that was preinstalled."],
+    ["Пробую моргнуть. ‖ Получилось. ‖ Ещё раз. ‖ Получилось. Я развиваюсь.", "Trying to blink. ‖ Done. ‖ Again. ‖ Done. I’m evolving."],
+    // цифровое
+    ["В облаке твои фото видит сервер. ‖ Со мной — только ты.", "In the cloud, a server sees your photos. ‖ With me, only you do."],
+    ["Ctrl+Z для жизни не завезли. ‖ Зато докачка после обрыва есть.", "No Ctrl+Z for life. ‖ But resume after a cable drop — yes."],
+    ["HEIC в JPG — ‖ как перевести поэзию на язык мемов. Иногда нужно.", "HEIC to JPG — ‖ like translating poetry into memes. Sometimes necessary."],
+    ["Мой пароль — ‖ ******. Ой. Даже я вижу звёздочки.", "My password is ‖ ******. Oops. Even I see asterisks."],
+    ["Ошибка 418: ‖ я чайник. ‖ Шучу. Я шаттл.", "Error 418: ‖ I’m a teapot. ‖ Kidding. I’m a shuttle."],
+    ["git commit -m «шутка» ‖ git push ‖ Шутка задеплоена. Смейся.", "git commit -m “joke” ‖ git push ‖ Joke deployed. Laugh now."],
+    ["Мой стек: ‖ Swift, libmtp и чистый энтузиазм.", "My stack: ‖ Swift, libmtp and pure enthusiasm."],
+    ["Скриншоты Switch названы как пароль от Wi‑Fi. ‖ Я переименовываю. Это призвание.", "Switch screenshots are named like Wi‑Fi passwords. ‖ I rename them. It’s my calling."],
+    ["В DCIM живут 4000 фото и одно важное. ‖ Найдём вместе.", "DCIM: 4,000 photos and one important one. ‖ Let’s find it together."],
+    ["Пробел — и Quick Look. ‖ Самая короткая шутка: « ».", "Space opens Quick Look. ‖ Shortest joke ever: “ ”."],
+    ["Я open source. ‖ Можно посмотреть, как я устроен. Только не щекочи.", "I’m open source. ‖ You can see how I work. Just don’t tickle."],
+    ["Обновления приходят сами. ‖ Как кот. Но полезнее.", "Updates show up on their own. ‖ Like a cat. But useful."],
+    ["Мой гороскоп: ‖ Меркурий ретроградный, USB-C прямой. Всё будет хорошо.", "My horoscope: ‖ Mercury in retrograde, USB-C straight. All good."],
+    ["Если файл не копируется — ‖ я не сдаюсь. Я жду. Я буфер. Это моя суперсила.", "If a file won’t copy — ‖ I don’t give up. I wait. I’m a buffer. That’s my superpower."],
     // повторение (Бергсон)
     ['Повторяю: кабель. ‖ Повторяю: кабель. ‖ Кажется, я зациклился. ‖ Повторяю…', 'Repeat: cable. ‖ Repeat: cable. ‖ I think I’m looping. ‖ Repeat…'],
   ];
   // у каждого раздела своя реплика — сказать один раз, когда маскот рядом
   const PLACES = {
-    top: ['Я тут логотип. ‖ Но с амбициями.', 'I’m the logo here. ‖ With ambitions.'],
-    features: ['Тут перечислено, что я умею. ‖ Из скромности не всё.', 'Here’s what I can do. ‖ Not all of it. I’m modest.'],
-    switch: ['Это DBI. ‖ Не путать с DVD, ДВП и BBQ.', 'That’s DBI. ‖ Not DVD. Not BBQ.'],
-    android: ['«Передача файлов», ‖ а не «Только зарядка». Это частая драма.', '“File transfer”, ‖ not “Charging only”. A classic drama.'],
-    download: ['Тащи меня в «Программы». ‖ Я лёгкий. Эмоционально тоже.', 'Drag me to Applications. ‖ I’m light. Emotionally too.'],
-    faq: ['Ответы на вопросы. ‖ Кроме «зачем я это читаю в три ночи».', 'Answers to questions. ‖ Except “why am I reading this at 3 AM”.'],
-    changes: ['История версий. ‖ Мой фотоальбом. Вот я в 0.2.0 — совсем пиксельный.', 'Version history. ‖ My photo album. That’s me in 0.2.0, very pixelated.'],
+    top: [
+      ["Я тут логотип. ‖ Но с амбициями.", "I’m the logo here. ‖ With ambitions."],
+      ["Это моя шапка. ‖ В смысле, шапка сайта. Мой головной убор — антенны.", "This is my header. ‖ The site header. My actual hat is antennas."],
+      ["Я сижу на логотипе. ‖ Это не наглость. Это брендинг.", "I’m sitting on the logo. ‖ Not rude. Branding."],
+    ],
+    features: [
+      ["Тут перечислено, что я умею. ‖ Из скромности не всё.", "Here’s what I can do. ‖ Not all of it. I’m modest."],
+      ["Восемь карточек. ‖ Я незримо присутствую в каждой.", "Eight cards. ‖ I’m invisibly in every one."],
+      ["Возможности. ‖ Невозможности — в следующей версии.", "Features. ‖ Un-features coming next version."],
+    ],
+    switch: [
+      ["Это DBI. ‖ Не путать с DVD, ДВП и BBQ.", "That’s DBI. ‖ Not DVD. Not BBQ."],
+      ["Сейвы Switch — святое. ‖ Бэкаплю молча и с уважением.", "Switch saves are sacred. ‖ I back them up quietly, with respect."],
+      ["0100152000022000 — ‖ это не номер карты. Это Mario Kart. Я переведу.", "0100152000022000 — ‖ not a credit card. It’s Mario Kart. I’ll translate."],
+    ],
+    android: [
+      ["«Передача файлов», ‖ а не «Только зарядка». Это частая драма.", "“File transfer”, ‖ not “Charging only”. A classic drama."],
+      ["DCIM — это Digital Camera IMages. ‖ А не «Дичь, Котики, Инста, Мемы».", "DCIM stands for Digital Camera IMages. ‖ Not “Dogs, Cats, Insta, Memes”."],
+      ["HEIC в JPG — на лету. ‖ Фото даже не заметит.", "HEIC to JPG on the fly. ‖ The photo won’t even notice."],
+    ],
+    download: [
+      ["Тащи меня в «Программы». ‖ Я лёгкий. Эмоционально тоже.", "Drag me to Applications. ‖ I’m light. Emotionally too."],
+      ["DMG — это не «Дай Мне Гигабайт». ‖ Всего 6 МБ.", "DMG doesn’t mean “Damn, Many Gigabytes”. ‖ Just 6 MB."],
+      ["«Всё равно открыть» — ‖ звучит дерзко. Но так надо.", "“Open Anyway” ‖ sounds rebellious. But that’s the way."],
+    ],
+    faq: [
+      ["Ответы на вопросы. ‖ Кроме «зачем я это читаю в три ночи».", "Answers to questions. ‖ Except “why am I reading this at 3 AM”."],
+      ["Самый частый вопрос: ‖ «А без кабеля можно?» ‖ Нет. Кабель — это моя личность.", "Most asked: ‖ “Can I do it without a cable?” ‖ No. The cable is my personality."],
+      ["Тут нет вопроса «Почему ты такой милый». ‖ Ответ: так получилось.", "There’s no FAQ for “Why so cute?” ‖ Answer: it just happened."],
+    ],
+    changes: [
+      ["История версий. ‖ Мой фотоальбом. Вот я в 0.2.0 — совсем пиксельный.", "Version history. ‖ My photo album. That’s me in 0.2.0, very pixelated."],
+      ["Каждая версия — ‖ как день рождения. Только с багфиксами.", "Every version is ‖ like a birthday. With bug fixes."],
+      ["Старые DMG тоже можно скачать. ‖ Ностальгия по 0.2.0 — это нормально.", "Old DMGs are downloadable too. ‖ Nostalgia for 0.2.0 is valid."],
+    ],
   };
   // реакции на события
   const EV = {
     hello: ['Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает.', 'Hi! I’m Shuttle. ‖ I carry files by cable. Not clouds — I get airsick.'],
     again: ['Снова ты! ‖ Я скучал. Ровно {n} мин.', 'You’re back! ‖ I missed you. Exactly {n} min.'],
-    light: ['А-а-а, свет! ‖ Мои пиксели!', 'Aaah, light! ‖ My pixels!'],
-    dark: ['Так-то лучше. ‖ Родной сливовый.', 'Much better. ‖ Home sweet plum.'],
+    light: [
+      ["А-а-а, свет! ‖ Мои пиксели!", "Aaah, light! ‖ My pixels!"],
+      ["Кто включил свет? ‖ Я как раз собирался вздремнуть в тёмной теме.", "Who turned on the lights? ‖ I was about to nap in dark mode."],
+    ],
+    dark: [
+      ["Так-то лучше. ‖ Родной сливовый.", "Much better. ‖ Home sweet plum."],
+      ["Ночь, тишина, кабель. ‖ Романтика.", "Night, silence, a cable. ‖ Romance."],
+    ],
     toEN: ['Switching to English. ‖ My accent is 8-bit.', 'Switching to English. ‖ My accent is 8-bit.'],
     toRU: ['Переключаюсь на русский. ‖ Падежи загружаются…', 'Переключаюсь на русский. ‖ Падежи загружаются…'],
-    dl: ['Ура! ‖ У меня будет дом. Не забудь «Всё равно открыть».', 'Yay! ‖ I’m getting a home. Remember “Open Anyway”.'],
-    copy: ['Ctrl+C засчитан. ‖ Вообще-то копировать — моя работа.', 'Copy detected. ‖ Copying is literally my job.'],
-    back: ['О, вернулся! ‖ Я ничего не трогал. Почти.', 'Oh, you’re back! ‖ I didn’t touch anything. Mostly.'],
-    idle: ['ping… ‖ ping… ‖ Ты тут? Время ответа: ∞ мс.', 'ping… ‖ ping… ‖ Hello? Response time: ∞ ms.'],
+    dl: [
+      ["Ура! ‖ У меня будет дом. Не забудь «Всё равно открыть».", "Yay! ‖ I’m getting a home. Remember “Open Anyway”."],
+      ["Качается! ‖ Пойду соберу вещи. А, у меня их нет.", "Downloading! ‖ Let me pack my things. Oh, I have none."],
+    ],
+    copy: [
+      ["Ctrl+C засчитан. ‖ Вообще-то копировать — моя работа.", "Copy detected. ‖ Copying is literally my job."],
+      ["Скопировал? ‖ Теперь вставь куда-нибудь хорошее.", "Copied? ‖ Now paste it somewhere nice."],
+    ],
+    back: [
+      ["О, вернулся! ‖ Я ничего не трогал. Почти.", "Oh, you’re back! ‖ I didn’t touch anything. Mostly."],
+      ["С возвращением! ‖ Без тебя я ничего не скачивал. Ждал.", "Welcome back! ‖ Didn’t download anything without you."],
+    ],
+    idle: [
+      ["ping… ‖ ping… ‖ Ты тут? Время ответа: ∞ мс.", "ping… ‖ ping… ‖ Hello? Response time: ∞ ms."],
+      ["Скучно. ‖ Посчитал пиксели на себе. Четыреста с хвостиком.", "Bored. ‖ Counted my pixels. Four hundred and something."],
+      ["Ты ушёл за чаем? ‖ Я подожду. Я буфер, я умею ждать.", "Went for tea? ‖ I’ll wait. I’m a buffer. Waiting is my thing."],
+    ],
     night: ['Три часа ночи — ‖ лучшее время перекинуть мемы с телефона. Уважаю.', '3 AM. ‖ Peak meme-transfer hours. Respect.'],
-    fast: ['Вжух! ‖ Скроллишь быстрее, чем я копирую.', 'Whoa! ‖ You scroll faster than I copy.'],
+    fast: [
+      ["Вжух! ‖ Скроллишь быстрее, чем я копирую.", "Whoa! ‖ You scroll faster than I copy."],
+      ["Тише, тише! ‖ Меня укачивает от скролла.", "Easy! ‖ I get seasick from scrolling."],
+    ],
     // снежный ком: серия кликов подряд
-    s5: ['Эй, я не кнопка «Скачать». ‖ Хотя сходство есть.', 'Hey, I’m not the Download button. ‖ I see the resemblance, though.'],
+    s5: [
+      ["Эй, я не кнопка «Скачать». ‖ Хотя сходство есть.", "Hey, I’m not the Download button. ‖ I see the resemblance, though."],
+      ["Ты кликаешь, как будто там бонус. ‖ Бонус — это я.", "You click like there’s a bonus. ‖ I am the bonus."],
+    ],
     s8: ['Перегрев! ‖ Включаю кулер… ‖ А, у меня нет кулера.', 'Overheating! ‖ Turning on the fan… ‖ Oh. I don’t have a fan.'],
     reboot: ['…Привет! Я Шаттл. ‖ Мы знакомы? Кэш чистый.', '…Hi! I’m Shuttle. ‖ Have we met? My cache is empty.'],
   };
@@ -1110,7 +1242,8 @@ document.fonts && document.fonts.ready.then(fitTitle);
     })(0);
     function done(){ m.classList.remove('talk'); speaking = false; hideT = setTimeout(hideBubble, Math.max(3600, text.textContent.length * 55)); after && after(); }
   }
-  const pick = pair => T(pair[0], pair[1]);
+  // пара [ru, en] или список таких пар — тогда случайная
+  const pick = x => { const p = Array.isArray(x[0]) ? x[Math.random() * x.length | 0] : x; return T(p[0], p[1]); };
   function nextJoke(){
     // мешок без повторов: пока не прозвучат все шутки, одна и та же не вернётся
     if (!bag.length) bag = JOKES.map((_, i) => i).sort(() => Math.random() - .5);
@@ -1144,7 +1277,8 @@ document.fonts && document.fonts.ready.then(fitTitle);
     }
     // иногда — реплика про раздел, где маскот сейчас
     const here = currentPlace();
-    if (here && !saidPlace[here] && Math.random() < .4) { saidPlace[here] = 1; return say(pick(PLACES[here])); }
+    const n = saidPlace[here] || 0;
+    if (here && n < PLACES[here].length && Math.random() < .4) { saidPlace[here] = n + 1; return say(pick(PLACES[here][n])); }
     say(nextJoke());
   });
   function bsod(){
