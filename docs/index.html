@@ -1438,7 +1438,8 @@ function renderRelease(){
   $('.m-ver').textContent = T('Версия ', 'Version ') + v;
   $('.m-ver2').textContent = v;
   if (asset) {
-    $$('.dl-link').forEach(a => a.href = asset.browser_download_url);
+    // Копия DMG лежит на самом сайте — открывается даже там, где github.com недоступен.
+    $$('.dl-link').forEach(a => a.href = 'dl/' + asset.name);
     $('.m-size').textContent = 'DMG · ' + (asset.size / 1e6).toFixed(1) + T(' МБ', ' MB');
   }
 }

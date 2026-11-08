@@ -11,7 +11,8 @@ cd "$(dirname "$0")/.."
 VERSION=$(sed -n 's/.*CFBundleShortVersionString: "\(.*\)"/\1/p' project.yml)
 BUILD=$(sed -n 's/.*CFBundleVersion: "\(.*\)"/\1/p' project.yml)
 DMG=build/Shuttle-$VERSION.dmg
-URL=https://github.com/Q7N3T/shuttle/releases/download/v$VERSION/Shuttle-$VERSION.dmg
+# DMG для обновлений — копия на сайте: github.com доступен не везде, а сайт доступен.
+URL=https://q7n3t.github.io/shuttle/dl/Shuttle-$VERSION.dmg
 SPARKLE=build/Debug.noindex/SourcePackages/artifacts/sparkle/Sparkle/bin
 
 grep -q "^## \[$VERSION\]" CHANGELOG.md || { echo "✗ Нет раздела [$VERSION] в CHANGELOG.md"; exit 1; }
@@ -38,9 +39,14 @@ gh release create "v$VERSION" "$DMG" --title "Shuttle $VERSION" --notes "$NOTES
 
 echo "▸ appcast.xml"
 python3 scripts/appcast.py "$VERSION" "$BUILD" "$URL" "$SIG" "$LEN"
+echo "▸ Сайт: копия DMG для обновлений (до того, как appcast позовёт на новую версию)"
+gh workflow run pages.yml --ref main >/dev/null
+sleep 8
+gh run watch "$(gh run list --workflow pages.yml -L1 --json databaseId -q '.[0].databaseId')" --exit-status >/dev/null
+for i in $(seq 1 30); do
+  [[ $(curl -s -o /dev/null -w "%{http_code}" -I "$URL") == 200 ]] && break
+  sleep 10
+done
 git add appcast.xml && git commit -q -m "update appcast" && git push -q
 
 echo "✓ Shuttle $VERSION выпущен: https://github.com/Q7N3T/shuttle/releases/tag/v$VERSION"
-
-echo "▸ Сайт: новая версия на кнопке «Скачать»"
-gh workflow run pages.yml --ref main >/dev/null && echo "✓ Сайт обновляется"

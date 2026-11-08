@@ -29,6 +29,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api "repos/${{ github.repository }}/releases?per_page=20" > docs/releases.json
+      # Копия свежего DMG на самом сайте: github.com открывается не у всех (VPN, прокси, блокировки),
+      # а сайт — открывается. Обновления берут DMG отсюда; подлинность проверяет подпись Sparkle.
+      - name: Копия последнего DMG на сайте
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(jq -r '[.[] | select(.draft|not) | select(.prerelease|not)][0].tag_name // ""' docs/releases.json)
+          if [ -n "$tag" ]; then
+            mkdir -p docs/dl
+            gh release download "$tag" -R "${{ github.repository }}" -p "*.dmg" -D docs/dl --clobber
+            ls -la docs/dl
+          fi
       - name: Версия прямо в HTML (на случай, если JSON не дойдёт)
         run: |
           v=$(jq -r '[.[] | select(.draft|not) | select(.prerelease|not)][0].tag_name // "" | ltrimstr("v")' docs/releases.json)
