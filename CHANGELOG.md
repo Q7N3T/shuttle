@@ -1,69 +1,71 @@
 # Changelog
 
-Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle/releases).
+Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle/releases). [По-русски](CHANGELOG.ru.md).
 
 ## [0.5.2] — 2026-11-08
 
-- A new Nintendo Switch icon in Shuttle colors — in device tabs, the device card and the pane
+- New Switch icon, in Shuttle's gold.
 
 ## [0.5.1] — 2026-11-08
 
-- The last update check date follows the app language
-- Updates and the Download button get the DMG from the Shuttle site — works even where github.com is blocked
+- The "last checked" time now follows the app's language.
+- Updates now download from the Shuttle website, so they work even where GitHub is blocked.
 
 ## [0.5.0] — 2026-11-08
 
-- Shuttle the mascot lives in the window header: blinks, jokes in a retro bubble, cheers for new devices and finished transfers
-- The mascot runs along the transfer bar and sits down to wait if the cable drops; yawns when the phone battery is low
-- Badges with pixel icons and “past the cloud” stats — the Badges tab in Settings
-- Seasonal hats and birthday
-- Phone and Switch at the same time: each device in its own tab, transfers run in parallel
-- Verification after copying: every verified file gets a ✓
-- Free up space: delete from the phone only what’s definitely on the Mac, with content verification
-- Run from the menu bar: close the window and transfers and photo auto-import keep going
+- Meet Shuttle, the little robot in the top corner of the window. Click him and he'll tell you a joke. He also reacts when you plug something in or a transfer finishes.
+- While a file is copying, he runs along the progress bar. If the cable comes out, he sits down and waits.
+- Badges for things like your first transfer or your first 100 GB. You'll find them in Settings.
+- He dresses up for the holidays, and celebrates Shuttle's birthday.
+- You can connect a phone and a Switch at the same time. Each gets its own tab, and both can transfer at once.
+- After copying, Shuttle checks that the file arrived in full. Checked files get a green tick.
+- New "Free up space" button for phones. It deletes photos and videos from the phone only if an identical copy is already on your Mac.
+- Shuttle can keep running in the menu bar after you close the window. Transfers carry on, and it can bring over new photos by itself.
 
 ## [0.4.2] — 2026-11-07
 
-- “From camera” button instead of “New photos”: it fetches both photos and videos
-- Camera downloads are labeled by file type: “New photo” or “New video”
+- The "New photos" button is now called "From camera", since it brings over videos too.
+- Camera imports in the transfer list are labelled "New photo" or "New video".
 
 ## [0.4.1] — 2026-11-07
 
-- Settings: a “Check for updates” button in the header, visible from any tab
-- Settings show the result of the last check: up to date, a new version, or an error — and when it ran
+- "Check for updates" moved to the top of Settings, so it's there on every tab.
+- Settings shows how the last check went and when it happened.
 
 ## [0.4.0] — 2026-11-07
 
-- Android: new camera files in one click, folder sync, HEIC → JPG, previews and grid, “already on Mac” badge, duplicate finder
-- Android over ADB (optional): faster, over Wi‑Fi, APK install, phone screenshots
-- Switch: install games via DBI with a space check, homebrew from a zip, save backups, album grid, readable game names, Atmosphère updates
-- Transfers resume by themselves after the cable comes out
-- Search in subfolders, favorite folders, Quick Look (Space), batch rename
-- Transfer history, notifications, menu bar icon
-- English interface, Unbounded and Golos Text fonts
+- Android: one button brings over new photos and videos from the camera.
+- Android: folder sync, HEIC to JPG conversion, thumbnails and a grid view.
+- Android: files that are already on your Mac are marked, and you can find duplicates.
+- Android over ADB, if you want it: faster, works over Wi‑Fi, installs APKs and takes screenshots.
+- Switch: install games through DBI. Shuttle checks there's enough space first.
+- Switch: homebrew straight from a zip, save backups, the album as a grid, game names instead of title IDs, Atmosphère updates.
+- If the cable comes out mid-transfer, Shuttle picks up where it left off.
+- Search inside subfolders, favorite folders, Quick Look with Space, batch rename.
+- Transfer history, notifications and a menu bar icon.
+- The app is now available in English.
 
 ## [0.3.1] — 2026-11-07
 
-- New title bar: taller, logo and buttons aligned with the window controls
-- Bigger logo and name, theme switch in a neat capsule
+- Redesigned the top of the window. It's taller, and the logo and buttons line up with the window controls.
+- Bigger logo, and the theme switcher sits in a tidy capsule.
 
 ## [0.3.0] — 2026-11-07
 
-- Auto updates: Shuttle finds new versions and offers to update
-- Update window: “Update now”, “Later” or “Skip this version”
-- Settings (⌘,): automatic checks, automatic install, bring back skipped versions
-- Styled DMG: drag Shuttle to Applications
+- Shuttle now updates itself. When there's a new version, you can install it now, later, or skip it.
+- In Settings (⌘,) you can turn automatic checks and installs on or off, and bring back skipped versions.
+- The DMG got a proper window: just drag Shuttle into Applications.
 
 ## [0.2.1] — 2026-11-07
 
-- Menu bar: File, Edit, View, Go, Help
-- Shortcuts: ⌘D download, ⌘U send, ⇧⌘N new folder, ⌘1…⌘9 storages
-- Smooth theme transitions, including Auto mode
-- Deleting on the Mac goes to the Trash
+- A full menu bar: File, Edit, View, Go and Help.
+- Shortcuts: ⌘D to download, ⌘U to send, ⇧⌘N for a new folder, ⌘1–⌘9 to switch storages.
+- Switching themes is smooth now, including in Auto mode.
+- Files deleted on your Mac go to the Trash.
 
 ## [0.2.0] — 2026-11-07
 
-- Nintendo Switch via DBI: every storage as a tab
-- Table with columns and sorting, folders expand right in the list
-- Drop files right onto a folder
-- DMG installer, everything bundled in the app
+- Nintendo Switch support through DBI. Every storage shows up as a tab.
+- File lists are now a sortable table, and folders expand right in place.
+- You can drop files straight onto a folder.
+- Shuttle now comes as a DMG with everything it needs built in.
