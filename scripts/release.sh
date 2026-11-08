@@ -41,3 +41,6 @@ python3 scripts/appcast.py "$VERSION" "$BUILD" "$URL" "$SIG" "$LEN"
 git add appcast.xml && git commit -q -m "update appcast" && git push -q
 
 echo "✓ Shuttle $VERSION выпущен: https://github.com/Q7N3T/shuttle/releases/tag/v$VERSION"
+
+echo "▸ Сайт: новая версия на кнопке «Скачать»"
+gh workflow run pages.yml --ref main >/dev/null && echo "✓ Сайт обновляется"

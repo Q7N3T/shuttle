@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths: ["docs/**", ".github/workflows/pages.yml"]
-  release:
-    types: [published, edited]
+  # После релиза сайт обновляет scripts/release.sh (gh workflow run --ref main):
+  # запуск от тега GitHub Pages отклоняет правилами окружения.
   workflow_dispatch:
 
 permissions:
