@@ -1424,12 +1424,14 @@ const lineIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersec
 document.querySelectorAll('section.node').forEach(el => lineIO.observe(el));
 
 /* ---------- Свежий выпуск с GitHub ---------- */
-let release = null, releases = [], notesEN = {};
+let release = null, releases = [], notesEN = {}, notesRU = {};
 // Картинка не загрузилась (кэш, деплой, локальный просмотр) — берём её прямо из репозитория.
 addEventListener('error', e => { const im = e.target; if (im.tagName !== 'IMG' || im.dataset.fb) return; im.dataset.fb = 1;
   im.src = 'https://raw.githubusercontent.com/' + REPO + '/main/docs/' + im.getAttribute('src').split('?')[0]; }, true);
 document.querySelectorAll('img').forEach(im => { if (im.complete && !im.naturalWidth) im.dispatchEvent(new Event('error')); });
+// Заметки к версиям — из журналов изменений (CHANGELOG.md и CHANGELOG.ru.md), а не из текста релиза.
 fetch('changelog.en.json').then(r => r.ok ? r.json() : {}).then(j => { notesEN = j; renderChanges(); }).catch(() => {});
+fetch('changelog.ru.json').then(r => r.ok ? r.json() : {}).then(j => { notesRU = j; renderChanges(); }).catch(() => {});
 function renderRelease(){
   if (!release) return;
   const asset = (release.assets || []).find(a => a.name.endsWith('.dmg'));
@@ -1448,7 +1450,7 @@ function renderChanges(){
   if (!releases.length) return;
   $('#changes-list').innerHTML = releases.slice(0, 12).map((r, i) => {
     const v = r.tag_name.replace(/^v/, '');
-    const list = lang === 'en' && notesEN[v] ? notesEN[v] : (r.body || '').split('\n---')[0].split('\n').filter(l => l.startsWith('- ')).map(l => l.slice(2));
+    const list = (lang === 'en' ? notesEN[v] : notesRU[v]) || (r.body || '').split('\n---')[0].split('\n').filter(l => l.startsWith('- ')).map(l => l.slice(2));
     const items = list.map(l => `<li>${md(l)}</li>`).join('');
     const dmg = (r.assets || []).find(a => a.name.endsWith('.dmg'));
     const date = new Date(r.published_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });

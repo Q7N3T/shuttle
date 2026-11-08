@@ -1,11 +1,11 @@
-name: Сайт
+name: Site
 
 on:
   push:
     branches: [main]
     paths: ["docs/**", ".github/workflows/pages.yml"]
-  # После релиза сайт обновляет scripts/release.sh (gh workflow run --ref main):
-  # запуск от тега GitHub Pages отклоняет правилами окружения.
+  # After a release scripts/release.sh runs this on main (gh workflow run --ref main):
+  # GitHub Pages environment rules reject runs triggered by a tag.
   workflow_dispatch:
 
 permissions:
@@ -25,13 +25,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Список релизов для кнопки «Скачать»
+      - name: Release list for the Download button
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api "repos/${{ github.repository }}/releases?per_page=20" > docs/releases.json
-      # Копия свежего DMG на самом сайте: github.com открывается не у всех (VPN, прокси, блокировки),
-      # а сайт — открывается. Обновления берут DMG отсюда; подлинность проверяет подпись Sparkle.
-      - name: Копия последнего DMG на сайте
+      # Mirror of the latest DMG on the site itself: github.com is unreachable for some people
+      # (VPNs, proxies, blocks) while the site loads. Updates download the DMG from here;
+      # the Sparkle signature guarantees it's authentic.
+      - name: Mirror the latest DMG
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -41,11 +42,11 @@ jobs:
             gh release download "$tag" -R "${{ github.repository }}" -p "*.dmg" -D docs/dl --clobber
             ls -la docs/dl
           fi
-      - name: Версия прямо в HTML (на случай, если JSON не дойдёт)
+      - name: Put the version into the HTML (in case the JSON fails to load)
         run: |
           v=$(jq -r '[.[] | select(.draft|not) | select(.prerelease|not)][0].tag_name // "" | ltrimstr("v")' docs/releases.json)
           [ -n "$v" ] && sed -i "s|<span class=\"m-ver\">—</span>|<span class=\"m-ver\">v$v</span>|" docs/index.html || true
-      - name: Свежие картинки после каждого обновления
+      - name: Bust image caches on every deploy
         run: sed -i -E "s/\.png\"/.png?v=${GITHUB_SHA::7}\"/g" docs/index.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

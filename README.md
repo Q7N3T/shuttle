@@ -2,42 +2,46 @@
 
 <h1 align="center">Shuttle</h1>
 
-<p align="center">Перетаскивание файлов между Mac и Android или Nintendo Switch по кабелю.</p>
+<p align="center">Drag and drop files between your Mac and an Android phone or a Nintendo Switch — over a cable.</p>
 
 ![Shuttle](docs/screenshot-switch.png)
 
-## Установка
+## Install
 
-**[Скачать последнюю версию](https://github.com/Q7N3T/shuttle/releases/latest)** · [Сайт](https://q7n3t.github.io/shuttle/) · macOS 14+, Apple Silicon и Intel
+**[Download the latest version](https://github.com/Q7N3T/shuttle/releases/latest)** · [Website](https://q7n3t.github.io/shuttle/) · macOS 14+, Apple Silicon and Intel
 
-1. Откройте DMG.
-2. Перетащите Shuttle в «Программы».
-3. Запустите Shuttle.
+1. Open the DMG.
+2. Drag Shuttle to Applications.
+3. Launch Shuttle.
 
-> Если macOS не даёт открыть приложение, зайдите в
-> **Настройки → Конфиденциальность и безопасность**
-> и нажмите **«Всё равно открыть»**. Это нужно один раз.
+> If macOS won’t open the app, go to
+> **System Settings → Privacy & Security**
+> and click **Open Anyway**. You only need to do this once.
 
-## Возможности
+## Features
 
-- Две панели, Mac и устройство, перетаскивание в обе стороны и из Finder
-- Все разделы устройства вкладками
-- Таблица с сортировкой и раскрытием папок
-- Очередь передач с прогрессом и отменой
-- Тёмная и светлая темы
-- Автообновления: новая версия придёт сама
+- Two panes, Mac and device: drag files both ways, and from Finder
+- A phone and a Switch at the same time, each in its own tab
+- Every device storage as a tab; a table with sorting and expandable folders
+- Transfer queue with progress and cancel; transfers resume by themselves after the cable drops
+- Copies are verified after transferring
+- Android: new camera photos in one click, folder sync, HEIC → JPG, previews, free up space safely
+- Switch with DBI: install games, homebrew from a zip, save backups, Atmosphère updates
+- Runs from the menu bar; dark and light themes; English and Russian
+- Automatic updates: new versions arrive by themselves
+- Shuttle the pixel mascot, with jokes and badges
 
-[История версий](CHANGELOG.md) · [все сборки](https://github.com/Q7N3T/shuttle/releases)
+[Changelog](CHANGELOG.md) · [Русский](CHANGELOG.ru.md) · [All builds](https://github.com/Q7N3T/shuttle/releases)
 
-## Подключение
+## Connecting
 
-**Android:** подключите кабель и в уведомлении USB выберите «Передача файлов».
+**Android:** plug in the cable and pick “File transfer” in the USB notification.
 
-**Nintendo Switch:** запустите DBI, выберите «Run MTP responder» и подключите кабель.
+**Nintendo Switch:** launch DBI, choose “Run MTP responder” and plug in the cable.
 
-Если устройство не находится, закройте «Захват изображений», «Фото» и Android File Transfer, затем переподключите кабель.
+If the device doesn’t show up, quit Image Capture, Photos and Android File Transfer, then replug the cable.
 
-## Сборка из исходников
+## Building from source
 
 ```bash
 brew install xcodegen pkg-config
@@ -46,4 +50,6 @@ xcodegen generate
 open Shuttle.xcodeproj
 ```
 
-Выпуск новой версии: поднимите версию в `project.yml`, допишите `CHANGELOG.md` и запустите `scripts/release.sh`.
+To ship a new version: bump the version in `project.yml`, add the notes to `CHANGELOG.md` and `CHANGELOG.ru.md`, then run `scripts/release.sh`.
+
+Shuttle is not affiliated with Nintendo or Google.

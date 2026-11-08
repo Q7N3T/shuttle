@@ -1,7 +1,7 @@
 #!/bin/bash
-# Собирает Release (arm64 + x86_64) и упаковывает в build/Shuttle-<версия>.dmg
-# с оформленным окном: фон, стрелка, иконки на своих местах.
-# Папки сборки названы *.noindex — Spotlight и Launchpad их не видят.
+# Builds Release (arm64 + x86_64) and packs it into build/Shuttle-<version>.dmg
+# with a styled window: background, arrow, icons in place.
+# Build folders are named *.noindex so Spotlight and Launchpad ignore them.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -12,25 +12,25 @@ DD=build/Release.noindex
 ASSETS=build/dmg-assets.noindex
 VENV=build/venv.noindex
 
-echo "▸ Библиотеки"
+echo "▸ Libraries"
 scripts/build-deps.sh
 
-echo "▸ Сборка Release $VERSION"
+echo "▸ Release build $VERSION"
 xcodegen generate -q
 xcodebuild -project Shuttle.xcodeproj -scheme Shuttle -configuration Release \
   -derivedDataPath "$DD" ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO build -quiet
 APP=$DD/Build/Products/Release/Shuttle.app
 
-echo "▸ Проверка"
+echo "▸ Checks"
 if otool -L "$APP/Contents/MacOS/Shuttle" | grep -q /opt/homebrew; then
-  echo "✗ Приложение ссылается на Homebrew"; exit 1
+  echo "✗ The app links against Homebrew"; exit 1
 fi
 lipo -info "$APP/Contents/MacOS/Shuttle"
 codesign --verify --deep --strict "$APP"
 vtool -show-build "$APP/Contents/MacOS/Shuttle" | grep -m1 minos
 
-echo "▸ Фон окна"
-# Фон рисует Debug-сборка (режим --dmg-background).
+echo "▸ Window background"
+# The Debug build draws the background (--dmg-background mode).
 xcodebuild -project Shuttle.xcodeproj -scheme Shuttle -configuration Debug \
   -derivedDataPath build/Debug.noindex build -quiet
 DBG=build/Debug.noindex/Build/Products/Debug/Shuttle.app/Contents/MacOS/Shuttle
@@ -48,7 +48,7 @@ rm -f "$OUT"
   "Shuttle $VERSION" "$OUT" >/dev/null
 codesign --sign "$IDENTITY" "$OUT"
 
-# Убираем сборки из списка приложений системы: в Launchpad останется только установленный Shuttle.
+# Unregister build products so Launchpad only shows the installed Shuttle.
 LSR=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 "$LSR" -u "$PWD/$APP" 2>/dev/null || true
 "$LSR" -u "$PWD/build/Debug.noindex/Build/Products/Debug/Shuttle.app" 2>/dev/null || true

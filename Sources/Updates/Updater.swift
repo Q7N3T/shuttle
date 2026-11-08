@@ -294,8 +294,18 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
     }
 
     /// Пункты списка изменений из описания версии в appcast (<li>…</li> или строки «- …»).
-    static func notes(from html: String?) -> [String] {
-        guard let html, !html.isEmpty else { return [] }
+    static func notes(from html: String?, english: Bool = L10n.english) -> [String] {
+        guard var html, !html.isEmpty else { return [] }
+        // В appcast два списка: русский — пунктами <li>, английский — <p> внутри <div data-lang="en">.
+        if let r = html.range(of: #"<div data-lang="en">"#) {
+            let en = String(html[r.upperBound...])
+            if english {
+                let items = en.components(separatedBy: "<p>").dropFirst().compactMap { $0.components(separatedBy: "</p>").first }
+                if !items.isEmpty { html = items.map { "<li>\($0)</li>" }.joined() }
+            } else {
+                html = String(html[..<r.lowerBound])
+            }
+        }
         let li = html.components(separatedBy: "<li>").dropFirst().compactMap {
             $0.components(separatedBy: "</li>").first
         }

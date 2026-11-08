@@ -1,6 +1,6 @@
 #!/bin/bash
-# Собирает libusb и libmtp статически под macOS 14+ (arm64 + x86_64)
-# в build/deps — чтобы приложение не зависело от Homebrew у пользователя.
+# Builds libusb and libmtp as static libraries for macOS 14+ (arm64 + x86_64)
+# into build/deps, so the app doesn't depend on Homebrew on the user's Mac.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$PWD
@@ -9,7 +9,7 @@ SRC=$ROOT/build/deps-src
 MIN=14.0
 
 if [[ -f $PREFIX/lib/libmtp.a && -f $PREFIX/lib/libusb-1.0.a && "${1:-}" != "--force" ]]; then
-  echo "deps: уже собраны ($PREFIX)"; exit 0
+  echo "deps: already built ($PREFIX)"; exit 0
 fi
 
 brew fetch --build-from-source libusb libmtp >/dev/null
@@ -35,5 +35,5 @@ tar -xf "$MTP_TGZ" -C "$SRC"
   && make -j"$JOBS" -C src >/dev/null && make -C src install >/dev/null && make install-data-am >/dev/null 2>&1 || true)
 test -f "$PREFIX/lib/libmtp.a"
 cp "$SRC"/libmtp-*/src/libmtp.h "$PREFIX/include/" 2>/dev/null || true
-echo "deps: готово"
+echo "deps: done"
 lipo -info "$PREFIX/lib/libmtp.a" "$PREFIX/lib/libusb-1.0.a"

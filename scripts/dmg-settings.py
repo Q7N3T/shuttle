@@ -1,9 +1,9 @@
-# Настройки окна DMG для dmgbuild (запускается из scripts/make-dmg.sh).
-# Координаты иконок совпадают с Sources/DMGBackground.swift.
+# DMG window settings for dmgbuild (run from scripts/make-dmg.sh).
+# Icon positions match Sources/DMGBackground.swift.
 import os.path
 
-app = defines["app"]            # путь к Shuttle.app
-assets = defines["assets"]      # папка с bg.png / bg@2x.png
+app = defines["app"]            # path to Shuttle.app
+assets = defines["assets"]      # folder with bg.png / bg@2x.png
 
 format = "UDZO"
 compression_level = 9
@@ -14,7 +14,7 @@ files = [app]
 symlinks = {"Applications": "/Applications"}
 
 icon = os.path.join(app, "Contents", "Resources", "AppIcon.icns")
-background = os.path.join(assets, "bg.png")   # bg@2x.png подхватится для ретины
+background = os.path.join(assets, "bg.png")   # bg@2x.png is picked up on Retina
 
 window_rect = ((200, 140), (640, 400))
 default_view = "icon-view"

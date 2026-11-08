@@ -111,6 +111,14 @@ final class FeatureTests: XCTestCase {
         XCTAssertEqual(Achievements.cloudPrice(for: 150_000_000_000), "$2.99")
     }
 
+    func testUpdateNotesFollowAppLanguage() {
+        let html = #"<ul><li>Новый значок</li><li>Сверка</li></ul><div data-lang="en"><p>New icon</p><p>Verification</p></div>"#
+        XCTAssertEqual(ShuttleUserDriver.notes(from: html, english: false), ["Новый значок", "Сверка"])
+        XCTAssertEqual(ShuttleUserDriver.notes(from: html, english: true), ["New icon", "Verification"])
+        // Старые записи appcast — только русский список.
+        XCTAssertEqual(ShuttleUserDriver.notes(from: "<ul><li>Только русский</li></ul>", english: true), ["Только русский"])
+    }
+
     func testMascotHatsByDate() {
         func date(_ m: Int, _ d: Int, _ h: Int) -> Date {
             Calendar.current.date(from: DateComponents(year: 2027, month: m, day: d, hour: h))!

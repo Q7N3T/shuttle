@@ -1,70 +1,70 @@
-# История версий
+# Changelog
 
-Все версии можно скачать на странице [Releases](https://github.com/Q7N3T/shuttle/releases).
+Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle/releases).
 
 ## [0.5.2] — 2026-11-08
 
-- Новый значок Nintendo Switch в цвете Shuttle — во вкладках устройств, карточке и панели
+- A new Nintendo Switch icon in Shuttle colors — in device tabs, the device card and the pane
 
 ## [0.5.1] — 2026-11-08
 
-- Окно настроек помещается на экран 13-дюймового Mac: вкладки прокручиваются внутри окна
-- Дата последней проверки обновлений — на языке интерфейса
-- Обновления и кнопка «Скачать» берут DMG с сайта Shuttle — работает и там, где github.com недоступен
+- Settings fit on a 13-inch Mac screen: tabs scroll inside the window
+- The last update check date follows the app language
+- Updates and the Download button get the DMG from the Shuttle site — works even where github.com is blocked
 
 ## [0.5.0] — 2026-11-08
 
-- Маскот Шаттл в шапке окна: моргает, шутит в ретро-облачке, радуется подключениям и готовым передачам
-- Маскот бежит по полоске передачи, а при обрыве кабеля садится и ждёт; зевает, когда телефон садится
-- Достижения с пиксельными значками и статистика «мимо облака» — вкладка «Значки» в настройках
-- Сезонные шапки маскота, день рождения и секретный код ↑↑↓↓←→←→BA
-- Телефон и Switch одновременно: каждое устройство в своей вкладке, передачи идут параллельно
-- Сверка после копирования: у каждого сверенного файла значок ✓
-- «Освободить место»: удалить с телефона только то, что точно лежит на Mac, со сверкой содержимого
-- Работа из строки меню: окно можно закрыть, передачи и автоимпорт новых фото продолжаются
+- Shuttle the mascot lives in the window header: blinks, jokes in a retro bubble, cheers for new devices and finished transfers
+- The mascot runs along the transfer bar and sits down to wait if the cable drops; yawns when the phone battery is low
+- Badges with pixel icons and “past the cloud” stats — the Badges tab in Settings
+- Seasonal hats, a birthday and the secret ↑↑↓↓←→←→BA code
+- Phone and Switch at the same time: each device in its own tab, transfers run in parallel
+- Verification after copying: every verified file gets a ✓
+- Free up space: delete from the phone only what’s definitely on the Mac, with content verification
+- Run from the menu bar: close the window and transfers and photo auto-import keep going
 
 ## [0.4.2] — 2026-11-07
 
-- Кнопка «С камеры» вместо «Новые фото»: она забирает и фото, и видео
-- Загрузки с камеры подписаны по типу файла: «Новое фото» или «Новое видео»
+- “From camera” button instead of “New photos”: it fetches both photos and videos
+- Camera downloads are labeled by file type: “New photo” or “New video”
 
 ## [0.4.1] — 2026-11-07
 
-- Настройки: кнопка «Проверить обновления» в шапке, видна с любой вкладки
-- В настройках виден итог проверки: последняя версия, доступна новая или ошибка, и время последней проверки
+- Settings: a “Check for updates” button in the header, visible from any tab
+- Settings show the result of the last check: up to date, a new version, or an error — and when it ran
 
 ## [0.4.0] — 2026-11-07
 
-- Android: «Новые фото» одной кнопкой, синхронизация папок, HEIC → JPG, превью и сетка, пометка «уже на Mac», поиск дублей
-- Android по ADB (по желанию): быстрее, по Wi‑Fi, установка APK, снимок экрана телефона
-- Switch: установка игр через DBI с проверкой места, homebrew из архива, резервная копия сейвов, альбом сеткой, понятные имена игр, обновление Atmosphère
-- Передача продолжается сама после обрыва кабеля
-- Поиск по вложенным папкам, избранные папки, быстрый просмотр (пробел), пакетное переименование
-- История передач, уведомления, иконка в строке меню
-- Английский язык интерфейса, шрифты Unbounded и Golos Text
+- Android: new camera files in one click, folder sync, HEIC → JPG, previews and grid, “already on Mac” badge, duplicate finder
+- Android over ADB (optional): faster, over Wi‑Fi, APK install, phone screenshots
+- Switch: install games via DBI with a space check, homebrew from a zip, save backups, album grid, readable game names, Atmosphère updates
+- Transfers resume by themselves after the cable comes out
+- Search in subfolders, favorite folders, Quick Look (Space), batch rename
+- Transfer history, notifications, menu bar icon
+- English interface, Unbounded and Golos Text fonts
 
 ## [0.3.1] — 2026-11-07
 
-- Новая шапка окна: выше, логотип и кнопки на одной линии с кнопками закрытия и сворачивания
-- Логотип и название крупнее, переключатели темы в аккуратной капсуле
+- New title bar: taller, logo and buttons aligned with the window controls
+- Bigger logo and name, theme switch in a neat capsule
 
 ## [0.3.0] — 2026-11-07
 
-- Автообновления: Shuttle сам находит новую версию и предлагает обновиться
-- В окне обновления: «Обновить сейчас», «Позже» или «Пропустить эту версию»
-- Настройки (⌘,): автопроверка, автоустановка, возврат пропущенных версий
-- Оформленный DMG: перетащите Shuttle в «Программы»
+- Auto updates: Shuttle finds new versions and offers to update
+- Update window: “Update now”, “Later” or “Skip this version”
+- Settings (⌘,): automatic checks, automatic install, bring back skipped versions
+- Styled DMG: drag Shuttle to Applications
 
 ## [0.2.1] — 2026-11-07
 
-- Строка меню на русском: Файл, Правка, Вид, Переход, Справка
-- Горячие клавиши: ⌘D скачать, ⌘U отправить, ⇧⌘N новая папка, ⌘1…⌘9 разделы
-- Плавный переход между темами, в том числе в режиме «Авто»
-- Удаление на Mac — только в Корзину
+- Menu bar: File, Edit, View, Go, Help
+- Shortcuts: ⌘D download, ⌘U send, ⇧⌘N new folder, ⌘1…⌘9 storages
+- Smooth theme transitions, including Auto mode
+- Deleting on the Mac goes to the Trash
 
 ## [0.2.0] — 2026-11-07
 
-- Nintendo Switch через DBI: все разделы вкладками
-- Таблица с колонками и сортировкой, раскрытие папок прямо в списке
-- Файлы можно бросить прямо на папку
-- Установка через DMG, всё нужное внутри приложения
+- Nintendo Switch via DBI: every storage as a tab
+- Table with columns and sorting, folders expand right in the list
+- Drop files right onto a folder
+- DMG installer, everything bundled in the app
