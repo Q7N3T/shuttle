@@ -23,11 +23,11 @@ struct DMGBackground: View {
             VStack(spacing: 6) {
                 HStack(spacing: 10) {
                     DroidMark(size: 24)
-                    Text("Shuttle")
+                    Text("Wirrow")
                         .font(AppFont.display(22, .bold))
                         .foregroundStyle(Color(hex: 0xF2EAE0))
                 }
-                Text("Перетащите Shuttle в «Программы»")
+                Text("Перетащите Wirrow в «Программы»")
                     .font(AppFont.body(13))
                     .foregroundStyle(muted)
             }

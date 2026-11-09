@@ -90,7 +90,7 @@ enum HomebrewLayout {
 
     /// Unzip with the built-in ditto into a temp folder.
     static func unzip(_ zip: URL) throws -> URL {
-        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Shuttle-zip-\(UUID().uuidString)")
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Wirrow-zip-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
@@ -148,7 +148,7 @@ enum Atmosphere {
     static func latest() async throws -> AtmosphereRelease {
         var req = URLRequest(url: api)
         req.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        req.setValue("Shuttle", forHTTPHeaderField: "User-Agent")
+        req.setValue("Wirrow", forHTTPHeaderField: "User-Agent")
         let (data, resp) = try await URLSession.shared.data(for: req)
         if let h = resp as? HTTPURLResponse, h.statusCode != 200 {
             throw MTPError.failed(L("GitHub ответил %d. Попробуйте позже.", h.statusCode))

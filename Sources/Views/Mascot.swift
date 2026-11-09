@@ -3,7 +3,7 @@ import AppKit
 
 // MARK: - Model: what the mascot says and how it feels
 
-/// Shuttle the mascot — the pixel droid from the logo. Sits in the window header,
+/// Shuttle (Шатл) the mascot, named after the app's old name — the pixel droid from the logo. Sits in the window header,
 /// jokes on click and reacts to what happens with devices and transfers.
 /// Same humor tricks as on the site: a pause before the twist (‖),
 /// a typo with a correction ({wrong|right}), repetition and a "snowball" of clicks.
@@ -41,7 +41,7 @@ final class Mascot: ObservableObject {
     private var konami: [UInt16] = []
     private var keyMonitor: Any?
 
-    /// Birthday — the date of Shuttle's first release.
+    /// Birthday — the date of Wirrow's first release.
     static let birthday = DateComponents(month: 11, day: 7)
 
     init() {
@@ -100,7 +100,9 @@ final class Mascot: ObservableObject {
             L("Скачать + счастье = ‖ скачастье."),
             L("Почему файл перешёл дорогу? ‖ Его перетащили."),
             L("Загружаю шутку… ‖ 99%… ‖ 99%… ‖ Шутка не найдена."),
-            L("Ошибка 418: ‖ я чайник. ‖ Шучу. Я шаттл."),
+            L("Ошибка 418: ‖ я чайник. ‖ Шучу. Я Шатл."),
+            L("Меня зовут Шатл. ‖ Раньше так звали всё приложение. ‖ Приложение переехало. Я остался."),
+            L("Wirrow — это приложение. ‖ Шатл — это я. ‖ Не путай, я ранимый."),
             L("Я робот. ‖ Бип. Буп. ‖ Извини, это было предустановлено."),
             L("12 новых фото. ‖ 11 — еда."),
             L("Мои антенны ничего не ловят. ‖ Они для красоты."),
@@ -446,7 +448,7 @@ struct HeaderMascot: View {
             .onTapGesture { Mascot.shared.click() }
             .onHover { hover = $0 }
             .help(L("Это Шаттл. Нажми — он что-нибудь скажет."))
-            .accessibilityLabel(L("Маскот Shuttle"))
+            .accessibilityLabel(L("Шатл, маскот Wirrow"))
             .accessibilityAddTraits(.isButton)
             .onChange(of: m.hops) { _, _ in
                 withAnimation(.spring(response: 0.18, dampingFraction: 0.5)) { lift = -6 }

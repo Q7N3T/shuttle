@@ -12,7 +12,7 @@ final class DeviceHub: @unchecked Sendable {
         let service: DeviceService
     }
 
-    private let queue = DispatchQueue(label: "shuttle.hub")
+    private let queue = DispatchQueue(label: "wirrow.hub")
     private var services: [String: DeviceService] = [:]
     /// For tests: the set of services is fixed in advance and never changes.
     private let fixed: [Slot]?

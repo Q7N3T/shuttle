@@ -696,7 +696,7 @@ final class AppState: ObservableObject {
         if case .failed = t.state { Mascot.shared.react(.failed) }
         if !transfers.contains(where: { $0.state.isActive }), batchCount > 0 {
             Mascot.shared.react(.done(batchCount))
-            Notifier.post(L("Shuttle: готово"), L("Передано: %d · %@", batchCount, formatBytes(batchBytes)))
+            Notifier.post(L("Wirrow: готово"), L("Передано: %d · %@", batchCount, formatBytes(batchBytes)))
             batchCount = 0
             batchBytes = 0
         }

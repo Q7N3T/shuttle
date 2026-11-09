@@ -64,14 +64,14 @@ final class UpdateModel: ObservableObject {
     var pending: UpdateInfo?
 
     private var updater: SPUUpdater?
-    private var driver: ShuttleUserDriver?
+    private var driver: WirrowUserDriver?
     private let delegate = UpdaterDelegate()
 
     init(start: Bool = true) {
         automaticallyChecks = true
         automaticallyInstalls = false
         guard start, Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") != nil else { return }
-        let driver = ShuttleUserDriver(model: self)
+        let driver = WirrowUserDriver(model: self)
         let updater = SPUUpdater(hostBundle: .main, applicationBundle: .main, userDriver: driver, delegate: delegate)
         self.driver = driver
         self.updater = updater
@@ -80,7 +80,7 @@ final class UpdateModel: ObservableObject {
             automaticallyChecks = updater.automaticallyChecksForUpdates
             automaticallyInstalls = updater.automaticallyDownloadsUpdates
         } catch {
-            NSLog("Shuttle: Sparkle не запустился: \(error.localizedDescription)")
+            NSLog("Wirrow: Sparkle не запустился: \(error.localizedDescription)")
         }
         refreshSkipped()
         #if DEBUG
@@ -156,7 +156,7 @@ final class UpdateModel: ObservableObject {
 }
 
 /// The bridge between Sparkle and our card. Sparkle calls these methods on the main thread.
-final class ShuttleUserDriver: NSObject, SPUUserDriver {
+final class WirrowUserDriver: NSObject, SPUUserDriver {
     private weak var model: UpdateModel?
 
     init(model: UpdateModel) { self.model = model }
@@ -191,7 +191,7 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
             // Already downloaded in the background — offer to install right away.
             m.phase = state.stage == .notDownloaded ? .found(info) : .ready(info)
             if UpdateModel.autoAccept {
-                NSLog("Shuttle test: найдено обновление \(info.version), ставим")
+                NSLog("Wirrow test: найдено обновление \(info.version), ставим")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) { m.install() }
             }
         }
@@ -213,7 +213,7 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
     }
 
     func showUpdaterError(_ error: any Error, acknowledgement: @escaping () -> Void) {
-        if UpdateModel.autoAccept { NSLog("Shuttle test: ошибка обновления: \(error.localizedDescription)") }
+        if UpdateModel.autoAccept { NSLog("Wirrow test: ошибка обновления: \(error.localizedDescription)") }
         ui { m in
             if m.userInitiated {
                 m.lastResult = error.localizedDescription
@@ -260,7 +260,7 @@ final class ShuttleUserDriver: NSObject, SPUUserDriver {
             m.choiceReply = reply
             if let info = m.pending { m.phase = .ready(info) } else { reply(.install) }
             if UpdateModel.autoAccept {
-                NSLog("Shuttle test: скачано, перезапускаем")
+                NSLog("Wirrow test: скачано, перезапускаем")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) { m.install() }
             }
         }

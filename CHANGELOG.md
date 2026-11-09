@@ -1,26 +1,26 @@
 # Changelog
 
-Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle/releases). [По-русски](CHANGELOG.ru.md).
+Every version can be downloaded from [Releases](https://github.com/Q7N3T/wirrow/releases). [По-русски](CHANGELOG.ru.md).
 
 ## [0.5.2] — 2026-11-08
 
-- New Switch icon, in Shuttle's gold.
+- New Switch icon, in Wirrow's gold.
 
 ## [0.5.1] — 2026-11-08
 
 - The "last checked" time now follows the app's language.
-- Updates now download from the Shuttle website, so they work even where GitHub is blocked.
+- Updates now download from the Wirrow website, so they work even where GitHub is blocked.
 
 ## [0.5.0] — 2026-11-08
 
-- Meet Shuttle, the little robot in the top corner of the window. Click him and he'll tell you a joke. He also reacts when you plug something in or a transfer finishes.
+- Meet Wirrow, the little robot in the top corner of the window. Click him and he'll tell you a joke. He also reacts when you plug something in or a transfer finishes.
 - While a file is copying, he runs along the progress bar. If the cable comes out, he sits down and waits.
 - Badges for things like your first transfer or your first 100 GB. You'll find them in Settings.
-- He dresses up for the holidays, and celebrates Shuttle's birthday.
+- He dresses up for the holidays, and celebrates Wirrow's birthday.
 - You can connect a phone and a Switch at the same time. Each gets its own tab, and both can transfer at once.
-- After copying, Shuttle checks that the file arrived in full. Checked files get a green tick.
+- After copying, Wirrow checks that the file arrived in full. Checked files get a green tick.
 - New "Free up space" button for phones. It deletes photos and videos from the phone only if an identical copy is already on your Mac.
-- Shuttle can keep running in the menu bar after you close the window. Transfers carry on, and it can bring over new photos by itself.
+- Wirrow can keep running in the menu bar after you close the window. Transfers carry on, and it can bring over new photos by itself.
 
 ## [0.4.2] — 2026-11-07
 
@@ -38,9 +38,9 @@ Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle
 - Android: folder sync, HEIC to JPG conversion, thumbnails and a grid view.
 - Android: files that are already on your Mac are marked, and you can find duplicates.
 - Android over ADB, if you want it: faster, works over Wi‑Fi, installs APKs and takes screenshots.
-- Switch: install games through DBI. Shuttle checks there's enough space first.
+- Switch: install games through DBI. Wirrow checks there's enough space first.
 - Switch: homebrew straight from a zip, save backups, the album as a grid, game names instead of title IDs, Atmosphère updates.
-- If the cable comes out mid-transfer, Shuttle picks up where it left off.
+- If the cable comes out mid-transfer, Wirrow picks up where it left off.
 - Search inside subfolders, favorite folders, Quick Look with Space, batch rename.
 - Transfer history, notifications and a menu bar icon.
 - The app is now available in English.
@@ -52,9 +52,9 @@ Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle
 
 ## [0.3.0] — 2026-11-07
 
-- Shuttle now updates itself. When there's a new version, you can install it now, later, or skip it.
+- Wirrow now updates itself. When there's a new version, you can install it now, later, or skip it.
 - In Settings (⌘,) you can turn automatic checks and installs on or off, and bring back skipped versions.
-- The DMG got a proper window: just drag Shuttle into Applications.
+- The DMG got a proper window: just drag Wirrow into Applications.
 
 ## [0.2.1] — 2026-11-07
 
@@ -68,4 +68,4 @@ Every version can be downloaded from [Releases](https://github.com/Q7N3T/shuttle
 - Nintendo Switch support through DBI. Every storage shows up as a tab.
 - File lists are now a sortable table, and folders expand right in place.
 - You can drop files straight onto a folder.
-- Shuttle now comes as a DMG with everything it needs built in.
+- Wirrow now comes as a DMG with everything it needs built in.

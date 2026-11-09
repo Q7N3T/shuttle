@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The Shuttle logo: a golden capsule droid with two antennas,
+/// The Wirrow logo: a golden capsule droid with two antennas,
 /// and ‹ › arrows for eyes (file exchange).
 struct DroidMark: View {
     var size: CGFloat = 22

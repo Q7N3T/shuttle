@@ -3,7 +3,7 @@
 
 appcast.py <version> <build> <url> <edSignature> <length>
 
-The description keeps the Russian list as <li> items (that is what Shuttle 0.5.2
+The description keeps the Russian list as <li> items (that is what Wirrow 0.5.2
 and older read) and adds the English list as <p> items inside
 <div data-lang="en">, which newer versions pick when the app is in English.
 """
@@ -30,12 +30,12 @@ en = changelog_items("CHANGELOG.md", version)
 notes = ("<ul>" + "".join(f"<li>{html.escape(i)}</li>" for i in ru) + "</ul>"
          + '<div data-lang="en">' + "".join(f"<p>{html.escape(i)}</p>" for i in en) + "</div>")
 item = f"""    <item>
-      <title>Shuttle {version}</title>
+      <title>Wirrow {version}</title>
       <pubDate>{formatdate(localtime=True)}</pubDate>
       <sparkle:version>{build}</sparkle:version>
       <sparkle:shortVersionString>{version}</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v{version}</link>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v{version}</link>
       <description><![CDATA[{notes}]]></description>
       <enclosure url="{url}" sparkle:edSignature="{sig}" length="{length}" type="application/octet-stream"/>
     </item>

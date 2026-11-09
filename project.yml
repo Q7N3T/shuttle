@@ -1,4 +1,4 @@
-name: Shuttle
+name: Wirrow
 options:
   bundleIdPrefix: com.vadimgrekov
   developmentLanguage: ru
@@ -9,7 +9,7 @@ packages:
     url: https://github.com/sparkle-project/Sparkle
     exactVersion: 2.10.0
 targets:
-  Shuttle:
+  Wirrow:
     type: application
     platform: macOS
     sources:
@@ -19,7 +19,7 @@ targets:
         buildPhase: resources
       - path: Resources/Localized
     scheme:
-      testTargets: [ShuttleTests]
+      testTargets: [WirrowTests]
     dependencies:
       - package: Sparkle
     preBuildScripts:
@@ -29,10 +29,10 @@ targets:
     info:
       path: Sources/Info.plist
       properties:
-        CFBundleDisplayName: Shuttle
+        CFBundleDisplayName: Wirrow
         CFBundleDevelopmentRegion: ru
         CFBundleLocalizations: [ru, en]
-        NSPhotoLibraryAddUsageDescription: Shuttle добавляет фото и видео с телефона или Switch в «Фото».
+        NSPhotoLibraryAddUsageDescription: Wirrow добавляет фото и видео с телефона или Switch в «Фото».
         CFBundleAllowMixedLocalizations: true
         CFBundleShortVersionString: "0.5.2"
         CFBundleVersion: "11"
@@ -40,7 +40,7 @@ targets:
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "14.0"
         # Automatic updates (Sparkle): the version list lives in the repository.
-        SUFeedURL: https://raw.githubusercontent.com/Q7N3T/shuttle/main/appcast.xml
+        SUFeedURL: https://raw.githubusercontent.com/Q7N3T/wirrow/main/appcast.xml
         SUPublicEDKey: OQkMHjKc/6xCJsLy7qUifmQ41D+OVyLJf1hB25fUHuE=
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 86400
@@ -50,7 +50,7 @@ targets:
         DEVELOPMENT_LANGUAGE: ru
         SWIFT_VERSION: "5.0"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        SWIFT_OBJC_BRIDGING_HEADER: Sources/Shuttle-Bridging-Header.h
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/Wirrow-Bridging-Header.h
         # libmtp and libusb are built statically by scripts/build-deps.sh —
         # the app doesn't need Homebrew on the user's Mac.
         HEADER_SEARCH_PATHS: $(SRCROOT)/build/deps/include
@@ -69,22 +69,22 @@ targets:
           # Tests load the test bundle into the app — so Debug has no Hardened Runtime.
           ENABLE_HARDENED_RUNTIME: NO
 
-  ShuttleTests:
+  WirrowTests:
     type: bundle.unit-test
     platform: macOS
     sources: [Tests]
     dependencies:
-      - target: Shuttle
+      - target: Wirrow
     settings:
       base:
         SWIFT_VERSION: "5.0"
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.vadimgrekov.shuttle.tests
-        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Shuttle.app/Contents/MacOS/Shuttle
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/Wirrow.app/Contents/MacOS/Wirrow
         BUNDLE_LOADER: $(TEST_HOST)
         CODE_SIGN_IDENTITY: "Apple Development"
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: HDYY45A296
         MACOSX_DEPLOYMENT_TARGET: "14.0"
-        SWIFT_OBJC_BRIDGING_HEADER: Sources/Shuttle-Bridging-Header.h
+        SWIFT_OBJC_BRIDGING_HEADER: Sources/Wirrow-Bridging-Header.h
         HEADER_SEARCH_PATHS: $(SRCROOT)/build/deps/include

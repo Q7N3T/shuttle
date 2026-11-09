@@ -1,9 +1,9 @@
 import XCTest
-@testable import Shuttle
+@testable import Wirrow
 
 /// A temp folder that's removed after the test.
 func tempDir(_ name: String = "t") -> URL {
-    let u = FileManager.default.temporaryDirectory.appendingPathComponent("ShuttleTests-\(name)-\(UUID().uuidString)")
+    let u = FileManager.default.temporaryDirectory.appendingPathComponent("WirrowTests-\(name)-\(UUID().uuidString)")
     try? FileManager.default.createDirectory(at: u, withIntermediateDirectories: true)
     return u
 }

@@ -14,7 +14,7 @@ enum ConflictPolicy {
 final class DeviceService: @unchecked Sendable {
     static let shared = DeviceService()
 
-    private let queue = DispatchQueue(label: "shuttle.device", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "wirrow.device", qos: .userInitiated)
     private var candidates: [DeviceDriver]
     private(set) var active: DeviceDriver?
     /// Files whose upload was interrupted: their leftovers on the device can be deleted.

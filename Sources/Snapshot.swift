@@ -3,8 +3,8 @@ import SwiftUI
 import AppKit
 
 /// Debug:
-/// `Shuttle --snapshot out.png [dark|light] [phone|switch] [nomac]` — the window with test data;
-/// `Shuttle --icon out.png` — a 1024×1024 icon.
+/// `Wirrow --snapshot out.png [dark|light] [phone|switch] [nomac]` — the window with test data;
+/// `Wirrow --icon out.png` — a 1024×1024 icon.
 enum Snapshot {
     @MainActor
     static func runIfRequested() {
@@ -40,7 +40,7 @@ enum Snapshot {
         let day: TimeInterval = 86_400
         if !args.contains("switch") {
             // Phone: the Mac photos folder on the left, camera shots at the bottom.
-            s.macURL = URL(fileURLWithPath: NSHomeDirectory() + "/Pictures/Shuttle/HUAWEI nova 9")
+            s.macURL = URL(fileURLWithPath: NSHomeDirectory() + "/Pictures/Wirrow/HUAWEI nova 9")
             s.macItems = [
                 LocalItem(url: URL(fileURLWithPath: "/p1"), name: "Отпуск 2026", size: 0, modified: .now - 30 * day, isFolder: true),
                 LocalItem(url: URL(fileURLWithPath: "/p2"), name: "IMG_2031.jpg", size: 3_800_000, modified: .now - 2 * day, isFolder: false),
@@ -77,7 +77,7 @@ enum Snapshot {
 
         let updates = UpdateModel(start: false)
         let info = UpdateInfo(version: "0.3.1", size: 4_100_000, notes: [
-            "Автообновления: Shuttle сам предложит новую версию",
+            "Автообновления: Wirrow сам предложит новую версию",
             "Настройки (⌘,) — галки обновлений и тема",
             "Красивое окно DMG",
         ])

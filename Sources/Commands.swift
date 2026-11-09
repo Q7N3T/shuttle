@@ -2,13 +2,13 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 extension Notification.Name {
-    static let focusSearch = Notification.Name("ShuttleFocusSearch")
+    static let focusSearch = Notification.Name("WirrowFocusSearch")
 }
 
 /// The macOS menu bar: File, Edit, View, Go, Device, Help.
 /// Split into small blocks: one big menu description overflows the SwiftUI stack.
 /// Commands apply to the pane clicked last (Mac or device).
-struct ShuttleCommands: Commands {
+struct WirrowCommands: Commands {
     @ObservedObject var state: AppState
     @Binding var theme: ThemeMode
 
@@ -241,9 +241,9 @@ struct HelpCommands: Commands, MenuPickers {
 
     var body: some Commands {
         CommandGroup(replacing: .help) {
-            Link(L("Справка Shuttle"), destination: URL(string: "https://github.com/Q7N3T/shuttle#readme")!)
-            Link(L("Как подключить Switch"), destination: URL(string: L("https://github.com/Q7N3T/shuttle#подключение"))!)
-            Link(L("История версий"), destination: URL(string: "https://github.com/Q7N3T/shuttle/blob/main/CHANGELOG.md")!)
+            Link(L("Справка Wirrow"), destination: URL(string: "https://github.com/Q7N3T/wirrow#readme")!)
+            Link(L("Как подключить Switch"), destination: URL(string: L("https://github.com/Q7N3T/wirrow#подключение"))!)
+            Link(L("История версий"), destination: URL(string: "https://github.com/Q7N3T/wirrow/blob/main/CHANGELOG.md")!)
         }
     }
 }

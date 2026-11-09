@@ -16,7 +16,7 @@ enum Notifier {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
     }
 
-    /// Only when Shuttle isn't frontmost — otherwise it's visible anyway.
+    /// Only when Wirrow isn't frontmost — otherwise it's visible anyway.
     static func post(_ title: String, _ body: String) {
         guard AppSettings.shared.notifications, !NSApp.isActive, !AppFolders.testing else { return }
         let c = UNMutableNotificationContent()
@@ -79,7 +79,7 @@ enum PhotosExport {
     static func add(_ urls: [URL]) async throws -> Int {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
-            throw MTPError.failed(L("Разрешите Shuttle добавлять фото: Настройки → Конфиденциальность → Фото"))
+            throw MTPError.failed(L("Разрешите Wirrow добавлять фото: Настройки → Конфиденциальность → Фото"))
         }
         let media = urls.filter { MediaKind.isMedia($0.lastPathComponent) }
         try await PHPhotoLibrary.shared().performChanges {

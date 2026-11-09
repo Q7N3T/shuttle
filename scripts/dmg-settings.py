@@ -2,7 +2,7 @@
 # Icon positions match Sources/DMGBackground.swift.
 import os.path
 
-app = defines["app"]            # path to Shuttle.app
+app = defines["app"]            # path to Wirrow.app
 assets = defines["assets"]      # folder with bg.png / bg@2x.png
 
 format = "UDZO"
@@ -30,6 +30,6 @@ text_size = 13
 label_pos = "bottom"
 arrange_by = None
 icon_locations = {
-    "Shuttle.app": (160, 196),
+    "Wirrow.app": (160, 196),
     "Applications": (480, 196),
 }

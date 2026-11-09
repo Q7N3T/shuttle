@@ -184,7 +184,7 @@ struct ProgressTrack: View {
     }
 }
 
-/// A size in Shuttle's interface language (not the system's): "4,2 МБ" / "4.2 MB". Decimal units, like Finder.
+/// A size in Wirrow's interface language (not the system's): "4,2 МБ" / "4.2 MB". Decimal units, like Finder.
 func formatBytes(_ bytes: UInt64) -> String {
     let en = L10n.english
     let units = en ? ["B", "KB", "MB", "GB", "TB"] : ["Б", "КБ", "МБ", "ГБ", "ТБ"]

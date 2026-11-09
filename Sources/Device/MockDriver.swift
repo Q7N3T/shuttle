@@ -4,7 +4,7 @@ import ImageIO
 import UniformTypeIdentifiers
 
 /// An in-memory test device: a phone or a Switch with DBI.
-/// Run with `Shuttle --mock-device phone|switch` (Debug), and in automated tests.
+/// Run with `Wirrow --mock-device phone|switch` (Debug), and in automated tests.
 final class MockDriver: DeviceDriver {
     enum Kind: String { case phone, console = "switch" }
 

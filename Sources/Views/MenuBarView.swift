@@ -43,13 +43,13 @@ struct MenuBarView: View {
         Divider()
         Toggle(L("Забирать новые фото сами"), isOn: Binding(get: { AppSettings.shared.autoImport },
                                                            set: { AppSettings.shared.autoImport = $0 }))
-        Button(L("Открыть Shuttle")) { MenuBarMode.showWindow { openWindow(id: "main") } }
+        Button(L("Открыть Wirrow")) { MenuBarMode.showWindow { openWindow(id: "main") } }
         Button(L("История передач")) {
             MenuBarMode.showWindow { openWindow(id: "main") }
             state.showHistory = true
         }
         Divider()
-        Button(L("Завершить Shuttle")) { NSApp.terminate(nil) }
+        Button(L("Завершить Wirrow")) { NSApp.terminate(nil) }
     }
 }
 

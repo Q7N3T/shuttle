@@ -183,7 +183,7 @@ struct SyncSheet: View {
                 }
             }
             SettingToggle(title: L("Синхронизировать при подключении"),
-                          hint: L("Как только телефон подключится, Shuttle заберёт новое сам."),
+                          hint: L("Как только телефон подключится, Wirrow заберёт новое сам."),
                           isOn: $settings.autoSync)
         } buttons: {
             Chip(title: L("Добавить текущую папку"), icon: "plus") { state.addSyncRuleForCurrentFolder() }
@@ -337,7 +337,7 @@ struct InstallSheet: View {
             }
             .padding(12)
             .background(RoundedRectangle(cornerRadius: 10).fill(p.surface))
-            Text(L("Shuttle передаст файлы в DBI, а установит их сама Switch. Не отключайте кабель до конца."))
+            Text(L("Wirrow передаст файлы в DBI, а установит их сама Switch. Не отключайте кабель до конца."))
                 .font(AppFont.body(12)).foregroundStyle(p.muted)
             if let sd, sd.capacity > 0, install.size > sd.free {
                 Label(L("На SD-карте мало места: свободно %@", formatBytes(sd.free)), systemImage: "exclamationmark.triangle")
@@ -433,7 +433,7 @@ struct AtmosphereSheet: View {
             }
             .padding(12)
             .background(RoundedRectangle(cornerRadius: 10).fill(p.surface))
-            Text(L("После обновления перезагрузите Switch в Atmosphère. Если что-то пойдёт не так, копия старой версии будет в «Документы → Shuttle → Резервные копии Switch»."))
+            Text(L("После обновления перезагрузите Switch в Atmosphère. Если что-то пойдёт не так, копия старой версии будет в «Документы → Wirrow → Резервные копии Switch»."))
                 .font(AppFont.body(12)).foregroundStyle(p.muted).fixedSize(horizontal: false, vertical: true)
             if let r { Link(L("Что нового в %@", r.version), destination: r.notesURL).font(AppFont.body(12)) }
         } buttons: {
@@ -462,7 +462,7 @@ struct APKSheet: View {
         let apks = state.pendingAPK ?? []
         SheetShell(icon: "shippingbox", title: L("Установить приложение на телефон?"),
                    subtitle: apks.map(\.lastPathComponent).joined(separator: ", ")) {
-            Text(L("Телефон подключён по ADB — Shuttle может сразу установить APK."))
+            Text(L("Телефон подключён по ADB — Wirrow может сразу установить APK."))
                 .font(AppFont.body(12))
         } buttons: {
             GhostButton(title: L("Только скопировать")) {

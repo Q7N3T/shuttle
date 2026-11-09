@@ -1,89 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
-    <title>Shuttle</title>
-    <link>https://github.com/Q7N3T/shuttle</link>
-    <description>Обновления Shuttle</description>
+    <title>Wirrow</title>
+    <link>https://github.com/Q7N3T/wirrow</link>
+    <description>Обновления Wirrow</description>
     <language>ru</language>
     <item>
-      <title>Shuttle 0.5.2</title>
+      <title>Wirrow 0.5.2</title>
       <pubDate>Sun, 08 Nov 2026 14:39:47 +0300</pubDate>
       <sparkle:version>11</sparkle:version>
       <sparkle:shortVersionString>0.5.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.5.2</link>
-      <description><![CDATA[<ul><li>Новый значок Switch в золотом цвете Shuttle.</li></ul><div data-lang="en"><p>New Switch icon, in Shuttle&#x27;s gold.</p></div>]]></description>
-      <enclosure url="https://q7n3t.github.io/shuttle/dl/Shuttle-0.5.2.dmg" sparkle:edSignature="c8VM1u364rcfXm9uCFU0y3l9pM1MGjrWZrM/HJYfe2Dj0W0fzQl9uCM00KMTPzVUzAQAlhCl1yJOoRENEaGOAQ==" length="6548587" type="application/octet-stream"/>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.5.2</link>
+      <description><![CDATA[<ul><li>Новый значок Switch в золотом цвете Wirrow.</li></ul><div data-lang="en"><p>New Switch icon, in Wirrow&#x27;s gold.</p></div>]]></description>
+      <enclosure url="https://q7n3t.github.io/wirrow/dl/Wirrow-0.5.2.dmg" sparkle:edSignature="c8VM1u364rcfXm9uCFU0y3l9pM1MGjrWZrM/HJYfe2Dj0W0fzQl9uCM00KMTPzVUzAQAlhCl1yJOoRENEaGOAQ==" length="6548587" type="application/octet-stream"/>
     </item>
     <item>
-      <title>Shuttle 0.5.1</title>
+      <title>Wirrow 0.5.1</title>
       <pubDate>Sun, 08 Nov 2026 14:36:03 +0300</pubDate>
       <sparkle:version>10</sparkle:version>
       <sparkle:shortVersionString>0.5.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.5.1</link>
-      <description><![CDATA[<ul><li>Время последней проверки обновлений теперь на языке приложения.</li><li>Обновления скачиваются с сайта Shuttle, так что они работают, даже если GitHub недоступен.</li></ul><div data-lang="en"><p>The &quot;last checked&quot; time now follows the app&#x27;s language.</p><p>Updates now download from the Shuttle website, so they work even where GitHub is blocked.</p></div>]]></description>
-      <enclosure url="https://q7n3t.github.io/shuttle/dl/Shuttle-0.5.1.dmg" sparkle:edSignature="RUHXoF2lus+0H3SOtZturUAxrD6sxwNJ6Lfe35nrrM0+J6PLtkQgBRlQmSbmjEhdAxCVJ6OcxsR0RHWbuLtUCg==" length="6546294" type="application/octet-stream"/>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.5.1</link>
+      <description><![CDATA[<ul><li>Время последней проверки обновлений теперь на языке приложения.</li><li>Обновления скачиваются с сайта Wirrow, так что они работают, даже если GitHub недоступен.</li></ul><div data-lang="en"><p>The &quot;last checked&quot; time now follows the app&#x27;s language.</p><p>Updates now download from the Wirrow website, so they work even where GitHub is blocked.</p></div>]]></description>
+      <enclosure url="https://q7n3t.github.io/wirrow/dl/Wirrow-0.5.1.dmg" sparkle:edSignature="RUHXoF2lus+0H3SOtZturUAxrD6sxwNJ6Lfe35nrrM0+J6PLtkQgBRlQmSbmjEhdAxCVJ6OcxsR0RHWbuLtUCg==" length="6546294" type="application/octet-stream"/>
     </item>
     <item>
-      <title>Shuttle 0.5.0</title>
+      <title>Wirrow 0.5.0</title>
       <pubDate>Sun, 08 Nov 2026 14:00:54 +0300</pubDate>
       <sparkle:version>9</sparkle:version>
       <sparkle:shortVersionString>0.5.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.5.0</link>
-      <description><![CDATA[<ul><li>Знакомьтесь: Шаттл, маленький робот в углу окна. Нажмите на него, и он пошутит. А ещё он радуется, когда вы что-то подключаете или когда передача закончилась.</li><li>Пока файл копируется, Шаттл бежит по полоске прогресса. Если кабель отошёл, он садится и ждёт.</li><li>Значки за достижения: первый перенесённый файл, первые 100 ГБ и другие. Их можно посмотреть в настройках.</li><li>По праздникам Шаттл наряжается, а ещё отмечает день рождения Shuttle.</li><li>Телефон и Switch можно подключить одновременно. У каждого своя вкладка, и передачи идут параллельно.</li><li>После копирования Shuttle проверяет, что файл дошёл целиком. Проверенные отмечены зелёной галочкой.</li><li>Новая кнопка «Освободить место» для телефона. Она удаляет фото и видео, только если точно такая же копия уже лежит на Mac.</li><li>Shuttle может работать из строки меню после закрытия окна. Передачи продолжаются, а новые фото он может забирать сам.</li></ul><div data-lang="en"><p>Meet Shuttle, the little robot in the top corner of the window. Click him and he&#x27;ll tell you a joke. He also reacts when you plug something in or a transfer finishes.</p><p>While a file is copying, he runs along the progress bar. If the cable comes out, he sits down and waits.</p><p>Badges for things like your first transfer or your first 100 GB. You&#x27;ll find them in Settings.</p><p>He dresses up for the holidays, and celebrates Shuttle&#x27;s birthday.</p><p>You can connect a phone and a Switch at the same time. Each gets its own tab, and both can transfer at once.</p><p>After copying, Shuttle checks that the file arrived in full. Checked files get a green tick.</p><p>New &quot;Free up space&quot; button for phones. It deletes photos and videos from the phone only if an identical copy is already on your Mac.</p><p>Shuttle can keep running in the menu bar after you close the window. Transfers carry on, and it can bring over new photos by itself.</p></div>]]></description>
-      <enclosure url="https://q7n3t.github.io/shuttle/dl/Shuttle-0.5.0.dmg" sparkle:edSignature="wus3V+Xb04Efl+b1xS0AilPSt3SdNbxIsji+VndVT8yn3WOSyVibSqv6OHRKyd1eSEv6lvQfwcOorl8yV7XSBg==" length="6530645" type="application/octet-stream"/>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.5.0</link>
+      <description><![CDATA[<ul><li>Знакомьтесь: Шаттл, маленький робот в углу окна. Нажмите на него, и он пошутит. А ещё он радуется, когда вы что-то подключаете или когда передача закончилась.</li><li>Пока файл копируется, Шаттл бежит по полоске прогресса. Если кабель отошёл, он садится и ждёт.</li><li>Значки за достижения: первый перенесённый файл, первые 100 ГБ и другие. Их можно посмотреть в настройках.</li><li>По праздникам Шаттл наряжается, а ещё отмечает день рождения Wirrow.</li><li>Телефон и Switch можно подключить одновременно. У каждого своя вкладка, и передачи идут параллельно.</li><li>После копирования Wirrow проверяет, что файл дошёл целиком. Проверенные отмечены зелёной галочкой.</li><li>Новая кнопка «Освободить место» для телефона. Она удаляет фото и видео, только если точно такая же копия уже лежит на Mac.</li><li>Wirrow может работать из строки меню после закрытия окна. Передачи продолжаются, а новые фото он может забирать сам.</li></ul><div data-lang="en"><p>Meet Wirrow, the little robot in the top corner of the window. Click him and he&#x27;ll tell you a joke. He also reacts when you plug something in or a transfer finishes.</p><p>While a file is copying, he runs along the progress bar. If the cable comes out, he sits down and waits.</p><p>Badges for things like your first transfer or your first 100 GB. You&#x27;ll find them in Settings.</p><p>He dresses up for the holidays, and celebrates Wirrow&#x27;s birthday.</p><p>You can connect a phone and a Switch at the same time. Each gets its own tab, and both can transfer at once.</p><p>After copying, Wirrow checks that the file arrived in full. Checked files get a green tick.</p><p>New &quot;Free up space&quot; button for phones. It deletes photos and videos from the phone only if an identical copy is already on your Mac.</p><p>Wirrow can keep running in the menu bar after you close the window. Transfers carry on, and it can bring over new photos by itself.</p></div>]]></description>
+      <enclosure url="https://q7n3t.github.io/wirrow/dl/Wirrow-0.5.0.dmg" sparkle:edSignature="wus3V+Xb04Efl+b1xS0AilPSt3SdNbxIsji+VndVT8yn3WOSyVibSqv6OHRKyd1eSEv6lvQfwcOorl8yV7XSBg==" length="6530645" type="application/octet-stream"/>
     </item>
     <item>
-      <title>Shuttle 0.4.2</title>
+      <title>Wirrow 0.4.2</title>
       <pubDate>Sat, 07 Nov 2026 19:10:15 +0300</pubDate>
       <sparkle:version>8</sparkle:version>
       <sparkle:shortVersionString>0.4.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.4.2</link>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.4.2</link>
       <description><![CDATA[<ul><li>Кнопка «Новые фото» теперь называется «С камеры»: она забирает и видео тоже.</li><li>В списке передач загрузки с камеры подписаны «Новое фото» или «Новое видео».</li></ul><div data-lang="en"><p>The &quot;New photos&quot; button is now called &quot;From camera&quot;, since it brings over videos too.</p><p>Camera imports in the transfer list are labelled &quot;New photo&quot; or &quot;New video&quot;.</p></div>]]></description>
-      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.4.2/Shuttle-0.4.2.dmg" sparkle:edSignature="dz/fibo4LEfKGy9qBtBxhNdSu5mtO5TSjoH0Uip090stwUHz2ZYJkpyNW75GJCdKtXebjZR9fQw+02uUYLb+CA==" length="6047178" type="application/octet-stream"/>
+      <enclosure url="https://github.com/Q7N3T/wirrow/releases/download/v0.4.2/Wirrow-0.4.2.dmg" sparkle:edSignature="dz/fibo4LEfKGy9qBtBxhNdSu5mtO5TSjoH0Uip090stwUHz2ZYJkpyNW75GJCdKtXebjZR9fQw+02uUYLb+CA==" length="6047178" type="application/octet-stream"/>
     </item>
     <item>
-      <title>Shuttle 0.4.1</title>
+      <title>Wirrow 0.4.1</title>
       <pubDate>Sat, 07 Nov 2026 16:51:51 +0300</pubDate>
       <sparkle:version>7</sparkle:version>
       <sparkle:shortVersionString>0.4.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.4.1</link>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.4.1</link>
       <description><![CDATA[<ul><li>Кнопка «Проверить обновления» переехала наверх настроек и видна на любой вкладке.</li><li>В настройках видно, чем закончилась последняя проверка и когда она была.</li></ul><div data-lang="en"><p>&quot;Check for updates&quot; moved to the top of Settings, so it&#x27;s there on every tab.</p><p>Settings shows how the last check went and when it happened.</p></div>]]></description>
-      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.4.1/Shuttle-0.4.1.dmg" sparkle:edSignature="ddZihtLnra9J1AT+KRvcSUH93elJIh3zwwOEwLHYBm3uzedbWgPyGb4Sg8tejeHtuAXoJjgXksOaNaBgNf9yAg==" length="6039598" type="application/octet-stream"/>
+      <enclosure url="https://github.com/Q7N3T/wirrow/releases/download/v0.4.1/Wirrow-0.4.1.dmg" sparkle:edSignature="ddZihtLnra9J1AT+KRvcSUH93elJIh3zwwOEwLHYBm3uzedbWgPyGb4Sg8tejeHtuAXoJjgXksOaNaBgNf9yAg==" length="6039598" type="application/octet-stream"/>
     </item>
     <item>
-      <title>Shuttle 0.4.0</title>
+      <title>Wirrow 0.4.0</title>
       <pubDate>Sat, 07 Nov 2026 16:24:53 +0300</pubDate>
       <sparkle:version>6</sparkle:version>
       <sparkle:shortVersionString>0.4.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.4.0</link>
-      <description><![CDATA[<ul><li>Android: новые фото и видео с камеры забираются одной кнопкой.</li><li>Android: синхронизация папок, перевод HEIC в JPG, превью и вид сеткой.</li><li>Android: файлы, которые уже есть на Mac, помечены, а дубли можно найти.</li><li>Android по ADB, если хочется: быстрее, работает по Wi‑Fi, ставит APK и делает скриншоты.</li><li>Switch: установка игр через DBI. Shuttle заранее проверяет, хватит ли места.</li><li>Switch: homebrew прямо из zip, копии сейвов, альбом сеткой, названия игр вместо кодов, обновление Atmosphère.</li><li>Если кабель отошёл посреди передачи, Shuttle продолжит с того же места.</li><li>Поиск по вложенным папкам, избранные папки, просмотр по пробелу, пакетное переименование.</li><li>История передач, уведомления и значок в строке меню.</li><li>Приложение теперь есть на английском.</li></ul><div data-lang="en"><p>Android: one button brings over new photos and videos from the camera.</p><p>Android: folder sync, HEIC to JPG conversion, thumbnails and a grid view.</p><p>Android: files that are already on your Mac are marked, and you can find duplicates.</p><p>Android over ADB, if you want it: faster, works over Wi‑Fi, installs APKs and takes screenshots.</p><p>Switch: install games through DBI. Shuttle checks there&#x27;s enough space first.</p><p>Switch: homebrew straight from a zip, save backups, the album as a grid, game names instead of title IDs, Atmosphère updates.</p><p>If the cable comes out mid-transfer, Shuttle picks up where it left off.</p><p>Search inside subfolders, favorite folders, Quick Look with Space, batch rename.</p><p>Transfer history, notifications and a menu bar icon.</p><p>The app is now available in English.</p></div>]]></description>
-      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.4.0/Shuttle-0.4.0.dmg" sparkle:edSignature="XCjUGcx5rs2U9v4Cs/9sXphS5NNbLdg5neBFtsOkwQjs3nY4H94V6xTEBKNmum1dGcvqYg5j88+78deHIvX+Dw==" length="6015839" type="application/octet-stream"/>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.4.0</link>
+      <description><![CDATA[<ul><li>Android: новые фото и видео с камеры забираются одной кнопкой.</li><li>Android: синхронизация папок, перевод HEIC в JPG, превью и вид сеткой.</li><li>Android: файлы, которые уже есть на Mac, помечены, а дубли можно найти.</li><li>Android по ADB, если хочется: быстрее, работает по Wi‑Fi, ставит APK и делает скриншоты.</li><li>Switch: установка игр через DBI. Wirrow заранее проверяет, хватит ли места.</li><li>Switch: homebrew прямо из zip, копии сейвов, альбом сеткой, названия игр вместо кодов, обновление Atmosphère.</li><li>Если кабель отошёл посреди передачи, Wirrow продолжит с того же места.</li><li>Поиск по вложенным папкам, избранные папки, просмотр по пробелу, пакетное переименование.</li><li>История передач, уведомления и значок в строке меню.</li><li>Приложение теперь есть на английском.</li></ul><div data-lang="en"><p>Android: one button brings over new photos and videos from the camera.</p><p>Android: folder sync, HEIC to JPG conversion, thumbnails and a grid view.</p><p>Android: files that are already on your Mac are marked, and you can find duplicates.</p><p>Android over ADB, if you want it: faster, works over Wi‑Fi, installs APKs and takes screenshots.</p><p>Switch: install games through DBI. Wirrow checks there&#x27;s enough space first.</p><p>Switch: homebrew straight from a zip, save backups, the album as a grid, game names instead of title IDs, Atmosphère updates.</p><p>If the cable comes out mid-transfer, Wirrow picks up where it left off.</p><p>Search inside subfolders, favorite folders, Quick Look with Space, batch rename.</p><p>Transfer history, notifications and a menu bar icon.</p><p>The app is now available in English.</p></div>]]></description>
+      <enclosure url="https://github.com/Q7N3T/wirrow/releases/download/v0.4.0/Wirrow-0.4.0.dmg" sparkle:edSignature="XCjUGcx5rs2U9v4Cs/9sXphS5NNbLdg5neBFtsOkwQjs3nY4H94V6xTEBKNmum1dGcvqYg5j88+78deHIvX+Dw==" length="6015839" type="application/octet-stream"/>
     </item>
     <item>
-      <title>Shuttle 0.3.1</title>
+      <title>Wirrow 0.3.1</title>
       <pubDate>Sat, 07 Nov 2026 15:04:36 +0300</pubDate>
       <sparkle:version>5</sparkle:version>
       <sparkle:shortVersionString>0.3.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.3.1</link>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.3.1</link>
       <description><![CDATA[<ul><li>Новая шапка окна. Она выше, а логотип и кнопки стоят на одной линии с кнопками окна.</li><li>Логотип крупнее, переключатель темы собран в аккуратную капсулу.</li></ul><div data-lang="en"><p>Redesigned the top of the window. It&#x27;s taller, and the logo and buttons line up with the window controls.</p><p>Bigger logo, and the theme switcher sits in a tidy capsule.</p></div>]]></description>
-      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.3.1/Shuttle-0.3.1.dmg" sparkle:edSignature="Rn7wRddBKa/qIS+uliYE11gFsi6pJ5ijIbVACOxtZW6rgu0mMKni/XiUO1VD5ewbrR5DlEOBOS4jp13+78qWBQ==" length="4328050" type="application/octet-stream"/>
+      <enclosure url="https://github.com/Q7N3T/wirrow/releases/download/v0.3.1/Wirrow-0.3.1.dmg" sparkle:edSignature="Rn7wRddBKa/qIS+uliYE11gFsi6pJ5ijIbVACOxtZW6rgu0mMKni/XiUO1VD5ewbrR5DlEOBOS4jp13+78qWBQ==" length="4328050" type="application/octet-stream"/>
     </item>
     <item>
-      <title>Shuttle 0.3.0</title>
+      <title>Wirrow 0.3.0</title>
       <pubDate>Sat, 07 Nov 2026 14:51:19 +0300</pubDate>
       <sparkle:version>4</sparkle:version>
       <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <link>https://github.com/Q7N3T/shuttle/releases/tag/v0.3.0</link>
-      <description><![CDATA[<ul><li>Shuttle теперь обновляется сам. Новую версию можно поставить сразу, отложить или пропустить.</li><li>В настройках (⌘,) можно включить или выключить автопроверку и автоустановку, а также вернуть пропущенные версии.</li><li>У DMG появилось нормальное окно: просто перетащите Shuttle в «Программы».</li></ul><div data-lang="en"><p>Shuttle now updates itself. When there&#x27;s a new version, you can install it now, later, or skip it.</p><p>In Settings (⌘,) you can turn automatic checks and installs on or off, and bring back skipped versions.</p><p>The DMG got a proper window: just drag Shuttle into Applications.</p></div>]]></description>
-      <enclosure url="https://github.com/Q7N3T/shuttle/releases/download/v0.3.0/Shuttle-0.3.0.dmg" sparkle:edSignature="Y2jk+PRcyBAdVv92slN7UO+leT4vFEywbECBucMQNWcJNdk3cFNXd4rOdpaZ8rqRMAdPTDoAVPw/O2sY5QRmAw==" length="4286874" type="application/octet-stream"/>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.3.0</link>
+      <description><![CDATA[<ul><li>Wirrow теперь обновляется сам. Новую версию можно поставить сразу, отложить или пропустить.</li><li>В настройках (⌘,) можно включить или выключить автопроверку и автоустановку, а также вернуть пропущенные версии.</li><li>У DMG появилось нормальное окно: просто перетащите Wirrow в «Программы».</li></ul><div data-lang="en"><p>Wirrow now updates itself. When there&#x27;s a new version, you can install it now, later, or skip it.</p><p>In Settings (⌘,) you can turn automatic checks and installs on or off, and bring back skipped versions.</p><p>The DMG got a proper window: just drag Wirrow into Applications.</p></div>]]></description>
+      <enclosure url="https://github.com/Q7N3T/wirrow/releases/download/v0.3.0/Wirrow-0.3.0.dmg" sparkle:edSignature="Y2jk+PRcyBAdVv92slN7UO+leT4vFEywbECBucMQNWcJNdk3cFNXd4rOdpaZ8rqRMAdPTDoAVPw/O2sY5QRmAw==" length="4286874" type="application/octet-stream"/>
     </item>
   </channel>
 </rss>

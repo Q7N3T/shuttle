@@ -261,7 +261,7 @@ extension AppState {
             let t = Transfer(name: "Atmosphère \(release.version)", direction: .toAndroid, label: L("Обновление"), deviceKey: key)
             run(t, completion: { [weak self] t in
                 Task { await self?.refreshAfterUpload(storage: sd.id) }
-                if t.state == .done { self?.toast(L("Atmosphère обновлён. Копия старой версии — в «Документы/Shuttle»")) }
+                if t.state == .done { self?.toast(L("Atmosphère обновлён. Копия старой версии — в «Документы/Wirrow»")) }
             }) { svc, t in
                 try FileManager.default.createDirectory(at: backup, withIntermediateDirectories: true)
                 for name in ["atmosphere", "bootloader"] {
@@ -683,7 +683,7 @@ extension AppState {
     nonisolated func itemProvider(for item: RemoteItem, state: AppState) -> NSItemProvider {
         let provider = NSItemProvider()
         provider.suggestedName = item.name
-        provider.registerObject("shuttle-remote:\(item.id)" as NSString, visibility: .ownProcess)
+        provider.registerObject("wirrow-remote:\(item.id)" as NSString, visibility: .ownProcess)
 
         guard !item.isFolder else { return provider }
         let type = UTType(filenameExtension: (item.name as NSString).pathExtension) ?? .data
@@ -692,7 +692,7 @@ extension AppState {
             let t = Transfer(name: item.name, direction: .toMac)
             Task { @MainActor in state.transfers.insert(t, at: 0) }
             let dir = FileManager.default.temporaryDirectory
-                .appendingPathComponent("Shuttle-\(UUID().uuidString)", isDirectory: true)
+                .appendingPathComponent("Wirrow-\(UUID().uuidString)", isDirectory: true)
             state.svc.runDetached { svc in
                 t.began()
                 do {

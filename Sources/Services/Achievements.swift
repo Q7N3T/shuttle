@@ -153,7 +153,7 @@ final class Achievements: ObservableObject {
     var monthJoke: String? {
         let b = monthBytes
         guard b > 0 else { return nil }
-        return L("За месяц мимо облака: %@. ‖ Подписка на такой объём — от %@ в месяц. Shuttle — $0.",
+        return L("За месяц мимо облака: %@. ‖ Подписка на такой объём — от %@ в месяц. Wirrow — $0.",
                  formatBytes(b), Self.cloudPrice(for: b))
     }
 }

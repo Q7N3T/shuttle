@@ -1,5 +1,5 @@
 import XCTest
-@testable import Shuttle
+@testable import Wirrow
 
 /// Whole-app scenarios: AppState + a test device.
 @MainActor

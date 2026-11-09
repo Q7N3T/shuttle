@@ -3,8 +3,8 @@ import Foundation
 import AppKit
 import CryptoKit
 
-/// Debug: `Shuttle --selftest` runs real operations on a connected phone.
-/// Everything happens in a temporary ShuttleSelfTest folder at the storage root and is deleted at the end.
+/// Debug: `Wirrow --selftest` runs real operations on a connected phone.
+/// Everything happens in a temporary WirrowSelfTest folder at the storage root and is deleted at the end.
 enum SelfTest {
     static func runIfRequested() {
         if CommandLine.arguments.contains("--dump-menu") {
@@ -102,7 +102,7 @@ enum SelfTest {
     private static func run() -> Int32 {
         let svc = DeviceService.shared
         let fm = FileManager.default
-        let work = fm.temporaryDirectory.appendingPathComponent("ShuttleSelfTest-\(UUID().uuidString)")
+        let work = fm.temporaryDirectory.appendingPathComponent("WirrowSelfTest-\(UUID().uuidString)")
         try? fm.createDirectory(at: work, withIntermediateDirectories: true)
         defer { try? fm.removeItem(at: work); svc.release() }
 
@@ -131,17 +131,17 @@ enum SelfTest {
             }
         }
 
-        print("— Запись (папка ShuttleSelfTest)")
+        print("— Запись (папка WirrowSelfTest)")
         // Clean up leftovers from the previous run.
-        for old in root where old.isFolder && old.name == "ShuttleSelfTest" { try? svc.deleteTree(old) }
+        for old in root where old.isFolder && old.name == "WirrowSelfTest" { try? svc.deleteTree(old) }
 
         guard let folder = step("Создание папки", {
-            try svc.createFolder("ShuttleSelfTest", parent: mtpRoot, storage: info.storageID)
+            try svc.createFolder("WirrowSelfTest", parent: mtpRoot, storage: info.storageID)
         }) else { return 1 }
 
         // Test files: a small one, one with Cyrillic and a space, and 50 MB for speed.
         let small = work.appendingPathComponent("hello.txt")
-        try? "Привет от Shuttle \(Date())".data(using: .utf8)!.write(to: small)
+        try? "Привет от Wirrow \(Date())".data(using: .utf8)!.write(to: small)
         let cyr = work.appendingPathComponent("Тест файл №1.txt")
         try? Data((0..<4096).map { UInt8($0 % 251) }).write(to: cyr)
         let big = work.appendingPathComponent("big.bin")
@@ -176,7 +176,7 @@ enum SelfTest {
             try svc.uploadTree([nested], parent: folder, storage: info.storageID, token: CancelToken()) { _, _ in }
         }
 
-        let listed = step("Список ShuttleSelfTest") { try svc.list(storage: info.storageID, parent: folder) } ?? []
+        let listed = step("Список WirrowSelfTest") { try svc.list(storage: info.storageID, parent: folder) } ?? []
         print("   \(listed.map { $0.isFolder ? $0.name + "/" : "\($0.name) (\($0.size) Б)" }.joined(separator: ", "))")
         let names = Set(listed.map(\.name))
         check("Все объекты на месте", names.isSuperset(of: ["hello.txt", "Тест файл №1.txt", "big.bin", "Папка с файлами"]))
@@ -233,10 +233,10 @@ enum SelfTest {
         }
         let current = (try? svc.list(storage: info.storageID, parent: mtpRoot)) ?? []
         if let f = current.first(where: { $0.id == folder }) {
-            _ = step("Удаление ShuttleSelfTest целиком") { try svc.deleteTree(f) }
+            _ = step("Удаление WirrowSelfTest целиком") { try svc.deleteTree(f) }
         }
         let rootAfter = (try? svc.list(storage: info.storageID, parent: mtpRoot)) ?? []
-        check("Папка удалена с телефона", !rootAfter.contains { $0.name == "ShuttleSelfTest" })
+        check("Папка удалена с телефона", !rootAfter.contains { $0.name == "WirrowSelfTest" })
 
         print("")
         print(failures == 0 ? "Итог: всё прошло" : "Итог: ошибок \(failures)")

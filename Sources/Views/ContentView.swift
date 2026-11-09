@@ -83,7 +83,7 @@ struct ContentView: View {
     private var brand: some View {
         HStack(spacing: 10) {
             HeaderMascot()
-            Text("Shuttle").font(AppFont.display(16, .bold)).foregroundStyle(p.text)
+            Text("Wirrow").font(AppFont.display(16, .bold)).foregroundStyle(p.text)
         }
         .padding(.leading, 6)
         .fixedSize()

@@ -530,7 +530,7 @@ struct DevicePane: View {
         case .searching:
             if state.nintendoWithoutMTP {
                 Hint(icon: "gamecontroller", title: L("Switch подключена, но DBI не в режиме MTP"),
-                     lines: [L("На Switch: DBI → «Run MTP responder»"), L("Shuttle подхватит её сам")])
+                     lines: [L("На Switch: DBI → «Run MTP responder»"), L("Wirrow подхватит её сам")])
             } else {
                 Hint(icon: "cable.connector", title: L("Подключите устройство"),
                      lines: [L("Android: уведомление USB → «Передача файлов»"),

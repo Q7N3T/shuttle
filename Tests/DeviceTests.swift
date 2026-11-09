@@ -1,5 +1,5 @@
 import XCTest
-@testable import Shuttle
+@testable import Wirrow
 
 /// The device layer on the test driver.
 final class DeviceServiceTests: XCTestCase {

@@ -1,5 +1,5 @@
 import XCTest
-@testable import Shuttle
+@testable import Wirrow
 
 /// New in 0.5: several devices at once, verification after copying, free up space, achievements.
 @MainActor
@@ -113,10 +113,10 @@ final class FeatureTests: XCTestCase {
 
     func testUpdateNotesFollowAppLanguage() {
         let html = #"<ul><li>Новый значок</li><li>Сверка</li></ul><div data-lang="en"><p>New icon</p><p>Verification</p></div>"#
-        XCTAssertEqual(ShuttleUserDriver.notes(from: html, english: false), ["Новый значок", "Сверка"])
-        XCTAssertEqual(ShuttleUserDriver.notes(from: html, english: true), ["New icon", "Verification"])
+        XCTAssertEqual(WirrowUserDriver.notes(from: html, english: false), ["Новый значок", "Сверка"])
+        XCTAssertEqual(WirrowUserDriver.notes(from: html, english: true), ["New icon", "Verification"])
         // Old appcast entries — Russian list only.
-        XCTAssertEqual(ShuttleUserDriver.notes(from: "<ul><li>Только русский</li></ul>", english: true), ["Только русский"])
+        XCTAssertEqual(WirrowUserDriver.notes(from: "<ul><li>Только русский</li></ul>", english: true), ["Только русский"])
     }
 
     func testMascotHatsByDate() {

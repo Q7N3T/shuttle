@@ -1,18 +1,18 @@
-<p align="center"><img src="docs/icon-1024.png" width="128" alt="Shuttle"></p>
+<p align="center"><img src="docs/icon-1024.png" width="128" alt="Wirrow"></p>
 
-<h1 align="center">Shuttle</h1>
+<h1 align="center">Wirrow</h1>
 
 <p align="center">Drag and drop files between your Mac and an Android phone or a Nintendo Switch — over a cable.</p>
 
-![Shuttle](docs/screenshot-switch.png)
+![Wirrow](docs/screenshot-switch.png)
 
 ## Install
 
-**[Download the latest version](https://github.com/Q7N3T/shuttle/releases/latest)** · [Website](https://q7n3t.github.io/shuttle/) · macOS 14+, Apple Silicon and Intel
+**[Download the latest version](https://github.com/Q7N3T/wirrow/releases/latest)** · [Website](https://q7n3t.github.io/wirrow/) · macOS 14+, Apple Silicon and Intel
 
 1. Open the DMG.
-2. Drag Shuttle to Applications.
-3. Launch Shuttle.
+2. Drag Wirrow to Applications.
+3. Launch Wirrow.
 
 > If macOS won’t open the app, go to
 > **System Settings → Privacy & Security**
@@ -29,9 +29,9 @@
 - Switch with DBI: install games, homebrew from a zip, save backups, Atmosphère updates
 - Runs from the menu bar; dark and light themes; English and Russian
 - Automatic updates: new versions arrive by themselves
-- Shuttle the pixel mascot, with jokes and badges
+- Wirrow the pixel mascot, with jokes and badges
 
-[Changelog](CHANGELOG.md) · [Русский](CHANGELOG.ru.md) · [All builds](https://github.com/Q7N3T/shuttle/releases)
+[Changelog](CHANGELOG.md) · [Русский](CHANGELOG.ru.md) · [All builds](https://github.com/Q7N3T/wirrow/releases)
 
 ## Connecting
 
@@ -47,9 +47,9 @@ If the device doesn’t show up, quit Image Capture, Photos and Android File Tra
 brew install xcodegen pkg-config
 scripts/build-deps.sh
 xcodegen generate
-open Shuttle.xcodeproj
+open Wirrow.xcodeproj
 ```
 
 To ship a new version: bump the version in `project.yml`, add the notes to `CHANGELOG.md` and `CHANGELOG.ru.md`, then run `scripts/release.sh`.
 
-Shuttle is not affiliated with Nintendo or Google.
+Wirrow is not affiliated with Nintendo or Google.

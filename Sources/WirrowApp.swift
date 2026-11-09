@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ShuttleApp: App {
+struct WirrowApp: App {
     @StateObject private var state = AppState()
     @StateObject private var updates = UpdateModel(start: !AppFolders.testing)
     @ObservedObject private var settings = AppSettings.shared
@@ -30,7 +30,7 @@ struct ShuttleApp: App {
         .windowToolbarStyle(.unified(showsTitle: false))
         .defaultSize(width: 1100, height: 720)
         .commands {
-            ShuttleCommands(state: state, theme: $theme)
+            WirrowCommands(state: state, theme: $theme)
             CommandGroup(after: .appInfo) {
                 Button(L("Проверить обновления…")) { updates.checkNow() }
             }
@@ -44,7 +44,7 @@ struct ShuttleApp: App {
 
         // SwiftUI writes isInserted on every rebuild; writing the same value
         // sends objectWillChange and loops the update — write only real changes.
-        // In menu bar mode the icon is always needed — otherwise there's no way to reach Shuttle.
+        // In menu bar mode the icon is always needed — otherwise there's no way to reach Wirrow.
         MenuBarExtra(isInserted: Binding(get: { settings.menuBarIcon || settings.menuBarMode },
                                          set: { if !settings.menuBarMode, settings.menuBarIcon != $0 { settings.menuBarIcon = $0 } })) {
             MenuBarView().environmentObject(state)
@@ -102,7 +102,7 @@ final class SystemAppearance: ObservableObject {
     }
 }
 
-/// Menu bar mode: when the last window closes, Shuttle leaves the Dock,
+/// Menu bar mode: when the last window closes, Wirrow leaves the Dock,
 /// and comes back when the window is opened again.
 @MainActor
 enum MenuBarMode {
@@ -124,7 +124,7 @@ enum MenuBarMode {
         })
     }
 
-    /// Show the Shuttle window (from the menu): bring back the Dock icon and the window to the front.
+    /// Show the Wirrow window (from the menu): bring back the Dock icon and the window to the front.
     static func showWindow(open: () -> Void) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)

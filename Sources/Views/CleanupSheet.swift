@@ -125,7 +125,7 @@ struct CleanupSheet: View {
 
     var body: some View {
         SheetShell(icon: "externaldrive.badge.minus", title: L("Освободить место на телефоне"), subtitle: subtitle) {
-            Text(L("Shuttle найдёт фото, видео и скриншоты, у которых на Mac есть точная копия, и сверит их содержимое. Удалит с телефона только сверенные — остальное не тронет."))
+            Text(L("Wirrow найдёт фото, видео и скриншоты, у которых на Mac есть точная копия, и сверит их содержимое. Удалит с телефона только сверенные — остальное не тронет."))
                 .font(AppFont.body(12)).foregroundStyle(p.muted).fixedSize(horizontal: false, vertical: true)
             switch model.phase {
             case .scanning, .checking, .deleting:

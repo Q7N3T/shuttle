@@ -11,9 +11,9 @@ cd "$(dirname "$0")/.."
 
 VERSION=$(sed -n 's/.*CFBundleShortVersionString: "\(.*\)"/\1/p' project.yml)
 BUILD=$(sed -n 's/.*CFBundleVersion: "\(.*\)"/\1/p' project.yml)
-DMG=build/Shuttle-$VERSION.dmg
+DMG=build/Wirrow-$VERSION.dmg
 # Updates download the DMG from the site mirror: github.com is blocked in some networks, the site is not.
-URL=https://q7n3t.github.io/shuttle/dl/Shuttle-$VERSION.dmg
+URL=https://q7n3t.github.io/wirrow/dl/Wirrow-$VERSION.dmg
 SPARKLE=build/Debug.noindex/SourcePackages/artifacts/sparkle/Sparkle/bin
 
 grep -q "^## \[$VERSION\]" CHANGELOG.md || { echo "✗ No [$VERSION] section in CHANGELOG.md"; exit 1; }
@@ -36,11 +36,11 @@ git push -q
 
 echo "▸ GitHub release"
 NOTES=$(awk -v v="$VERSION" '$0 ~ "^## \\["v"\\]" {f=1; next} /^## \[/ {f=0} f' CHANGELOG.md | sed '/^\s*$/d')
-gh release create "v$VERSION" "$DMG" --title "Shuttle $VERSION" --notes "$NOTES
+gh release create "v$VERSION" "$DMG" --title "Wirrow $VERSION" --notes "$NOTES
 
 ---
-**Install:** open the DMG and drag Shuttle to Applications.
-Already running Shuttle 0.3.0 or later? The update arrives by itself."
+**Install:** open the DMG and drag Wirrow to Applications.
+Already running Wirrow 0.3.0 or later? The update arrives by itself."
 
 echo "▸ appcast.xml"
 python3 scripts/appcast.py "$VERSION" "$BUILD" "$URL" "$SIG" "$LEN"
@@ -54,4 +54,4 @@ for i in $(seq 1 30); do
 done
 git add appcast.xml && git commit -q -m "update appcast" && git push -q
 
-echo "✓ Shuttle $VERSION released: https://github.com/Q7N3T/shuttle/releases/tag/v$VERSION"
+echo "✓ Wirrow $VERSION released: https://github.com/Q7N3T/wirrow/releases/tag/v$VERSION"

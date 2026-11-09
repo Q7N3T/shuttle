@@ -1,5 +1,5 @@
 import XCTest
-@testable import Shuttle
+@testable import Wirrow
 
 /// Every L("…") string in the code is translated, and the format specifiers match.
 final class LocalizationTests: XCTestCase {

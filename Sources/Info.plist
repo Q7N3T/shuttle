@@ -9,7 +9,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ru</string>
 	<key>CFBundleDisplayName</key>
-	<string>Shuttle</string>
+	<string>Wirrow</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -34,11 +34,11 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Shuttle добавляет фото и видео с телефона или Switch в «Фото».</string>
+	<string>Wirrow добавляет фото и видео с телефона или Switch в «Фото».</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/Q7N3T/shuttle/main/appcast.xml</string>
+	<string>https://raw.githubusercontent.com/Q7N3T/wirrow/main/appcast.xml</string>
 	<key>SUPublicEDKey</key>
 	<string>OQkMHjKc/6xCJsLy7qUifmQ41D+OVyLJf1hB25fUHuE=</string>
 	<key>SUScheduledCheckInterval</key>

@@ -18,7 +18,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 DroidMark(size: 34)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Shuttle").font(AppFont.display(15, .bold))
+                    Text("Wirrow").font(AppFont.display(15, .bold))
                     Text(L("Версия %@", updates.currentVersion)).font(AppFont.body(12)).foregroundStyle(p.muted)
                 }
                 Spacer()
@@ -92,11 +92,11 @@ struct SettingsView: View {
             }
             section(L("Передачи")) {
                 SettingToggle(title: L("Уведомлять, когда передача закончилась"),
-                              hint: L("Только если Shuttle в фоне."), isOn: $settings.notifications)
+                              hint: L("Только если Wirrow в фоне."), isOn: $settings.notifications)
                 SettingToggle(title: L("Иконка в строке меню"),
                               hint: L("Устройство, свободное место и быстрые действия."), isOn: $settings.menuBarIcon)
                 SettingToggle(title: L("Работать из строки меню"),
-                              hint: L("Окно можно закрыть: Shuttle уйдёт из Dock в строку меню, передачи и автоимпорт продолжатся."),
+                              hint: L("Окно можно закрыть: Wirrow уйдёт из Dock в строку меню, передачи и автоимпорт продолжатся."),
                               isOn: $settings.menuBarMode)
                 SettingToggle(title: L("Забирать новые фото сами"),
                               hint: L("При подключении телефона новые фото и видео с камеры сразу скачиваются на Mac."),
@@ -181,7 +181,7 @@ struct SettingsView: View {
     private var updatesSection: some View {
         section(L("Обновления")) {
             SettingToggle(title: L("Проверять обновления автоматически"),
-                          hint: L("Раз в день. Новую версию покажем в окне Shuttle."),
+                          hint: L("Раз в день. Новую версию покажем в окне Wirrow."),
                           isOn: $updates.automaticallyChecks)
             SettingToggle(title: L("Скачивать и устанавливать сами"),
                           hint: L("Обновление поставится при следующем запуске."),
@@ -197,7 +197,7 @@ struct SettingsView: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
             }
-            Link(destination: URL(string: "https://github.com/Q7N3T/shuttle/releases")!) {
+            Link(destination: URL(string: "https://github.com/Q7N3T/wirrow/releases")!) {
                 Label(L("История версий и старые сборки"), systemImage: "clock.arrow.circlepath")
                     .font(AppFont.body(12))
             }
@@ -321,7 +321,7 @@ struct UpdateCheckRow: View {
         case .found(let i), .ready(let i): return L("Доступна версия %@", i.version)
         case .downloading, .extracting: return L("Скачиваем обновление")
         case .installing: return L("Устанавливаем и перезапускаем…")
-        default: return updates.lastResult ?? L("Shuttle %@", updates.currentVersion)
+        default: return updates.lastResult ?? L("Wirrow %@", updates.currentVersion)
         }
     }
 

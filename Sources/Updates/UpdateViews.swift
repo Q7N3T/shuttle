@@ -69,7 +69,7 @@ struct UpdateCard: View {
                 Text(L("У вас последняя версия — %@", updates.currentVersion))
             case .installed(let v):
                 DrawnCheck(size: 16, color: p.ok)
-                Text(L("Shuttle обновлён до %@", v))
+                Text(L("Wirrow обновлён до %@", v))
             default:
                 EmptyView()
             }
@@ -118,7 +118,7 @@ struct UpdateCard: View {
 
     private var title: String {
         switch updates.phase {
-        case .found(let i), .ready(let i): L("Доступен Shuttle %@", i.version)
+        case .found(let i), .ready(let i): L("Доступен Wirrow %@", i.version)
         case .downloading, .extracting: L("Скачиваем обновление")
         case .installing: L("Почти готово")
         case .failed: L("Не удалось обновить")
@@ -132,7 +132,7 @@ struct UpdateCard: View {
             L("У вас %@", updates.currentVersion) + (i.size > 0 ? " · \(formatBytes(i.size))" : "")
         case .ready: L("Обновление скачано и готово к установке")
         case .downloading, .extracting: L("Можно продолжать работать")
-        case .installing: L("Shuttle перезапустится сам")
+        case .installing: L("Wirrow перезапустится сам")
         case .failed: L("Попробуйте позже или скачайте с GitHub")
         default: ""
         }
@@ -182,7 +182,7 @@ struct UpdateCard: View {
                 Spacer()
                 Chip(title: L("Отменить")) { updates.cancel() }
             case .failed:
-                Link(L("Открыть страницу версий"), destination: URL(string: "https://github.com/Q7N3T/shuttle/releases")!)
+                Link(L("Открыть страницу версий"), destination: URL(string: "https://github.com/Q7N3T/wirrow/releases")!)
                     .font(AppFont.body(12))
                 Spacer()
                 AccentButton(title: L("Понятно")) { updates.close() }
