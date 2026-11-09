@@ -3,7 +3,7 @@ import AppKit
 
 // MARK: - Model: what the mascot says and how it feels
 
-/// Shuttle (Шаттл) the mascot, named after the app's old name — the pixel droid from the logo. Sits in the window header,
+/// Wirrow (Вироу) the mascot — the pixel droid from the logo. Sits in the window header,
 /// jokes on click and reacts to what happens with devices and transfers.
 /// Same humor tricks as on the site: a pause before the twist (‖),
 /// a typo with a correction ({wrong|right}), repetition and a "snowball" of clicks.
@@ -100,9 +100,7 @@ final class Mascot: ObservableObject {
             L("Скачать + счастье = ‖ скачастье."),
             L("Почему файл перешёл дорогу? ‖ Его перетащили."),
             L("Загружаю шутку… ‖ 99%… ‖ 99%… ‖ Шутка не найдена."),
-            L("Ошибка 418: ‖ я чайник. ‖ Шучу. Я Шаттл."),
-            L("Меня зовут Шаттл. ‖ Раньше так звали всё приложение. ‖ Приложение переехало. Я остался."),
-            L("Wirrow — это приложение. ‖ Шаттл — это я. ‖ Не путай, я ранимый."),
+            L("Ошибка 418: ‖ я чайник. ‖ Шучу. Я Вироу."),
             L("Я робот. ‖ Бип. Буп. ‖ Извини, это было предустановлено."),
             L("12 новых фото. ‖ 11 — еда."),
             L("Мои антенны ничего не ловят. ‖ Они для красоты."),
@@ -150,7 +148,7 @@ final class Mascot: ObservableObject {
                 } else if tired {
                     say(L("Я немного устал. ‖ Телефон почти сел, а мы с ним на одной волне."))
                 } else {
-                    say(L("Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает."))
+                    say(L("Привет! Я Вироу. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает."))
                 }
             } else if let joke = Achievements.shared.monthJoke, Int.random(in: 0..<7) == 0 {
                 say(joke)
@@ -447,8 +445,8 @@ struct HeaderMascot: View {
             .contentShape(Rectangle())
             .onTapGesture { Mascot.shared.click() }
             .onHover { hover = $0 }
-            .help(L("Это Шаттл. Нажми — он что-нибудь скажет."))
-            .accessibilityLabel(L("Шаттл, маскот Wirrow"))
+            .help(L("Это Вироу. Нажми — он что-нибудь скажет."))
+            .accessibilityLabel(L("Маскот Вироу"))
             .accessibilityAddTraits(.isButton)
             .onChange(of: m.hops) { _, _ in
                 withAnimation(.spring(response: 0.18, dampingFraction: 0.5)) { lift = -6 }

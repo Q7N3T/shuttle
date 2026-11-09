@@ -514,16 +514,19 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .bento .big h3{font-size:21px;max-width:34ch}
 @media (max-width:900px){.bento{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.bento-stage{padding:20px 12px;border-radius:16px}.bento{grid-template-columns:1fr}.bento .big{grid-column:auto}.bcard canvas{height:200px}.bento .big h3,.bcard h3{font-size:17px}}
-/* Знакомство: Шаттл кружится, превращается и проводит экскурсию с большим пиксельным пальцем */
+/* Знакомство: Вироу кружится в 3D, превращается и сам показывает пальцем, что умеет приложение */
 .intro{position:fixed;inset:0;z-index:66;display:grid;place-items:center;overflow:hidden;
   background:radial-gradient(circle at 50% 46%,#33243d 0,#1a121f 45%,#0b080e 100%);opacity:0;transition:opacity .6s}
 .intro.on{opacity:1}
 .intro.out{opacity:0;transition:opacity .7s .15s}
-.intro canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.intro .i-back,.intro .i-front{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .intro .i-front{z-index:3}
 .i-stage{position:relative;z-index:2;display:grid;justify-items:center;gap:6px;text-align:center;padding:0 16px}
-.i-hero{--is:9px;width:calc(32 * var(--is));height:calc(30 * var(--is));will-change:transform}
+.i-hero{--is:9px;position:relative;width:calc(32 * var(--is));height:calc(30 * var(--is));will-change:transform}
 .i-hero svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 28px rgba(233,185,73,.35))}
+.i-hero .i-vox{position:absolute;left:50%;top:50%;width:220%;height:170%;transform:translate(-50%,-50%);pointer-events:none;display:none}
+.i-hero.spin .i-vox{display:block}
+.i-hero.spin svg{visibility:hidden}
 .i-hero .m-arm{transition:transform .45s cubic-bezier(.2,1.7,.4,1)}
 .i-hero.pose .m-arm.l{transform:rotate(100deg)}
 .i-hero.pose .m-arm.r{transform:rotate(-100deg)}
@@ -554,29 +557,31 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .i-flash.go{animation:iFlash .6s steps(5) forwards}
 @keyframes iFlash{0%{opacity:0}20%{opacity:.95}100%{opacity:0}}
 
-/* экскурсия */
+/* экскурсия: подсветка раздела, Вироу на карточке тянет руку с большим пальцем */
 .tour{position:fixed;inset:0;z-index:66;pointer-events:none}
-.t-spot{position:fixed;left:0;top:0;width:0;height:0;border-radius:6px;box-shadow:0 0 0 200vmax rgba(10,6,14,.62);outline:3px dashed #E9B949;outline-offset:6px;opacity:0;transition:opacity .5s}
+.t-spot{position:fixed;left:0;top:0;width:0;height:0;border-radius:8px;box-shadow:0 0 0 200vmax rgba(10,6,14,.62);outline:3px dashed #E9B949;outline-offset:4px;opacity:0;transition:opacity .5s}
 .tour.on .t-spot{opacity:1}
 :root[data-theme="light"] .t-spot{box-shadow:0 0 0 200vmax rgba(40,26,40,.45)}
-.t-hand{position:fixed;left:0;top:0;opacity:0;transition:opacity .4s;will-change:transform}
+.t-arm{position:fixed;inset:0;width:100%;height:100%;opacity:0;transition:opacity .4s}
+.tour.on .t-arm{opacity:1}
+.t-hand{position:fixed;left:0;top:0;opacity:0;transition:opacity .4s;transform-origin:0 50%;will-change:transform}
 .tour.on .t-hand{opacity:1}
 .t-hand svg{display:block;filter:drop-shadow(4px 5px 0 rgba(0,0,0,.35))}
 .t-hand .t-poke{animation:tPoke .7s steps(2) infinite}
-@keyframes tPoke{50%{transform:translateX(12px)}}
+@keyframes tPoke{50%{transform:translateX(7px)}}
 .t-card{position:fixed;left:50%;bottom:22px;width:min(600px,calc(100vw - 32px));transform:translate(-50%,30px);opacity:0;pointer-events:auto;
-  display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:16px 18px;background:#221A26;color:#F2EAE0;
+  padding:16px 18px;background:#221A26;color:#F2EAE0;
   box-shadow:0 0 0 3px #E9B949,8px 8px 0 rgba(0,0,0,.35);transition:transform .5s cubic-bezier(.2,1.4,.4,1),opacity .35s}
 .tour.on .t-card{transform:translate(-50%,0);opacity:1}
-.t-mascot{width:86px;height:80px}
-.t-mascot svg{display:block;width:100%;height:100%;overflow:visible}
-.t-mascot .m-arm.r{transform:rotate(-70deg)}
-.t-mascot.talk .m-smile{opacity:0}
-.t-mascot.talk .m-talk{opacity:1;animation:mouth .24s steps(1) infinite}
-.t-mascot.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.t-buddy{--s:3px;position:absolute;left:22px;bottom:calc(100% - 3px);width:96px;height:90px}
+.t-buddy svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 4px 0 rgba(0,0,0,.28))}
+.t-buddy[data-side="r"] .m-arm.r,.t-buddy[data-side="l"] .m-arm.l{visibility:hidden}
+.t-buddy.talk .m-smile{opacity:0}
+.t-buddy.talk .m-talk{opacity:1;animation:mouth .24s steps(1) infinite}
+.t-buddy.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
 .t-step{font:400 12px var(--display);color:#bfa9c9;letter-spacing:.14em}
-.t-title{display:block;margin:4px 0 4px;font:400 20px/1.2 var(--display);color:#E9B949}
-.t-text{margin:0;min-height:2.9em;font:400 15px/1.45 var(--display);color:#F2EAE0}
+.t-title{display:block;margin:4px 0 6px;font:400 20px/1.2 var(--display);color:#E9B949}
+.t-text{margin:0;min-height:4.35em;font:400 15px/1.45 var(--display);color:#F2EAE0}
 .t-btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .t-btns .px-btn{padding:9px 14px;font-size:14px}
 .t-x{all:unset;position:absolute;top:8px;right:10px;cursor:pointer;color:#bfa9c9;font:400 16px var(--display);padding:4px}
@@ -584,9 +589,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .touring .mascot{opacity:0;pointer-events:none;transition:opacity .3s}
 @media (max-width:560px){
   .i-hero{--is:6px}.i-skip{top:12px;right:12px}
-  .t-card{bottom:12px;grid-template-columns:1fr;gap:6px;padding:14px}
-  .t-mascot{position:absolute;right:12px;top:-62px;width:64px;height:60px}
-  .t-title{font-size:18px}.t-text{font-size:14px}
+  .t-card{bottom:12px;padding:14px}
+  .t-buddy{--s:2.4px;left:14px;width:77px;height:72px}
+  .t-title{font-size:18px}.t-text{font-size:14px;min-height:5.8em}
 }
 @media (prefers-reduced-motion:reduce){.intro *,.tour *{animation:none!important;transition:none!important}}
 </style>
@@ -596,7 +601,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <nav class="rail" id="rail" aria-hidden="true"></nav>
 <div class="mascot top" id="mascot"><div class="m-fly">
   <div class="m-bubble" id="m-bubble" role="status" aria-live="polite"><div class="m-box"><span></span></div><i></i></div>
-  <button class="m-sprite" id="m-sprite" type="button" aria-label="Шаттл, маскот Wirrow"><svg viewBox="0 0 32 30" shape-rendering="crispEdges" aria-hidden="true"><g class="m-leg l"><g class="limb"><rect x="12" y="23" width="2" height="3"/></g><g class="sock"><rect x="12" y="26" width="2" height="1"/></g><g class="shoe"><rect x="9" y="27" width="5" height="2"/></g><g class="sole"><rect x="9" y="29" width="5" height="1"/></g><g class="toe"><rect x="10" y="27" width="1" height="1"/></g></g><g class="m-leg r"><g class="limb"><rect x="18" y="23" width="2" height="3"/></g><g class="sock"><rect x="18" y="26" width="2" height="1"/></g><g class="shoe"><rect x="18" y="27" width="5" height="2"/></g><g class="sole"><rect x="18" y="29" width="5" height="1"/></g><g class="toe"><rect x="21" y="27" width="1" height="1"/></g></g><g class="m-arm l"><g class="limb"><rect x="5" y="12" width="1" height="2"/><rect x="4" y="13" width="1" height="2"/><rect x="3" y="14" width="1" height="2"/></g><g class="cuff"><rect x="2" y="16" width="3" height="1"/></g><g class="glove"><rect x="1" y="17" width="4" height="3"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="20" width="2" height="1"/></g><g class="finger"><rect x="2" y="18" width="2" height="1"/></g></g><g class="m-arm r"><g class="limb"><rect x="26" y="12" width="1" height="2"/><rect x="27" y="13" width="1" height="2"/><rect x="28" y="14" width="1" height="2"/></g><g class="cuff"><rect x="27" y="16" width="3" height="1"/></g><g class="glove"><rect x="27" y="17" width="4" height="3"/><rect x="31" y="18" width="1" height="1"/><rect x="28" y="20" width="2" height="1"/></g><g class="finger"><rect x="28" y="18" width="2" height="1"/></g></g><g class="m-ant"><g class="stem"><rect x="10" y="4" width="1" height="1"/><rect x="11" y="5" width="1" height="2"/><rect x="21" y="4" width="1" height="1"/><rect x="20" y="5" width="1" height="2"/></g><g class="ball"><rect x="7" y="1" width="3" height="3"/><rect x="22" y="1" width="3" height="3"/></g><g class="glint"><rect x="8" y="1" width="1" height="1"/><rect x="23" y="1" width="1" height="1"/></g></g><g class="m-body"><g><rect x="10" y="7" width="12" height="1"/><rect x="8" y="8" width="16" height="1"/><rect x="7" y="9" width="18" height="1"/><rect x="6" y="10" width="20" height="10"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shade"><rect x="6" y="18" width="20" height="2"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shine"><rect x="10" y="8" width="4" height="1"/><rect x="8" y="9" width="2" height="1"/><rect x="7" y="10" width="1" height="3"/></g></g><g class="m-cheeks"><rect x="8" y="16" width="2" height="1"/><rect x="22" y="16" width="2" height="1"/></g><g class="m-eyes"><rect x="13" y="11" width="2" height="1"/><rect x="12" y="12" width="2" height="1"/><rect x="11" y="13" width="2" height="1"/><rect x="12" y="14" width="2" height="1"/><rect x="13" y="15" width="2" height="1"/><rect x="17" y="11" width="2" height="1"/><rect x="18" y="12" width="2" height="1"/><rect x="19" y="13" width="2" height="1"/><rect x="18" y="14" width="2" height="1"/><rect x="17" y="15" width="2" height="1"/></g><g class="m-smile"><rect x="14" y="17" width="1" height="1"/><rect x="15" y="18" width="2" height="1"/><rect x="17" y="17" width="1" height="1"/></g><g class="m-talk"><g><rect x="14" y="17" width="4" height="2"/></g><g class="tongue"><rect x="15" y="18" width="2" height="1"/></g></g></svg></button>
+  <button class="m-sprite" id="m-sprite" type="button" aria-label="Маскот Вироу"><svg viewBox="0 0 32 30" shape-rendering="crispEdges" aria-hidden="true"><g class="m-leg l"><g class="limb"><rect x="12" y="23" width="2" height="3"/></g><g class="sock"><rect x="12" y="26" width="2" height="1"/></g><g class="shoe"><rect x="9" y="27" width="5" height="2"/></g><g class="sole"><rect x="9" y="29" width="5" height="1"/></g><g class="toe"><rect x="10" y="27" width="1" height="1"/></g></g><g class="m-leg r"><g class="limb"><rect x="18" y="23" width="2" height="3"/></g><g class="sock"><rect x="18" y="26" width="2" height="1"/></g><g class="shoe"><rect x="18" y="27" width="5" height="2"/></g><g class="sole"><rect x="18" y="29" width="5" height="1"/></g><g class="toe"><rect x="21" y="27" width="1" height="1"/></g></g><g class="m-arm l"><g class="limb"><rect x="5" y="12" width="1" height="2"/><rect x="4" y="13" width="1" height="2"/><rect x="3" y="14" width="1" height="2"/></g><g class="cuff"><rect x="2" y="16" width="3" height="1"/></g><g class="glove"><rect x="1" y="17" width="4" height="3"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="20" width="2" height="1"/></g><g class="finger"><rect x="2" y="18" width="2" height="1"/></g></g><g class="m-arm r"><g class="limb"><rect x="26" y="12" width="1" height="2"/><rect x="27" y="13" width="1" height="2"/><rect x="28" y="14" width="1" height="2"/></g><g class="cuff"><rect x="27" y="16" width="3" height="1"/></g><g class="glove"><rect x="27" y="17" width="4" height="3"/><rect x="31" y="18" width="1" height="1"/><rect x="28" y="20" width="2" height="1"/></g><g class="finger"><rect x="28" y="18" width="2" height="1"/></g></g><g class="m-ant"><g class="stem"><rect x="10" y="4" width="1" height="1"/><rect x="11" y="5" width="1" height="2"/><rect x="21" y="4" width="1" height="1"/><rect x="20" y="5" width="1" height="2"/></g><g class="ball"><rect x="7" y="1" width="3" height="3"/><rect x="22" y="1" width="3" height="3"/></g><g class="glint"><rect x="8" y="1" width="1" height="1"/><rect x="23" y="1" width="1" height="1"/></g></g><g class="m-body"><g><rect x="10" y="7" width="12" height="1"/><rect x="8" y="8" width="16" height="1"/><rect x="7" y="9" width="18" height="1"/><rect x="6" y="10" width="20" height="10"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shade"><rect x="6" y="18" width="20" height="2"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shine"><rect x="10" y="8" width="4" height="1"/><rect x="8" y="9" width="2" height="1"/><rect x="7" y="10" width="1" height="3"/></g></g><g class="m-cheeks"><rect x="8" y="16" width="2" height="1"/><rect x="22" y="16" width="2" height="1"/></g><g class="m-eyes"><rect x="13" y="11" width="2" height="1"/><rect x="12" y="12" width="2" height="1"/><rect x="11" y="13" width="2" height="1"/><rect x="12" y="14" width="2" height="1"/><rect x="13" y="15" width="2" height="1"/><rect x="17" y="11" width="2" height="1"/><rect x="18" y="12" width="2" height="1"/><rect x="19" y="13" width="2" height="1"/><rect x="18" y="14" width="2" height="1"/><rect x="17" y="15" width="2" height="1"/></g><g class="m-smile"><rect x="14" y="17" width="1" height="1"/><rect x="15" y="18" width="2" height="1"/><rect x="17" y="17" width="1" height="1"/></g><g class="m-talk"><g><rect x="14" y="17" width="4" height="2"/></g><g class="tongue"><rect x="15" y="18" width="2" height="1"/></g></g></svg></button>
 </div></div>
 <div class="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -760,7 +765,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <footer>
   <div class="wrap">
     <span style="display:flex;align-items:center;gap:10px"><img src="icon-256.png" alt="" width="26" height="26" style="border-radius:7px"><b style="font-family:var(--display)">Wirrow</b> — <a href="https://github.com/Q7N3T">Q7N3T</a></span>
-    <span><a href="#tour" data-tour data-i18n="ft.tour">Знакомство с Шаттлом</a> · <a href="https://github.com/Q7N3T/wirrow/releases" data-i18n="ft.all">Все версии</a> · <a href="https://github.com/Q7N3T/wirrow/blob/main/CHANGELOG.md">CHANGELOG</a> · <a href="https://github.com/Q7N3T/wirrow/issues" data-i18n="ft.issue">Сообщить о проблеме</a></span>
+    <span><a href="#tour" data-tour data-i18n="ft.tour">Знакомство с Вироу</a> · <a href="https://github.com/Q7N3T/wirrow/releases" data-i18n="ft.all">Все версии</a> · <a href="https://github.com/Q7N3T/wirrow/blob/main/CHANGELOG.md">CHANGELOG</a> · <a href="https://github.com/Q7N3T/wirrow/issues" data-i18n="ft.issue">Сообщить о проблеме</a></span>
   </div>
 </footer>
 
@@ -803,7 +808,7 @@ const EN = {
   'h.k4':'Free up space','h.t4':'<b>Only what’s safely on your Mac</b> gets deleted from the phone.',
   'h.k5':'Two devices','h.t5':'<b>A phone and a Switch at once,</b> each in its own tab.',
   'tape':'NOT NINTENDO · NOT GOOGLE',
-  'ft.all':'All releases','ft.tour':'Meet Shuttle','ft.issue':'Report an issue','sb.palette':'palette','sb.theme':'theme'
+  'ft.all':'All releases','ft.tour':'Meet Wirrow','ft.issue':'Report an issue','sb.palette':'palette','sb.theme':'theme'
 };
 const RU = {};
 $$('[data-i18n]').forEach(e => RU[e.dataset.i18n] = e.textContent);
@@ -1079,7 +1084,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
     // осмысленная бессмыслица и антишутки
     ['Почему файл перешёл дорогу? ‖ Его перетащили.', 'Why did the file cross the road? ‖ Someone dragged it.'],
     ['Тук-тук. ‖ — Кто там? ‖ — MTP. ‖ — MTP кто? ‖ — Разблокируй телефон — узнаешь.', 'Knock knock. ‖ Who’s there? ‖ MTP. ‖ MTP who? ‖ Unlock your phone and find out.'],
-    ['Сколько Шаттлов нужно, чтобы вкрутить лампочку? ‖ Ни одного. Лампочка не видна по MTP.', 'How many Shuttles to change a light bulb? ‖ None. Bulbs don’t show up over MTP.'],
+    ['Сколько Вироу нужно, чтобы вкрутить лампочку? ‖ Ни одного. Лампочка не видна по MTP.', 'How many Wirrows to change a light bulb? ‖ None. Bulbs don’t show up over MTP.'],
     // ложный вывод → поправка
     ["Я сегодня перенёс терабайт. ‖ Один и тот же файл. Туда-обратно. Нервы.", "Moved a terabyte today. ‖ Same file. Back and forth. Nerves."],
     ["Мне предлагали работу в облаке. ‖ Отказался. Там высоко и сыро.", "I was offered a job in the cloud. ‖ Declined. Too high, too damp."],
@@ -1104,7 +1109,6 @@ document.fonts && document.fonts.ready.then(fitTitle);
     // двусмысленность
     ["Люблю ветки. ‖ В git. В лесу — не очень.", "I love branches. ‖ In git. In the woods, not so much."],
     ["У меня отличная связь. ‖ С тобой. И с телефоном. Но с телефоном лучше.", "I have a great connection. ‖ With you. And your phone. Mostly your phone."],
-    ["Шаттл — это не только космос. ‖ Это ещё и маршрутка до твоих файлов.", "A shuttle isn’t just space. ‖ It’s also the bus to your files."],
     ["Спросили, где я храню данные. ‖ На твоём диске. Это комплимент твоему диску.", "Asked where I store data. ‖ On your disk. That’s a compliment to your disk."],
     ["Я поддерживаю Switch. ‖ Морально. И по MTP.", "I support the Switch. ‖ Emotionally. And over MTP."],
     ["Телефон спрашивает: «Разрешить доступ к данным?» ‖ Разреши. Я милый.", "Your phone asks “Allow access to data?” ‖ Allow it. I’m adorable."],
@@ -1149,9 +1153,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
     ["Ctrl+Z для жизни не завезли. ‖ Зато докачка после обрыва есть.", "No Ctrl+Z for life. ‖ But resume after a cable drop — yes."],
     ["HEIC в JPG — ‖ как перевести поэзию на язык мемов. Иногда нужно.", "HEIC to JPG — ‖ like translating poetry into memes. Sometimes necessary."],
     ["Мой пароль — ‖ ******. Ой. Даже я вижу звёздочки.", "My password is ‖ ******. Oops. Even I see asterisks."],
-    ["Ошибка 418: ‖ я чайник. ‖ Шучу. Я Шаттл.", "Error 418: ‖ I’m a teapot. ‖ Kidding. I’m Shuttle."],
-    ["Меня зовут Шаттл. ‖ Раньше так звали всё приложение. ‖ Приложение переехало. Я остался.", "My name is Shuttle. ‖ The whole app used to be called that. ‖ The app moved on. I stayed."],
-    ["Wirrow — это приложение. ‖ Шаттл — это я. ‖ Не путай, я ранимый.", "Wirrow is the app. ‖ Shuttle is me. ‖ Don’t mix us up, I’m sensitive."],
+    ["Ошибка 418: ‖ я чайник. ‖ Шучу. Я Вироу.", "Error 418: ‖ I’m a teapot. ‖ Kidding. I’m Wirrow."],
     ["git commit -m «шутка» ‖ git push ‖ Шутка задеплоена. Смейся.", "git commit -m “joke” ‖ git push ‖ Joke deployed. Laugh now."],
     ["Мой стек: ‖ Swift, libmtp и чистый энтузиазм.", "My stack: ‖ Swift, libmtp and pure enthusiasm."],
     ["Скриншоты Switch названы как пароль от Wi‑Fi. ‖ Я переименовываю. Это призвание.", "Switch screenshots are named like Wi‑Fi passwords. ‖ I rename them. It’s my calling."],
@@ -1204,7 +1206,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
   };
   // реакции на события
   const EV = {
-    hello: ['Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает.', 'Hi! I’m Shuttle. ‖ I carry files by cable. Not clouds — I get airsick.'],
+    hello: ['Привет! Я Вироу. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает.', 'Hi! I’m Wirrow. ‖ I carry files by cable. Not clouds — I get airsick.'],
     again: ['Снова ты! ‖ Я скучал. Ровно {n} мин.', 'You’re back! ‖ I missed you. Exactly {n} min.'],
     light: [
       ["А-а-а, свет! ‖ Мои пиксели!", "Aaah, light! ‖ My pixels!"],
@@ -1244,7 +1246,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
       ["Ты кликаешь, как будто там бонус. ‖ Бонус — это я.", "You click like there’s a bonus. ‖ I am the bonus."],
     ],
     s8: ['Перегрев! ‖ Включаю кулер… ‖ А, у меня нет кулера.', 'Overheating! ‖ Turning on the fan… ‖ Oh. I don’t have a fan.'],
-    reboot: ['…Привет! Я Шаттл. ‖ Мы знакомы? Кэш чистый.', '…Hi! I’m Shuttle. ‖ Have we met? My cache is empty.'],
+    reboot: ['…Привет! Я Вироу. ‖ Мы знакомы? Кэш чистый.', '…Hi! I’m Wirrow. ‖ Have we met? My cache is empty.'],
   };
   const BSOD = ['Маскот столкнулся с проблемой и будет перезапущен. Собрано 0% юмора.', 'Your mascot ran into a problem and needs to restart. 0% humor collected.'];
   let mode = '', clicks = 0, hideT = 0, busy = 0, timer = 0, speaking = false, lastAuto = 0, lastUser = 0, bag = [];
@@ -1424,9 +1426,9 @@ document.fonts && document.fonts.ready.then(fitTitle);
   // привет для тех, кто открыл консоль
   console.log('%c ‹ › %c Привет, разработчик. Я тоже из байтов. / Hi, dev. I’m made of bytes too.', 'background:#E9B949;color:#1F1822;font:bold 14px monospace;padding:4px 6px', 'color:#E9B949;font:12px monospace');
 
-  const label = () => sprite.setAttribute('aria-label', T('Шаттл, маскот Wirrow — нажми', 'Shuttle, the Wirrow mascot — click me'));
+  const label = () => sprite.setAttribute('aria-label', T('Вироу, маскот — нажми', 'Wirrow the mascot — click me'));
   label();
-  // после экскурсии Шаттл возвращается на своё место и прощается
+  // после экскурсии Вироу возвращается на своё место и прощается
   addEventListener('tour-done', () => setTimeout(() => auto([['Обращайся! ‖ Я тут, рядом.', 'Anytime! ‖ I’ll be around.']], true), 700));
 })();
 
@@ -1989,10 +1991,10 @@ applyLang(); typeCmd();
   setTimeout(() => { $('#boot').classList.add('off'); playTitle(); }, wait);
 })();
 
-/* ---------- Знакомство: Шаттл кружится, превращается и проводит экскурсию ---------- */
+/* ---------- Знакомство: Вироу кружится в 3D, превращается и сам проводит экскурсию ---------- */
 (() => {
   const SPRITE = $('#m-sprite svg').outerHTML;
-  // большой палец в белой перчатке с золотой манжетой, смотрит вправо
+  // большая ладонь в белой перчатке с золотой манжетой, указательный палец смотрит вправо
   const HAND = [
     '....ooooooo.........',
     'ooo.owwwwwwoooooooo.',
@@ -2023,9 +2025,77 @@ applyLang(); typeCmd();
     (function next(){
       if (!alive()) return;
       node.textContent = str.slice(0, ++i);
-      if (i < str.length) setTimeout(next, /[.,!?…—]/.test(str[i - 1]) ? 140 : 30);
+      if (i < str.length) setTimeout(next, /[.,!?…—]/.test(str[i - 1]) ? 140 : 26);
       else { talker && talker.classList.remove('talk'); cb && cb(); }
     })();
+  }
+
+  /* ---------- 3D: спрайт маскота, вытянутый в объём из вокселей ---------- */
+  let MODEL = null;
+  function model(){
+    if (MODEL) return MODEL;
+    // цвета берём из живого SVG: так модель всегда совпадает с маскотом на сайте
+    const box = document.createElement('div');
+    box.style.cssText = 'position:absolute;left:-9999px;top:0;width:32px;height:30px';
+    box.innerHTML = SPRITE; document.body.appendChild(box);
+    const base = new Map(), face = new Map(), part = new Map();
+    const rgb = c => (c.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number);
+    box.querySelectorAll('rect').forEach(r => {
+      const top = r.closest('svg > g'), cls = (top.getAttribute('class') || '').split(' ')[0];
+      let op = 1; for (let n = r; n && n.tagName.toLowerCase() !== 'svg'; n = n.parentElement) op *= +getComputedStyle(n).opacity;
+      if (op < .05) return;
+      const col = rgb(getComputedStyle(r).fill);
+      const x0 = +r.getAttribute('x'), y0 = +r.getAttribute('y'), w = +r.getAttribute('width'), h = +r.getAttribute('height');
+      for (let x = x0; x < x0 + w; x++) for (let y = y0; y < y0 + h; y++) {
+        const k = x + ',' + y;
+        if (cls === 'm-eyes' || cls === 'm-smile' || cls === 'm-cheeks') {
+          const b = base.get(k) || col; face.set(k, col.map((v, i) => v * op + b[i] * (1 - op)));
+        } else { base.set(k, col); part.set(k, cls + (r.closest('.limb,.stem') ? ' thin' : '')); }
+      }
+    });
+    box.remove();
+    // толщина: корпус — округлая капсула, ручки, ножки и антенны тоньше
+    const depth = k => {
+      const p = part.get(k), [x, y] = k.split(',').map(Number);
+      if (p === 'm-body') { const dx = (x + .5 - 16) / 10.5, dy = (y + .5 - 15) / 8.5; return Math.max(1, Math.round(5 * Math.sqrt(Math.max(0, 1 - (dx * dx + dy * dy * .55) * .8)))); }
+      return p.includes('thin') ? 0 : 1;
+    };
+    const D = new Map(); base.forEach((_, k) => D.set(k, depth(k)));
+    const occ = (x, y, z) => { const d = D.get(x + ',' + y); return d !== undefined && Math.abs(z) <= d; };
+    const vox = [];
+    base.forEach((col, k) => {
+      const [x, y] = k.split(',').map(Number), d = D.get(k), body = part.get(k) === 'm-body';
+      for (let z = -d; z <= d; z++) {
+        const ex = !occ(x + 1, y, z) - !occ(x - 1, y, z), ey = !occ(x, y + 1, z) - !occ(x, y - 1, z);
+        if (Math.abs(z) !== d && !ex && !ey && occ(x + 1, y, z) && occ(x - 1, y, z) && occ(x, y + 1, z) && occ(x, y - 1, z)) continue; // внутри — не видно
+        const n = body ? [(x + .5 - 16) / 10.5, (y + .5 - 15) / 8.5 * .7, z / 5] : [ex, ey, z === d ? 1 : z === -d ? -1 : 0];
+        const m = Math.hypot(...n) || 1;
+        vox.push({ x: x + .5 - 16, y: y + .5 - 15, z, c: z === d && face.has(k) ? face.get(k) : col, n: n.map(v => v / m), two: d === 0 });
+      }
+    });
+    return MODEL = vox;
+  }
+  const LIGHT = [-.45, -.55, .7].map((v, _, a) => v / Math.hypot(...a));
+  const colorCache = new Map();
+  // рисует модель: ang — поворот вокруг вертикали, tilt — наклон, shade — сила света (0 — как плоский спрайт)
+  function drawVox(ctx, cx, cy, s, ang, tilt, shade){
+    const V = model(), ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(tilt), st = Math.sin(tilt), pk = Math.abs(sa) * .02;
+    const out = [];
+    for (const v of V) {
+      const X = v.x * ca + v.z * sa, Z1 = -v.x * sa + v.z * ca, Y = v.y * ct - Z1 * st, Z = v.y * st + Z1 * ct;
+      const nx = v.n[0] * ca + v.n[2] * sa, nz1 = -v.n[0] * sa + v.n[2] * ca, ny = v.n[1] * ct - nz1 * st, nz = v.n[1] * st + nz1 * ct;
+      let lam = nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]; if (v.two) lam = Math.abs(lam);
+      const b = Math.round((1 + shade * (.42 + .72 * Math.max(0, lam) - 1)) * 14) / 14;
+      const p = 1 + Z * pk;
+      out.push([Z, cx + X * s * p, cy + Y * s * p, s * p, v.c, b]);
+    }
+    out.sort((a, b) => a[0] - b[0]);
+    for (const [, x, y, sz, c, b] of out) {
+      const key = c.join() + b;
+      let f = colorCache.get(key);
+      if (!f) { f = `rgb(${c.map(v => Math.min(255, Math.round(v * b))).join()})`; colorCache.set(key, f); }
+      ctx.fillStyle = f; ctx.fillRect(x - sz / 2 - .35, y - sz / 2 - .35, sz + .7, sz + .7);
+    }
   }
 
   /* ---------- 1. Превращение ---------- */
@@ -2033,20 +2103,21 @@ applyLang(); typeCmd();
     if (running) return; running = true;
     document.body.classList.add('touring');
     const el = document.createElement('div');
-    el.className = 'intro'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', T('Знакомство с Шаттлом', 'Meet Shuttle'));
-    el.innerHTML = `<canvas class="i-back"></canvas><div class="i-stage"><div class="i-hero">${SPRITE}</div><h2 class="i-title" aria-label="${T('Привет! Я Шаттл', 'Hi! I’m Shuttle')}"></h2>` +
+    el.className = 'intro'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', T('Знакомство с Вироу', 'Meet Wirrow'));
+    el.innerHTML = `<canvas class="i-back"></canvas><div class="i-stage"><div class="i-hero spin">${SPRITE}<canvas class="i-vox"></canvas></div><h2 class="i-title" aria-label="${T('Привет! Я Вироу', 'Hi! I’m Wirrow')}"></h2>` +
       `<div class="i-sub">${T('маскот приложения Wirrow', 'the Wirrow mascot')}</div><div class="i-say" aria-live="polite"></div>` +
       `<div class="i-btns"><button type="button" class="px-btn i-go">${T('Поехали →', 'Let’s go →')}</button><button type="button" class="px-btn ghost i-no">${T('В другой раз', 'Maybe later')}</button></div></div>` +
       `<canvas class="i-front"></canvas><div class="i-flash"></div><button type="button" class="px-btn ghost i-skip">${T('Пропустить ✕', 'Skip ✕')}</button>`;
     document.body.appendChild(el);
     document.documentElement.style.overflow = 'hidden';
-    const hero = el.querySelector('.i-hero'), back = el.querySelector('.i-back'), front = el.querySelector('.i-front');
-    const bc = back.getContext('2d'), fc = front.getContext('2d'), title = el.querySelector('.i-title');
+    const hero = el.querySelector('.i-hero'), back = el.querySelector('.i-back'), front = el.querySelector('.i-front'), vox = el.querySelector('.i-vox');
+    const bc = back.getContext('2d'), fc = front.getContext('2d'), vc = vox.getContext('2d'), title = el.querySelector('.i-title');
     const dpr = Math.min(2, devicePixelRatio || 1);
     let W = 0, H = 0, P = 6;
     function size(){
       W = innerWidth; H = innerHeight; P = W < 560 ? 4 : 6;
       [back, front].forEach(c => { c.width = W * dpr; c.height = H * dpr; c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); });
+      vox.width = vox.offsetWidth * dpr; vox.height = vox.offsetHeight * dpr; vc.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     size(); addEventListener('resize', size);
     const snap = v => Math.round(v / P) * P;
@@ -2054,8 +2125,9 @@ applyLang(); typeCmd();
     const COLORS = ['#E9B949', '#E8796E', '#8B5CF6'];
     // звёздочка-плюсик из пикселей
     const star = (ctx, x, y, s) => { ctx.fillRect(x - s * P, y, (2 * s + 1) * P, P); ctx.fillRect(x, y - s * P, P, (2 * s + 1) * P); };
-    let parts = [], phase = 0, pf = 0, pt = 0, last = performance.now(), raf = 0, closing = false, leaving = false, flashed = false, said = false, lastSpark = 0;
+    let parts = [], phase = 0, pf = 0, pt = 0, last = performance.now(), raf = 0, closing = false, leaving = false, flashed = false, stopped = false, said = false, lastSpark = 0;
     const t0 = performance.now(), alive = () => !closing;
+    const STOP = 4.1; // к этому моменту вращение замирает лицом к зрителю
     requestAnimationFrame(() => el.classList.add('on'));
 
     function burst(cx, cy, n, speed){
@@ -2069,33 +2141,36 @@ applyLang(); typeCmd();
       raf = requestAnimationFrame(frame);
       const t = (now - t0) / 1000, dt = Math.min(.05, (now - last) / 1000); last = now;
       bc.clearRect(0, 0, W, H); fc.clearRect(0, 0, W, H);
-      // мерцающие звёзды на фоне
       bc.fillStyle = '#F6E7B8';
       stars.forEach(s => { const a = Math.max(0, Math.sin(t * 1.7 + s.p)); bc.globalAlpha = .2 + .8 * a; star(bc, snap(s.x * W), snap(s.y * H), s.big && a > .75 ? 1 : 0); });
       bc.globalAlpha = 1;
 
-      const hw = hero.offsetWidth, hh = hero.offsetHeight, hr = hero.parentElement.getBoundingClientRect();
-      const cx = hr.left + hr.width / 2, cy = hero.getBoundingClientRect().top + hero.getBoundingClientRect().height / 2;
+      const hw = hero.offsetWidth, hh = hero.offsetHeight, hr = hero.getBoundingClientRect();
+      const cx = hr.left + hr.width / 2, cy = hr.top + hr.height / 2;
 
-      // вращение: разгон до вспышки, потом плавная остановка лицом к зрителю
-      if (t < 2.9) phase += (2 + 34 * Math.pow(clamp((t - .4) / 2.5), 2)) * dt;
+      // вращение в 3D: разгон до вспышки, потом плавная остановка лицом к зрителю
+      if (t < 2.9) phase += (1.5 + 26 * Math.pow(clamp((t - .3) / 2.6), 2)) * dt;
       else {
         if (!flashed) {
           flashed = true; pf = phase; pt = (Math.ceil(phase / 6.283) + 1) * 6.283;
-          el.querySelector('.i-flash').classList.add('go');
-          hero.classList.add('pose'); burst(cx, cy, 110, 760);
+          el.querySelector('.i-flash').classList.add('go'); burst(cx, cy, 110, 760);
         }
-        const k = clamp((t - 2.9) / 1.1); phase = pf + (pt - pf) * (1 - Math.pow(1 - k, 3));
+        const k = clamp((t - 2.9) / (STOP - 2.9)); phase = pf + (pt - pf) * (1 - Math.pow(1 - k, 3));
       }
-      let sx = Math.cos(phase);
-      sx = (sx < 0 ? -1 : 1) * Math.max(.1, Math.round(Math.abs(sx) * 5) / 5); // ступеньками, как в старых играх
-      const grow = .45 + .55 * ease((t - .15) / 1.4), y = 70 * (1 - ease(t / 1.8)) + (flashed ? Math.sin(t * 2.4) * 5 : 0);
-      if (!leaving) hero.style.transform = `translateY(${y.toFixed(1)}px) scale(${(grow * sx).toFixed(3)}, ${grow.toFixed(3)})`;
+      const settle = flashed ? ease((t - 2.9) / (STOP - 2.9)) : 0;
+      if (!stopped) {
+        const grow = .45 + .55 * ease((t - .15) / 1.4), is = hw / 32;
+        vc.clearRect(0, 0, vox.width, vox.height);
+        drawVox(vc, vox.offsetWidth / 2, vox.offsetHeight / 2, is * grow, phase, .32 * Math.sin(t * 1.6) * (1 - settle), 1 - ease((settle - .55) / .45));
+        if (t >= STOP) { stopped = true; hero.classList.remove('spin'); hero.classList.add('pose'); }
+      }
+      const y = 70 * (1 - ease(t / 1.8)) + (stopped ? Math.sin(t * 2.4) * 5 : 0);
+      if (!leaving) hero.style.transform = `translateY(${y.toFixed(1)}px)`;
 
-      // ленты: три спирали из пикселей обвивают Шаттла всё туже
+      // ленты: три спирали из пикселей обвивают Вироу всё туже
       if (t > .45 && t < 3) {
         const g = ease((t - .45) / 1.2), tight = ease((t - .8) / 2.1), fade = 1 - ease((t - 2.65) / .3);
-        const R = Math.max(W, H) * .42 * (1 - tight) + hw * .62 * tight, HH = H * .95 * (1 - tight) + hh * 1.2 * tight;
+        const R = Math.max(W, H) * .42 * (1 - tight) + hw * .7 * tight, HH = H * .95 * (1 - tight) + hh * 1.2 * tight;
         for (let k = 0; k < 3; k++) for (let i = 0; i <= 110; i++) {
           const u = i / 110; if (u > g) break;
           const a = u * 12.566 + t * 6 + k * 2.094, z = Math.sin(a), ctx = z > 0 ? fc : bc;
@@ -2106,12 +2181,10 @@ applyLang(); typeCmd();
         }
         fc.globalAlpha = bc.globalAlpha = 1;
       }
-      // после превращения вокруг иногда вспыхивают искорки
       if (flashed && !leaving && now - lastSpark > 260) {
         lastSpark = now;
         parts.push({ x: cx + (Math.random() - .5) * hw * 1.5, y: cy + (Math.random() - .5) * hh * 1.3, vx: 0, vy: -20, life: 1, dec: 1.1, c: Math.random() < .5 ? '#FFF6DA' : '#E9B949', star: true });
       }
-      // частицы
       parts = parts.filter(p => (p.life -= p.dec * dt) > 0);
       parts.forEach(p => {
         p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .965; p.vy = p.vy * .965 + 60 * dt;
@@ -2120,9 +2193,9 @@ applyLang(); typeCmd();
       });
       fc.globalAlpha = 1;
 
-      // «Привет! Я Шаттл» — буквы выскакивают по одной
-      if (t > 3.25 && !title.childElementCount) {
-        const str = T('Привет! Я Шаттл', 'Hi! I’m Shuttle'), name = T('Шаттл', 'Shuttle'), at = str.indexOf(name);
+      // «Привет! Я Вироу» — буквы выскакивают по одной
+      if (t > STOP - .2 && !title.childElementCount) {
+        const str = T('Привет! Я Вироу', 'Hi! I’m Wirrow'), at = str.indexOf(T('Вироу', 'Wirrow'));
         [...str].forEach((ch, i) => {
           const s = document.createElement('span'); s.textContent = ch === ' ' ? ' ' : ch;
           if (i >= at) s.className = 'g';
@@ -2130,10 +2203,10 @@ applyLang(); typeCmd();
         });
         setTimeout(() => el.querySelector('.i-sub').classList.add('on'), str.length * 55 + 250);
       }
-      if (t > 4.6 && !said) {
+      if (t > STOP + 1.3 && !said) {
         said = true;
-        type(el.querySelector('.i-say'), T('Я тут главный по проводам. Давай покажу, что умеет Wirrow, — это минута, не больше.',
-          'I’m the one in charge of cables here. Let me show you what Wirrow can do — it takes a minute, tops.'),
+        type(el.querySelector('.i-say'), T('Я тут главный по проводам. Давай покажу, что я умею, — это минута, не больше.',
+          'I’m the one in charge of cables here. Let me show you what I can do — it takes a minute, tops.'),
           hero, () => { el.querySelector('.i-btns').classList.add('on'); el.querySelector('.i-go').focus({ preventScroll: true }); }, alive);
       }
     }
@@ -2143,10 +2216,12 @@ applyLang(); typeCmd();
       if (closing) return; closing = true; remember();
       removeEventListener('keydown', key);
       if (then) {
-        // Шаттл уменьшается и улетает вниз — туда, где появится карточка экскурсии
-        leaving = true; const r = hero.getBoundingClientRect();
+        // Вироу уменьшается и прыгает вниз — на край карточки экскурсии
+        leaving = true; const r = hero.getBoundingClientRect(), small = innerWidth < 560;
+        const cardLeft = (innerWidth - Math.min(600, innerWidth - 32)) / 2, bw = small ? 77 : 96;
+        const tx = cardLeft + (small ? 14 : 22) + bw / 2, ty = innerHeight - (small ? 12 : 22) - 150 - bw * .45;
         hero.style.transition = 'transform .75s cubic-bezier(.5,0,.3,1)';
-        hero.style.transform = `translate(${(innerWidth / 2 - 240 - (r.left + r.width / 2)).toFixed(0)}px, ${(innerHeight - 70 - (r.top + r.height / 2)).toFixed(0)}px) scale(.3)`;
+        hero.style.transform = `translate(${(tx - (r.left + r.width / 2)).toFixed(0)}px, ${(ty - (r.top + r.height / 2)).toFixed(0)}px) scale(${(bw / r.width).toFixed(3)})`;
       }
       el.classList.add('out');
       setTimeout(() => {
@@ -2162,83 +2237,112 @@ applyLang(); typeCmd();
     el.querySelector('.i-skip').addEventListener('click', () => close());
   }
 
-  /* ---------- 2. Экскурсия: большой палец показывает главное ---------- */
+  /* ---------- 2. Экскурсия: подсветка раздела, Вироу показывает пальцем ---------- */
+  // [раздел, на что показать пальцем, заголовок, текст] по-русски и по-английски
   const STEPS = [
-    ['.hero .btns .primary', 'Скачать — вот тут', 'Wirrow бесплатный и весит около 6 МБ. Нужен macOS 14 или новее.',
-      'Download is right here', 'Wirrow is free and weighs about 6 MB. It needs macOS 14 or newer.'],
-    ['#feat-grid', 'Просто перетаскивай', 'Подключи телефон или Switch кабелем и тащи файлы туда-обратно, как между папками.',
-      'Just drag and drop', 'Plug in a phone or a Switch and drag files back and forth, like between folders.'],
-    ['#switch .frame', 'Switch с DBI', 'Игры ставятся перетаскиванием, сейвы копируются одной кнопкой, а вместо цифр — названия игр.',
-      'Switch with DBI', 'Install games by dragging, back up saves with one button, and see game names instead of numbers.'],
-    ['#android .frame', 'Android', 'Новые фото с камеры — одной кнопкой. Синхронизация папок только добавляет и ничего не удаляет.',
-      'Android', 'New camera photos with one button. Folder sync only adds and never deletes.'],
-    ['#how .bento', 'Под капотом', 'Докачка после обрыва кабеля, проверка каждой копии и никакого облака.',
-      'Under the hood', 'Resume after the cable drops, a check for every copy, and no cloud at all.'],
-    ['#drag-icon', 'Вот и всё!', 'Перетащи меня в «Программы» — увидимся на твоём Mac.',
+    ['.hero', '.hero .btns .primary', 'Скачать — вот тут', 'Wirrow бесплатный и весит около 6 МБ. Работает на macOS 14 и новее — и на Apple Silicon, и на Intel.',
+      'Download is right here', 'Wirrow is free and weighs about 6 MB. It runs on macOS 14 and newer, on both Apple Silicon and Intel.'],
+    ['#features', '#features h2', 'Просто перетаскивай', 'Подключи телефон или Switch кабелем и тащи файлы туда-обратно. Тут же быстрый просмотр, поиск, избранное и пакетное переименование.',
+      'Just drag and drop', 'Plug in a phone or a Switch and drag files back and forth. Quick Look, search, favorites and batch renaming are here too.'],
+    ['#switch', '#switch .frame', 'Switch с DBI', 'Игры ставятся перетаскиванием, сейвы копируются одной кнопкой, Atmosphère обновляется в один клик, а вместо цифр — названия игр.',
+      'Switch with DBI', 'Install games by dragging, back up saves with one button, update Atmosphère in one click, and see game names instead of numbers.'],
+    ['#android', '#android .frame', 'Android', 'Новые фото с камеры — одной кнопкой, HEIC можно сразу превращать в JPG. Синхронизация папок только добавляет и ничего не удаляет.',
+      'Android', 'New camera photos with one button, and HEIC can turn into JPG on the way. Folder sync only adds and never deletes.'],
+    ['#how', '#how .bento .big', 'Под капотом', 'Без облака и аккаунтов. Докачка после обрыва кабеля, проверка каждой копии и два устройства сразу.',
+      'Under the hood', 'No cloud, no accounts. Resume after the cable drops, a check for every copy, and two devices at once.'],
+    ['#download .dl', '#drag-icon', 'Вот и всё!', 'Перетащи меня в «Программы» — увидимся на твоём Mac.',
       'That’s it!', 'Drag me into Applications and see you on your Mac.'],
   ];
   function tour(){
     if (running) return; running = true;
     document.body.classList.add('touring');
-    const HP = innerWidth < 560 ? 4 : 7, hw = 20 * HP, hh = 11 * HP;
+    const HP = innerWidth < 560 ? 4 : 6, hw = 20 * HP, hh = 11 * HP;
     const el = document.createElement('div'); el.className = 'tour';
-    el.innerHTML = `<div class="t-spot"></div><div class="t-hand"><div class="t-rot"><div class="t-poke">${hand(HP)}</div></div></div>` +
-      `<div class="t-card" role="dialog" aria-label="${T('Экскурсия с Шаттлом', 'Tour with Shuttle')}"><div class="t-mascot">${SPRITE}</div>` +
-      `<div><div class="t-step"></div><b class="t-title"></b><p class="t-text" aria-live="polite"></p>` +
-      `<div class="t-btns"><button type="button" class="px-btn ghost t-prev">← ${T('Назад', 'Back')}</button><button type="button" class="px-btn t-next"></button></div></div>` +
+    el.innerHTML = `<div class="t-spot"></div><canvas class="t-arm"></canvas><div class="t-hand"><div class="t-poke">${hand(HP)}</div></div>` +
+      `<div class="t-card" role="dialog" aria-label="${T('Экскурсия с Вироу', 'Tour with Wirrow')}"><div class="t-buddy" data-side="r">${SPRITE}</div>` +
+      `<div class="t-step"></div><b class="t-title"></b><p class="t-text" aria-live="polite"></p>` +
+      `<div class="t-btns"><button type="button" class="px-btn ghost t-prev">← ${T('Назад', 'Back')}</button><button type="button" class="px-btn t-next"></button></div>` +
       `<button type="button" class="t-x" aria-label="${T('Закрыть', 'Close')}">✕</button></div>`;
     document.body.appendChild(el);
-    const spot = el.querySelector('.t-spot'), handEl = el.querySelector('.t-hand'), rot = el.querySelector('.t-rot'), card = el.querySelector('.t-card');
-    const mini = el.querySelector('.t-mascot'), text = el.querySelector('.t-text'), next = el.querySelector('.t-next'), prev = el.querySelector('.t-prev');
-    let i = 0, cur = null, hc = null, raf = 0, ended = false, ticket = 0;
+    const spot = el.querySelector('.t-spot'), handEl = el.querySelector('.t-hand'), card = el.querySelector('.t-card'), arm = el.querySelector('.t-arm');
+    const buddy = el.querySelector('.t-buddy'), text = el.querySelector('.t-text'), next = el.querySelector('.t-next'), prev = el.querySelector('.t-prev');
+    const ac = arm.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
+    const fit = () => { arm.width = innerWidth * dpr; arm.height = innerHeight * dpr; ac.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    fit(); addEventListener('resize', fit);
+    let i = 0, sp = null, tip = null, raf = 0, ended = false, ticket = 0, ours = 0;
 
-    function goal(){
-      const e = $(STEPS[i][0]); if (!e) return null;
-      const r = e.getBoundingClientRect(), pad = 12, limit = card.getBoundingClientRect().top - 18;
-      const top = Math.max(10, r.top - pad), bottom = Math.max(top + 24, Math.min(limit, r.bottom + pad));
-      const s = { x: r.left - pad, y: top, w: r.width + pad * 2, h: bottom - top };
-      // палец: слева от цели, если там есть место; иначе сверху вниз или снизу вверх
-      let tip, a;
-      if (s.x > hw + 30) { tip = [s.x - 10, s.y + Math.min(s.h / 2, 80)]; a = 0; }
-      else if (s.y > hw * .8) { tip = [s.x + Math.min(s.w / 2, 150), s.y - 10]; a = 90; }
-      else { tip = [s.x + Math.min(s.w / 2, 150), s.y + s.h + 10]; a = -90; }
-      const dir = [Math.cos(a * Math.PI / 180), Math.sin(a * Math.PI / 180)];
-      const c = [tip[0] - dir[0] * hw / 2, tip[1] - dir[1] * hw / 2];
-      return { s, h: { x: c[0] - hw / 2, y: c[1] - hh / 2, a } };
-    }
-    function frame(){
+    function frame(now){
       raf = requestAnimationFrame(frame);
-      const g = goal(); if (!g) return;
-      const k = reduced || !cur ? 1 : .14;
-      cur = cur ? { x: cur.x + (g.s.x - cur.x) * k, y: cur.y + (g.s.y - cur.y) * k, w: cur.w + (g.s.w - cur.w) * k, h: cur.h + (g.s.h - cur.h) * k } : { ...g.s };
-      hc = hc ? { x: hc.x + (g.h.x - hc.x) * k, y: hc.y + (g.h.y - hc.y) * k, a: hc.a + (g.h.a - hc.a) * k } : { ...g.h };
-      spot.style.transform = `translate(${cur.x.toFixed(1)}px, ${cur.y.toFixed(1)}px)`;
-      spot.style.width = cur.w.toFixed(1) + 'px'; spot.style.height = cur.h.toFixed(1) + 'px';
-      handEl.style.transform = `translate(${hc.x.toFixed(1)}px, ${hc.y.toFixed(1)}px)`;
-      rot.style.transform = `rotate(${hc.a.toFixed(1)}deg)`;
+      const st = STEPS[i], sec = $(st[0]), tgt = $(st[1]); if (!sec || !tgt) return;
+      const ct = card.getBoundingClientRect().top - buddy.offsetHeight + 10;
+      // подсветка: весь раздел, но не дальше карточки
+      const R = sec.getBoundingClientRect(), y0 = Math.max(8, R.top - 8), y1 = Math.max(y0 + 30, Math.min(R.bottom + 8, ct - 6));
+      const goalS = { x: R.left - 8, y: y0, w: R.width + 16, h: y1 - y0 };
+      // плечо Вироу и точка, куда смотрит палец: ближайшая к нему точка цели
+      const b = buddy.querySelector('svg').getBoundingClientRect(), s = b.width / 32;
+      const A = tgt.getBoundingClientRect();
+      const side = (A.left + A.right) / 2 >= b.left + b.width / 2 ? 'r' : 'l';
+      if (buddy.dataset.side !== side) buddy.dataset.side = side;
+      const S = [b.left + (side === 'r' ? 26.5 : 5.5) * s, b.top + 12.5 * s];
+      const ylo = A.top + 6, yhi = Math.max(ylo, Math.min(A.bottom - 6, ct - 30));
+      const goalT = [Math.min(Math.max(S[0], A.left + 10), A.right - 10), Math.min(Math.max(S[1], ylo), yhi)];
+      const k = reduced || !sp ? 1 : .16;
+      sp = sp ? { x: sp.x + (goalS.x - sp.x) * k, y: sp.y + (goalS.y - sp.y) * k, w: sp.w + (goalS.w - sp.w) * k, h: sp.h + (goalS.h - sp.h) * k } : goalS;
+      tip = tip ? [tip[0] + (goalT[0] - tip[0]) * k, tip[1] + (goalT[1] - tip[1]) * k] : goalT;
+      spot.style.transform = `translate(${sp.x.toFixed(1)}px, ${sp.y.toFixed(1)}px)`;
+      spot.style.width = sp.w.toFixed(1) + 'px'; spot.style.height = sp.h.toFixed(1) + 'px';
+
+      // рука тянется от плеча к манжете, ладонь с пальцем — на конце
+      let dx = tip[0] - S[0], dy = tip[1] - S[1]; const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len;
+      const reach = Math.max(0, len - hw - 6), C = [S[0] + dx * reach, S[1] + dy * reach];
+      const ang = Math.atan2(dy, dx), flip = dx < 0 ? -1 : 1;
+      handEl.style.transform = `translate(${C[0].toFixed(1)}px, ${(C[1] - hh / 2).toFixed(1)}px) rotate(${ang.toFixed(3)}rad) scaleY(${flip})`;
+      ac.clearRect(0, 0, innerWidth, innerHeight);
+      if (reach > 2) {
+        // резиновая рука: лёгкий изгиб и покачивание, из пиксельных квадратиков
+        const bend = (Math.sin(now / 420) * 10 + reach * .12) * -flip, mx = (S[0] + C[0]) / 2 - dy * bend, my = (S[1] + C[1]) / 2 + dx * bend;
+        const n = Math.ceil(reach / (s * 1.2)), q = v => Math.round(v / s) * s;
+        for (const pass of [0, 1]) {
+          ac.fillStyle = pass ? '#C99632' : '#1F1822';
+          const w = pass ? s * 2 : s * 2 + 3;
+          for (let j = 0; j <= n; j++) {
+            const u = j / n, x = (1 - u) * (1 - u) * S[0] + 2 * (1 - u) * u * mx + u * u * C[0], y = (1 - u) * (1 - u) * S[1] + 2 * (1 - u) * u * my + u * u * C[1];
+            ac.fillRect(q(x) - w / 2, q(y) - w / 2, w, w);
+          }
+        }
+      }
     }
-    function go(n){
+    function go(n, scroll = true){
       if (n < 0 || ended) return;
       if (n >= STEPS.length) return finish();
       i = n; const st = STEPS[i], my = ++ticket;
-      // высокие блоки — к верху экрана, чтобы над ними осталось место для пальца; остальные — по центру
-      const e = $(st[0]);
-      if (e) {
-        const r = e.getBoundingClientRect(), behavior = reduced ? 'auto' : 'smooth';
-        if (r.height > innerHeight * .45) scrollTo({ top: scrollY + r.top - (hw + 80), behavior });
-        else e.scrollIntoView({ behavior, block: 'center' });
+      const sec = $(st[0]);
+      if (sec && scroll) {
+        // раздел — к верху экрана, чтобы над карточкой было видно его целиком, насколько влезает
+        const r = sec.getBoundingClientRect(), room = card.getBoundingClientRect().top - buddy.offsetHeight - 20;
+        const top = r.height < room - 40 ? scrollY + r.top - (room - r.height) / 2 : scrollY + r.top - 24;
+        ours = performance.now() + 1300;
+        scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
       }
       el.querySelector('.t-step').textContent = `${i + 1} / ${STEPS.length}`;
-      el.querySelector('.t-title').textContent = T(st[1], st[3]);
+      el.querySelector('.t-title').textContent = T(st[2], st[4]);
       next.textContent = i === STEPS.length - 1 ? T('Готово ✓', 'Done ✓') : T('Дальше →', 'Next →');
       prev.style.visibility = i ? 'visible' : 'hidden';
-      mini.classList.remove('hop'); void mini.offsetWidth; mini.classList.add('hop');
+      buddy.classList.remove('hop'); void buddy.offsetWidth; buddy.classList.add('hop');
       text.textContent = '';
-      type(text, T(st[2], st[4]), mini, null, () => my === ticket && !ended);
+      type(text, T(st[3], st[5]), buddy, null, () => my === ticket && !ended);
     }
+    // листаешь сам — экскурсия переключается на раздел, который сейчас на экране
+    function onScroll(){
+      if (ended || performance.now() < ours) return;
+      let idx = 0;
+      STEPS.forEach((st, j) => { const e = $(st[0]); if (e && e.getBoundingClientRect().top < innerHeight * .42) idx = j; });
+      if (idx !== i) go(idx, false);
+    }
+    const onEnd = () => { ours = 0; };
     function finish(){
       if (ended) return; ended = true; remember();
-      removeEventListener('keydown', key);
+      removeEventListener('keydown', key); removeEventListener('scroll', onScroll); removeEventListener('scrollend', onEnd); removeEventListener('resize', fit);
       el.classList.remove('on');
       setTimeout(() => {
         cancelAnimationFrame(raf); el.remove(); running = false;
@@ -2252,6 +2356,8 @@ applyLang(); typeCmd();
       else if (e.key === 'ArrowLeft') { e.preventDefault(); go(i - 1); }
     };
     addEventListener('keydown', key);
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('scrollend', onEnd);
     next.addEventListener('click', () => go(i + 1));
     prev.addEventListener('click', () => go(i - 1));
     el.querySelector('.t-x').addEventListener('click', finish);
