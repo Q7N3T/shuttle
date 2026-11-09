@@ -524,9 +524,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .i-stage{position:relative;z-index:2;display:grid;justify-items:center;gap:6px;text-align:center;padding:0 16px}
 .i-hero{--is:9px;position:relative;width:calc(32 * var(--is));height:calc(30 * var(--is));will-change:transform}
 .i-hero svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 28px rgba(233,185,73,.35))}
-.i-hero .i-vox{position:absolute;left:50%;top:50%;width:220%;height:170%;transform:translate(-50%,-50%);pointer-events:none;display:none}
-.i-hero.spin .i-vox{display:block}
-.i-hero.spin svg{visibility:hidden}
+.i-hero .i-gl{position:absolute;left:50%;top:50%;width:230%;height:175%;transform:translate(-50%,-50%);pointer-events:none}
 .i-hero .m-arm{transition:transform .45s cubic-bezier(.2,1.7,.4,1)}
 .i-hero.pose .m-arm.l{transform:rotate(100deg)}
 .i-hero.pose .m-arm.r{transform:rotate(-100deg)}
@@ -2030,171 +2028,283 @@ applyLang(); typeCmd();
     })();
   }
 
-  /* ---------- 3D: спрайт маскота, вытянутый в объём из вокселей ---------- */
-  let MODEL = null;
-  function model(){
-    if (MODEL) return MODEL;
-    // цвета берём из живого SVG: так модель всегда совпадает с маскотом на сайте
-    const box = document.createElement('div');
-    box.style.cssText = 'position:absolute;left:-9999px;top:0;width:32px;height:30px';
-    box.innerHTML = SPRITE; document.body.appendChild(box);
-    const base = new Map(), face = new Map(), part = new Map();
-    const rgb = c => (c.match(/[\d.]+/g) || [0, 0, 0]).slice(0, 3).map(Number);
-    box.querySelectorAll('rect').forEach(r => {
-      const top = r.closest('svg > g'), cls = (top.getAttribute('class') || '').split(' ')[0];
-      let op = 1; for (let n = r; n && n.tagName.toLowerCase() !== 'svg'; n = n.parentElement) op *= +getComputedStyle(n).opacity;
-      if (op < .05) return;
-      const col = rgb(getComputedStyle(r).fill);
-      const x0 = +r.getAttribute('x'), y0 = +r.getAttribute('y'), w = +r.getAttribute('width'), h = +r.getAttribute('height');
-      for (let x = x0; x < x0 + w; x++) for (let y = y0; y < y0 + h; y++) {
-        const k = x + ',' + y;
-        if (cls === 'm-eyes' || cls === 'm-smile' || cls === 'm-cheeks') {
-          const b = base.get(k) || col; face.set(k, col.map((v, i) => v * op + b[i] * (1 - op)));
-        } else { base.set(k, col); part.set(k, cls + (r.closest('.limb,.stem') ? ' thin' : '')); }
-      }
-    });
-    box.remove();
-    // толщина: корпус — округлая капсула, ручки, ножки и антенны тоньше
-    const depth = k => {
-      const p = part.get(k), [x, y] = k.split(',').map(Number);
-      if (p === 'm-body') { const dx = (x + .5 - 16) / 10.5, dy = (y + .5 - 15) / 8.5; return Math.max(1, Math.round(5 * Math.sqrt(Math.max(0, 1 - (dx * dx + dy * dy * .55) * .8)))); }
-      return p.includes('thin') ? 0 : 1;
-    };
-    const D = new Map(); base.forEach((_, k) => D.set(k, depth(k)));
-    const occ = (x, y, z) => { const d = D.get(x + ',' + y); return d !== undefined && Math.abs(z) <= d; };
-    const vox = [];
-    base.forEach((col, k) => {
-      const [x, y] = k.split(',').map(Number), d = D.get(k), body = part.get(k) === 'm-body';
-      for (let z = -d; z <= d; z++) {
-        const ex = !occ(x + 1, y, z) - !occ(x - 1, y, z), ey = !occ(x, y + 1, z) - !occ(x, y - 1, z);
-        if (Math.abs(z) !== d && !ex && !ey && occ(x + 1, y, z) && occ(x - 1, y, z) && occ(x, y + 1, z) && occ(x, y - 1, z)) continue; // внутри — не видно
-        const n = body ? [(x + .5 - 16) / 10.5, (y + .5 - 15) / 8.5 * .7, z / 5] : [ex, ey, z === d ? 1 : z === -d ? -1 : 0];
-        const m = Math.hypot(...n) || 1;
-        vox.push({ x: x + .5 - 16, y: y + .5 - 15, z, c: z === d && face.has(k) ? face.get(k) : col, n: n.map(v => v / m), two: d === 0 });
-      }
-    });
-    return MODEL = vox;
+  /* ---------- 3D: Вироу на WebGL — гладкие формы, свет, блики, мордочка ---------- */
+  // Сцена описана функциями расстояния (SDF) и рисуется лучами прямо в шейдере.
+  const FRAG = `
+precision highp float;
+uniform vec2 uRes; uniform float uScale, uRotY, uTilt, uArm, uGlow, uHalo, uBlink, uTalk;
+uniform vec3 uGlowCol;
+mat3 rotY(float a){ float c=cos(a), s=sin(a); return mat3(c,0.,-s, 0.,1.,0., s,0.,c); }
+mat3 rotX(float a){ float c=cos(a), s=sin(a); return mat3(1.,0.,0., 0.,c,s, 0.,-s,c); }
+float sdRB(vec3 p, vec3 b, float r){ vec3 q=abs(p)-b; return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.)-r; }
+float sdCap(vec3 p, vec3 a, vec3 b, float r){ vec3 pa=p-a, ba=b-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.); return length(pa-ba*h)-r; }
+float sdEll(vec3 p, vec3 r){ float k0=length(p/r); float k1=length(p/(r*r)); return k0*(k0-1.)/k1; }
+vec2 U(vec2 a, vec2 b){ return a.x<b.x?a:b; }
+vec2 side(vec3 p, float s){
+  vec2 r = vec2(1e5, 0.);
+  vec3 a0 = vec3(.38*s,.72,0.), a1 = vec3(.66*s,1.34,0.);
+  r = U(r, vec2(sdCap(p,a0,a1,.045), 2.));
+  r = U(r, vec2(length(p-a1)-.15, 7.));
+  vec3 sh = vec3(.96*s,.1,0.);
+  vec3 hd = sh + mix(vec3(.34*s,-.52,.08), vec3(.4*s,.78,.08), uArm);
+  vec3 dir = normalize(hd-sh);
+  r = U(r, vec2(sdCap(p,sh,hd-dir*.13,.055), 2.));
+  r = U(r, vec2(sdCap(p,hd-dir*.19,hd-dir*.12,.1), 6.));
+  r = U(r, vec2(sdEll(p-hd, vec3(.15,.16,.13)), 3.));
+  r = U(r, vec2(length(p-(hd+vec3(-.11*s,.06,.07)))-.065, 3.));
+  vec3 hip = vec3(.3*s,-.66,0.), an = vec3(.31*s,-.98,0.);
+  r = U(r, vec2(sdCap(p,hip,an,.07), 2.));
+  r = U(r, vec2(sdCap(p,an,an-vec3(0.,.07,0.),.085), 3.));
+  r = U(r, vec2(sdRB(p-vec3(.36*s,-1.15,.07), vec3(.12,.035,.12), .055), 4.));
+  r = U(r, vec2(sdRB(p-vec3(.36*s,-1.235,.07), vec3(.135,.006,.135), .03), 5.));
+  return r;
+}
+vec2 map(vec3 p){
+  vec2 r = vec2(sdRB(p, vec3(.6,.4,.22), .4), 1.);
+  r = U(r, side(p,-1.)); r = U(r, side(p,1.));
+  return r;
+}
+vec3 nrm(vec3 p){ const vec2 k=vec2(1.,-1.); float e=.0012;
+  return normalize(k.xyy*map(p+k.xyy*e).x + k.yyx*map(p+k.yyx*e).x + k.yxy*map(p+k.yxy*e).x + k.xxx*map(p+k.xxx*e).x); }
+float seg(vec2 p, vec2 a, vec2 b){ vec2 pa=p-a, ba=b-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.); return length(pa-ba*h); }
+vec3 body(vec3 q){
+  vec3 col = mix(vec3(.93,.74,.30), vec3(.80,.59,.21), smoothstep(-.15,-.8,q.y)*.75);
+  if (q.z > .25) {
+    vec2 f = q.xy; float aa = .01;
+    vec2 e = vec2(abs(f.x), (f.y-.15)/max(.12,1.-uBlink)+.15);
+    float de = min(seg(e, vec2(.24,.37), vec2(.45,.15)), seg(e, vec2(.45,.15), vec2(.24,-.07)));
+    vec2 ck = (vec2(abs(f.x),f.y)-vec2(.62,-.12))/vec2(.12,.055);
+    col = mix(col, vec3(.95,.5,.47), .6*(1.-smoothstep(.85,1.,length(ck))));
+    vec3 ink = vec3(.12,.09,.13);
+    col = mix(col, ink, 1.-smoothstep(.05-aa,.05+aa,de));
+    if (uTalk < .5) {
+      float dm = min(seg(f,vec2(-.16,-.21),vec2(-.07,-.3)), min(seg(f,vec2(-.07,-.3),vec2(.07,-.3)), seg(f,vec2(.07,-.3),vec2(.16,-.21))));
+      col = mix(col, ink, 1.-smoothstep(.04-aa,.04+aa,dm));
+    } else {
+      float m = length((f-vec2(0.,-.28))/vec2(.14,.09));
+      vec3 mc = f.y < -.31 ? vec3(.91,.47,.43) : ink;
+      col = mix(col, mc, 1.-smoothstep(.92,1.,m));
+    }
   }
-  const LIGHT = [-.45, -.55, .7].map((v, _, a) => v / Math.hypot(...a));
-  const colorCache = new Map();
-  // рисует модель: ang — поворот вокруг вертикали, tilt — наклон, shade — сила света (0 — как плоский спрайт)
-  function drawVox(ctx, cx, cy, s, ang, tilt, shade){
-    const V = model(), ca = Math.cos(ang), sa = Math.sin(ang), ct = Math.cos(tilt), st = Math.sin(tilt), pk = Math.abs(sa) * .02;
-    const out = [];
-    for (const v of V) {
-      const X = v.x * ca + v.z * sa, Z1 = -v.x * sa + v.z * ca, Y = v.y * ct - Z1 * st, Z = v.y * st + Z1 * ct;
-      const nx = v.n[0] * ca + v.n[2] * sa, nz1 = -v.n[0] * sa + v.n[2] * ca, ny = v.n[1] * ct - nz1 * st, nz = v.n[1] * st + nz1 * ct;
-      let lam = nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]; if (v.two) lam = Math.abs(lam);
-      const b = Math.round((1 + shade * (.42 + .72 * Math.max(0, lam) - 1)) * 14) / 14;
-      const p = 1 + Z * pk;
-      out.push([Z, cx + X * s * p, cy + Y * s * p, s * p, v.c, b]);
-    }
-    out.sort((a, b) => a[0] - b[0]);
-    for (const [, x, y, sz, c, b] of out) {
-      const key = c.join() + b;
-      let f = colorCache.get(key);
-      if (!f) { f = `rgb(${c.map(v => Math.min(255, Math.round(v * b))).join()})`; colorCache.set(key, f); }
-      ctx.fillStyle = f; ctx.fillRect(x - sz / 2 - .35, y - sz / 2 - .35, sz + .7, sz + .7);
-    }
+  return col;
+}
+void main(){
+  vec2 uv = (gl_FragCoord.xy - .5*uRes)/uScale;
+  vec3 ro = vec3(0.,0.,7.), rd = normalize(vec3(uv,0.)-ro);
+  mat3 R = rotY(-uRotY)*rotX(-uTilt);
+  ro = R*ro; rd = R*rd;
+  float t = 4.5, md = 1e5; vec2 h = vec2(0.); bool hit = false;
+  for (int i=0;i<96;i++){ vec3 p=ro+rd*t; h=map(p); md=min(md,h.x); if(h.x<.0012){hit=true;break;} t+=h.x*.92; if(t>10.)break; }
+  if (!hit) { float a = exp(-max(md,0.)*6.)*uHalo; gl_FragColor = vec4(uGlowCol*a, a); return; }
+  vec3 p = ro+rd*t, n = nrm(p), V = -rd;
+  float id = h.y; vec3 col; float gloss = .55, sp = 48.;
+  if (id < 1.5) col = body(p);
+  else if (id < 2.5) col = vec3(.79,.59,.21);
+  else if (id < 3.5) { col = vec3(.97,.95,.91); gloss = .25; sp = 18.; }
+  else if (id < 4.5) { col = vec3(.24,.17,.27); gloss = .4; }
+  else if (id < 5.5) col = vec3(.45,.35,.48);
+  else if (id < 6.5) { col = vec3(.86,.82,.77); gloss = .2; }
+  else { col = vec3(.95,.76,.32); gloss = .9; sp = 70.; }
+  vec3 L1 = R*normalize(vec3(-.55,.65,.62)), L2 = R*normalize(vec3(.8,-.1,.45));
+  float dif = max(dot(n,L1),0.), fil = max(dot(n,L2),0.);
+  float spec = pow(max(dot(n,normalize(L1+V)),0.), sp)*gloss;
+  float rim = pow(1.-max(dot(n,V),0.), 3.);
+  float ao = clamp(map(p+n*.14).x/.14,0.,1.)*.45+.55;
+  vec3 c = col*(.28*ao + .9*dif*vec3(1.,.96,.88) + .38*fil*vec3(.62,.5,1.)) + spec*vec3(1.,.95,.82) + rim*vec3(1.,.6,.8)*.42;
+  c = mix(c, uGlowCol*1.15 + rim*.5, uGlow);
+  gl_FragColor = vec4(c, 1.);
+}`;
+  function makeGL(canvas){
+    const gl = canvas.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false });
+    if (!gl) return null;
+    const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; };
+    const vs = sh(gl.VERTEX_SHADER, 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}'), fs = sh(gl.FRAGMENT_SHADER, FRAG);
+    if (!vs || !fs) return null;
+    const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return null;
+    gl.useProgram(pr);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const u = {}; ['uRes', 'uScale', 'uRotY', 'uTilt', 'uArm', 'uGlow', 'uHalo', 'uBlink', 'uTalk', 'uGlowCol'].forEach(k => u[k] = gl.getUniformLocation(pr, k));
+    return (o) => {
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform2f(u.uRes, canvas.width, canvas.height);
+      ['uScale', 'uRotY', 'uTilt', 'uArm', 'uGlow', 'uHalo', 'uBlink', 'uTalk'].forEach(k => gl.uniform1f(u[k], o[k]));
+      gl.uniform3f(u.uGlowCol, ...o.uGlowCol);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
   }
 
-  /* ---------- 1. Превращение ---------- */
+  /* ---------- 1. Превращение: силуэт в свете, ленты, лучи, блёстки и поза ---------- */
   function intro(){
     if (running) return; running = true;
     document.body.classList.add('touring');
     const el = document.createElement('div');
     el.className = 'intro'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', T('Знакомство с Вироу', 'Meet Wirrow'));
-    el.innerHTML = `<canvas class="i-back"></canvas><div class="i-stage"><div class="i-hero spin">${SPRITE}<canvas class="i-vox"></canvas></div><h2 class="i-title" aria-label="${T('Привет! Я Вироу', 'Hi! I’m Wirrow')}"></h2>` +
+    el.innerHTML = `<canvas class="i-back"></canvas><div class="i-stage"><div class="i-hero"><canvas class="i-gl"></canvas></div><h2 class="i-title" aria-label="${T('Привет! Я Вироу', 'Hi! I’m Wirrow')}"></h2>` +
       `<div class="i-sub">${T('маскот приложения Wirrow', 'the Wirrow mascot')}</div><div class="i-say" aria-live="polite"></div>` +
       `<div class="i-btns"><button type="button" class="px-btn i-go">${T('Поехали →', 'Let’s go →')}</button><button type="button" class="px-btn ghost i-no">${T('В другой раз', 'Maybe later')}</button></div></div>` +
       `<canvas class="i-front"></canvas><div class="i-flash"></div><button type="button" class="px-btn ghost i-skip">${T('Пропустить ✕', 'Skip ✕')}</button>`;
     document.body.appendChild(el);
     document.documentElement.style.overflow = 'hidden';
-    const hero = el.querySelector('.i-hero'), back = el.querySelector('.i-back'), front = el.querySelector('.i-front'), vox = el.querySelector('.i-vox');
-    const bc = back.getContext('2d'), fc = front.getContext('2d'), vc = vox.getContext('2d'), title = el.querySelector('.i-title');
-    const dpr = Math.min(2, devicePixelRatio || 1);
-    let W = 0, H = 0, P = 6;
+    const hero = el.querySelector('.i-hero'), back = el.querySelector('.i-back'), front = el.querySelector('.i-front'), glc = el.querySelector('.i-gl');
+    const bc = back.getContext('2d'), fc = front.getContext('2d'), title = el.querySelector('.i-title');
+    let draw3d = makeGL(glc);
+    if (!draw3d) { glc.remove(); hero.innerHTML = SPRITE; hero.classList.add('flat'); } // без WebGL — плоский Вироу
+    const dpr = Math.min(2, devicePixelRatio || 1), gdpr = Math.max(1.5, dpr);
+    let W = 0, H = 0;
     function size(){
-      W = innerWidth; H = innerHeight; P = W < 560 ? 4 : 6;
+      W = innerWidth; H = innerHeight;
       [back, front].forEach(c => { c.width = W * dpr; c.height = H * dpr; c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); });
-      vox.width = vox.offsetWidth * dpr; vox.height = vox.offsetHeight * dpr; vc.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (draw3d) { glc.width = Math.round(glc.offsetWidth * gdpr); glc.height = Math.round(glc.offsetHeight * gdpr); }
     }
     size(); addEventListener('resize', size);
-    const snap = v => Math.round(v / P) * P;
-    const stars = Array.from({ length: 110 }, () => ({ x: Math.random(), y: Math.random(), p: Math.random() * 6.28, big: Math.random() < .18 }));
-    const COLORS = ['#E9B949', '#E8796E', '#8B5CF6'];
-    // звёздочка-плюсик из пикселей
-    const star = (ctx, x, y, s) => { ctx.fillRect(x - s * P, y, (2 * s + 1) * P, P); ctx.fillRect(x, y - s * P, P, (2 * s + 1) * P); };
-    let parts = [], phase = 0, pf = 0, pt = 0, last = performance.now(), raf = 0, closing = false, leaving = false, flashed = false, stopped = false, said = false, lastSpark = 0;
-    const t0 = performance.now(), alive = () => !closing;
-    const STOP = 4.1; // к этому моменту вращение замирает лицом к зрителю
+    const PAL = [['#FF8CC0', '#FFC2DD'], ['#FFD36B', '#FFF0B8'], ['#A98BFF', '#D9CCFF']];
+    const stars = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), p: Math.random() * 6.28, r: .6 + Math.random() * 1.6 }));
+    let parts = [], rings = [], phase = 0, pf = 0, pt = 0, last = performance.now(), raf = 0, closing = false, leaving = false;
+    let flashed = false, posed = false, said = false, winked = 0, nextBlink = 0, blinkAt = -9;
+    const ringAt = [1.2, 1.9, 2.6], t0 = performance.now(), alive = () => !closing;
+    const BURST = 3.3, STOP = 4.3;
     requestAnimationFrame(() => el.classList.add('on'));
 
-    function burst(cx, cy, n, speed){
+    // четырёхлучевая звёздочка-искра
+    function sparkle(ctx, x, y, r, rot){
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.beginPath();
+      ctx.moveTo(0, -r); ctx.quadraticCurveTo(0, 0, r, 0); ctx.quadraticCurveTo(0, 0, 0, r); ctx.quadraticCurveTo(0, 0, -r, 0); ctx.quadraticCurveTo(0, 0, 0, -r);
+      ctx.fill(); ctx.restore();
+    }
+    function emit(x, y, n, speed, kinds){
       for (let k = 0; k < n; k++) {
-        const a = Math.random() * 6.283, v = speed * (.35 + Math.random() * .65);
-        parts.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, dec: .5 + Math.random() * .5,
-          c: Math.random() < .3 ? '#FFF6DA' : COLORS[k % 3], star: Math.random() < .35 });
+        const a = Math.random() * 6.283, v = speed * (.25 + Math.random() * .75), pal = PAL[k % 3];
+        parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, dec: .35 + Math.random() * .5, r: 3 + Math.random() * 9,
+          rot: Math.random() * 3, spin: (Math.random() - .5) * 6, c: Math.random() < .35 ? '#FFFFFF' : pal[1], kind: kinds[k % kinds.length], g: 40 });
+      }
+    }
+    // шёлковая лента вокруг Вироу: перекручивается, сзади — тусклее, спереди — ярче
+    function ribbon(k, t, cx, cy, R, HH, wid, grow, alpha){
+      const N = 130, pts = [];
+      for (let i = 0; i <= N; i++) {
+        const u = i / N; if (u > grow) break;
+        const a = u * 12.566 + t * 4.6 + k * 2.094, z = Math.sin(a);
+        pts.push([cx + R * Math.cos(a), cy + (u - .5) * HH + z * R * .18, z, wid * (.18 + .82 * Math.abs(Math.cos(u * 11 + t * 2.2 + k * 1.7))), u]);
+      }
+      // ленту рисуем цельными кусками: подряд идущие точки с одной стороны от Вироу — один многоугольник
+      const [c0, c1] = PAL[k], runs = [];
+      pts.forEach((q, i) => { const fr = q[2] > 0; if (!runs.length || runs[runs.length - 1].fr !== fr) { const r = { fr, p: [] }; if (i) r.p.push(pts[i - 1]); runs.push(r); } runs[runs.length - 1].p.push(q); });
+      for (const run of runs) {
+        if (run.p.length < 2) continue;
+        const ctx = run.fr ? fc : bc, L = [], Rr = [];
+        run.p.forEach((q, i) => {
+          const a2 = run.p[Math.max(0, i - 1)], b2 = run.p[Math.min(run.p.length - 1, i + 1)];
+          let dx = b2[0] - a2[0], dy = b2[1] - a2[1]; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+          const tail = Math.min(1, q[4] * 8, (grow - q[4]) * 10), w = q[3] * tail / 2;
+          L.push([q[0] - dy * w, q[1] + dx * w]); Rr.push([q[0] + dy * w, q[1] - dx * w]);
+        });
+        const poly = () => { ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]); L.forEach(v => ctx.lineTo(v[0], v[1])); for (let i = Rr.length - 1; i >= 0; i--) ctx.lineTo(Rr[i][0], Rr[i][1]); ctx.closePath(); };
+        const x0 = run.p[0][0], x1 = run.p[run.p.length - 1][0];
+        const grad = ctx.createLinearGradient(x0, 0, x1 === x0 ? x0 + 1 : x1, 0);
+        grad.addColorStop(0, c0); grad.addColorStop(.5, run.fr ? c1 : c0); grad.addColorStop(1, c0);
+        ctx.fillStyle = grad;
+        ctx.globalAlpha = alpha * (run.fr ? .95 : .45); poly(); ctx.fill();
+        // мягкое свечение вокруг ленты
+        ctx.globalAlpha = alpha * (run.fr ? .25 : .1); ctx.strokeStyle = grad; ctx.lineWidth = wid * .9; ctx.lineJoin = 'round'; poly(); ctx.stroke();
+        if (run.fr && Math.random() < .5) { const q = run.p[Math.random() * run.p.length | 0]; if (Math.random() < .25) parts.push({ x: q[0], y: q[1], vx: (Math.random() - .5) * 40, vy: -20 - Math.random() * 40, life: 1, dec: 1.1, r: 4 + Math.random() * 5, rot: 0, spin: 2, c: c1, kind: 'star', g: 20 }); }
       }
     }
     function frame(now){
       raf = requestAnimationFrame(frame);
       const t = (now - t0) / 1000, dt = Math.min(.05, (now - last) / 1000); last = now;
       bc.clearRect(0, 0, W, H); fc.clearRect(0, 0, W, H);
-      bc.fillStyle = '#F6E7B8';
-      stars.forEach(s => { const a = Math.max(0, Math.sin(t * 1.7 + s.p)); bc.globalAlpha = .2 + .8 * a; star(bc, snap(s.x * W), snap(s.y * H), s.big && a > .75 ? 1 : 0); });
-      bc.globalAlpha = 1;
-
+      bc.globalCompositeOperation = fc.globalCompositeOperation = 'lighter';
       const hw = hero.offsetWidth, hh = hero.offsetHeight, hr = hero.getBoundingClientRect();
       const cx = hr.left + hr.width / 2, cy = hr.top + hr.height / 2;
+      const hue = (t * 70) % 360, magic = ease((t - .4) / .8) * (1 - ease((t - BURST - .2) / 1.4));
 
-      // вращение в 3D: разгон до вспышки, потом плавная остановка лицом к зрителю
-      if (t < 2.9) phase += (1.5 + 26 * Math.pow(clamp((t - .3) / 2.6), 2)) * dt;
+      // фон: мерцающие звёзды, вращающиеся лучи и мягкое сияние за спиной
+      stars.forEach(s => { const a = Math.max(0, Math.sin(t * 1.9 + s.p)); bc.globalAlpha = .15 + .7 * a; bc.fillStyle = '#FFF3D6'; bc.fillRect(s.x * W, s.y * H, s.r, s.r); });
+      if (magic > 0) {
+        const RR = Math.hypot(W, H) * .7, g = bc.createRadialGradient(cx, cy, 0, cx, cy, RR);
+        g.addColorStop(0, `hsla(${hue},95%,78%,${.38 * magic})`); g.addColorStop(.35, `hsla(${(hue + 60) % 360},90%,65%,${.18 * magic})`); g.addColorStop(1, 'hsla(0,0%,0%,0)');
+        bc.globalAlpha = 1; bc.fillStyle = g; bc.beginPath();
+        for (let i = 0; i < 18; i++) { const a0 = t * .5 + i * Math.PI / 9, a1 = a0 + Math.PI / 9 * .5; bc.moveTo(cx, cy); bc.lineTo(cx + RR * Math.cos(a0), cy + RR * Math.sin(a0)); bc.lineTo(cx + RR * Math.cos(a1), cy + RR * Math.sin(a1)); bc.closePath(); }
+        bc.fill();
+        const core = bc.createRadialGradient(cx, cy, 0, cx, cy, hw * .9);
+        core.addColorStop(0, `hsla(${(hue + 30) % 360},100%,85%,${.5 * magic})`); core.addColorStop(1, 'hsla(0,0%,0%,0)');
+        bc.fillStyle = core; bc.fillRect(cx - hw, cy - hw, hw * 2, hw * 2);
+      }
+      // в начале — одна звёздочка в центре, из неё появляется Вироу
+      if (t < 1.1) { const s = ease(t / .5) * (1 - ease((t - .6) / .5)); fc.globalAlpha = s; fc.fillStyle = '#FFFFFF'; sparkle(fc, cx, cy, 10 + 70 * s, t * 2); }
+
+      // вращение: разгон до вспышки, потом мягкая остановка лицом к зрителю
+      if (t < BURST) phase += (1 + 21 * Math.pow(clamp((t - .4) / 2.9), 2)) * dt;
       else {
         if (!flashed) {
           flashed = true; pf = phase; pt = (Math.ceil(phase / 6.283) + 1) * 6.283;
-          el.querySelector('.i-flash').classList.add('go'); burst(cx, cy, 110, 760);
+          el.querySelector('.i-flash').classList.add('go');
+          emit(cx, cy, 150, 820, ['star', 'star', 'dot', 'bubble']); rings.push({ t, max: Math.max(W, H) * .8, w: 6 });
         }
-        const k = clamp((t - 2.9) / (STOP - 2.9)); phase = pf + (pt - pf) * (1 - Math.pow(1 - k, 3));
+        phase = pf + (pt - pf) * (1 - Math.pow(1 - clamp((t - BURST) / (STOP - BURST)), 3));
       }
-      const settle = flashed ? ease((t - 2.9) / (STOP - 2.9)) : 0;
-      if (!stopped) {
-        const grow = .45 + .55 * ease((t - .15) / 1.4), is = hw / 32;
-        vc.clearRect(0, 0, vox.width, vox.height);
-        drawVox(vc, vox.offsetWidth / 2, vox.offsetHeight / 2, is * grow, phase, .32 * Math.sin(t * 1.6) * (1 - settle), 1 - ease((settle - .55) / .45));
-        if (t >= STOP) { stopped = true; hero.classList.remove('spin'); hero.classList.add('pose'); }
+      const settle = flashed ? ease((t - BURST) / (STOP - BURST)) : 0;
+      if (t >= STOP && !posed) { posed = true; hero.classList.add('pose'); nextBlink = t + 1.2; }
+      const arm = posed ? ease((t - STOP) / .45) : 0;
+      // подмигивание со звёздочкой у глаза
+      if (posed && !winked && t > STOP + .35) winked = t;
+      if (posed && t > nextBlink) { blinkAt = t; nextBlink = t + 2.4 + Math.random() * 2; }
+      const wink = winked ? Math.max(0, 1 - Math.abs(t - winked - .25) / .25) : 0, blink = Math.max(wink, Math.max(0, 1 - Math.abs(t - blinkAt - .07) / .07));
+      const grow = .2 + .8 * ease((t - .45) / 1.3);
+      const glow = t < BURST ? ease((t - .4) / .6) : 1 - ease((t - BURST) / .8);
+      if (draw3d) {
+        const talk = hero.classList.contains('talk') && Math.floor(t * 8) % 2 === 0 ? 1 : 0;
+        draw3d({ uScale: hw * .3125 * grow * gdpr, uRotY: phase, uTilt: .28 * Math.sin(t * 1.4) * (1 - settle), uArm: arm, uGlow: glow * .92,
+          uHalo: .25 + .75 * glow, uBlink: blink, uTalk: talk, uGlowCol: [1, .93, .97] });
       }
-      const y = 70 * (1 - ease(t / 1.8)) + (stopped ? Math.sin(t * 2.4) * 5 : 0);
+      const y = 60 * (1 - ease(t / 1.8)) + (posed ? Math.sin(t * 2.2) * 5 : 0);
       if (!leaving) hero.style.transform = `translateY(${y.toFixed(1)}px)`;
 
-      // ленты: три спирали из пикселей обвивают Вироу всё туже
-      if (t > .45 && t < 3) {
-        const g = ease((t - .45) / 1.2), tight = ease((t - .8) / 2.1), fade = 1 - ease((t - 2.65) / .3);
-        const R = Math.max(W, H) * .42 * (1 - tight) + hw * .7 * tight, HH = H * .95 * (1 - tight) + hh * 1.2 * tight;
-        for (let k = 0; k < 3; k++) for (let i = 0; i <= 110; i++) {
-          const u = i / 110; if (u > g) break;
-          const a = u * 12.566 + t * 6 + k * 2.094, z = Math.sin(a), ctx = z > 0 ? fc : bc;
-          ctx.globalAlpha = fade * (.5 + .5 * Math.abs(z)) * (u > g - .08 ? (g - u) / .08 : 1);
-          ctx.fillStyle = z > .8 ? '#FFF6DA' : COLORS[k];
-          ctx.fillRect(snap(cx + R * Math.cos(a)), snap(cy + (u - .5) * HH), P * 2, P * 2);
-          if (Math.random() < .004) parts.push({ x: cx + R * Math.cos(a), y: cy + (u - .5) * HH, vx: (Math.random() - .5) * 60, vy: -30 - Math.random() * 60, life: 1, dec: 1.2, c: COLORS[k], star: true });
-        }
-        fc.globalAlpha = bc.globalAlpha = 1;
+      // ленты: три шёлковые спирали обвивают Вироу всё туже, на вспышке рассыпаются
+      if (t > .7 && t < BURST + .05) {
+        const g = ease((t - .7) / 1.1), tight = ease((t - 1) / 2.1), fade = 1 - ease((t - BURST + .25) / .3);
+        const R = Math.max(W, H) * .4 * (1 - tight) + hw * .62 * tight, HH = H * .9 * (1 - tight) + hh * 1.25 * tight;
+        for (let k = 0; k < 3; k++) ribbon(k, t, cx, cy, R, HH, hw * .085, g, fade);
       }
-      if (flashed && !leaving && now - lastSpark > 260) {
-        lastSpark = now;
-        parts.push({ x: cx + (Math.random() - .5) * hw * 1.5, y: cy + (Math.random() - .5) * hh * 1.3, vx: 0, vy: -20, life: 1, dec: 1.1, c: Math.random() < .5 ? '#FFF6DA' : '#E9B949', star: true });
-      }
-      parts = parts.filter(p => (p.life -= p.dec * dt) > 0);
-      parts.forEach(p => {
-        p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .965; p.vy = p.vy * .965 + 60 * dt;
-        fc.globalAlpha = Math.min(1, p.life * 1.4); fc.fillStyle = p.c;
-        if (p.star) star(fc, snap(p.x), snap(p.y), p.life > .55 ? 1 : 0); else fc.fillRect(snap(p.x), snap(p.y), P, P);
+      // волшебные кольца расходятся от Вироу
+      ringAt.forEach((at, j) => { if (t >= at && !rings.some(r => r.at === at)) rings.push({ t, at, max: hw * (1.6 + j * .3), w: 3 }); });
+      rings = rings.filter(r => t - r.t < 1.2);
+      rings.forEach(r => {
+        const k = (t - r.t) / 1.2, rad = r.max * ease(k);
+        bc.globalAlpha = (1 - k) * .9; bc.strokeStyle = `hsl(${(hue + 40) % 360},100%,80%)`; bc.lineWidth = r.w * (1 - k) + 1;
+        bc.beginPath(); bc.ellipse(cx, cy + hh * .42, rad, rad * .3, 0, 0, 6.283); bc.stroke();
+        bc.beginPath(); bc.ellipse(cx, cy, rad * .8, rad * .8, 0, 0, 6.283); bc.globalAlpha *= .4; bc.stroke();
       });
-      fc.globalAlpha = 1;
+      // блёстки падают всё время превращения
+      if (magic > .05 && Math.random() < magic * .9) {
+        parts.push({ x: Math.random() * W, y: -10, vx: (Math.random() - .5) * 20, vy: 40 + Math.random() * 60, life: 1, dec: .25, r: 3 + Math.random() * 6, rot: 0, spin: 1.5, c: PAL[Math.random() * 3 | 0][1], kind: Math.random() < .7 ? 'star' : 'dot', g: 0 });
+      }
+      if (posed && Math.random() < .08) parts.push({ x: cx + (Math.random() - .5) * hw * 1.4, y: cy + (Math.random() - .5) * hh * 1.2, vx: 0, vy: -15, life: 1, dec: 1, r: 5 + Math.random() * 6, rot: 0, spin: 2, c: '#FFF6DA', kind: 'star', g: 0 });
+      parts = parts.filter(p => (p.life -= p.dec * dt) > 0 && p.y < H + 20);
+      parts.forEach(p => {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .97; p.vy = p.vy * .97 + p.g * dt; p.rot += p.spin * dt;
+        const tw = .6 + .4 * Math.sin(p.life * 20 + p.r);
+        fc.globalAlpha = Math.min(1, p.life * 1.6) * tw; fc.fillStyle = p.c; fc.strokeStyle = p.c;
+        if (p.kind === 'star') sparkle(fc, p.x, p.y, p.r * (.6 + .4 * p.life), p.rot);
+        else if (p.kind === 'bubble') { fc.lineWidth = 1.5; fc.beginPath(); fc.arc(p.x, p.y, p.r * (1.6 - p.life * .6), 0, 6.283); fc.stroke(); }
+        else { fc.beginPath(); fc.arc(p.x, p.y, p.r * .25, 0, 6.283); fc.fill(); }
+      });
+      // большая искра у глаза, когда Вироу подмигивает
+      if (winked && t - winked < .8) {
+        const k = (t - winked) / .8, s = Math.sin(k * Math.PI), sc = hw * .3125;
+        fc.globalAlpha = s; fc.fillStyle = '#FFFFFF';
+        sparkle(fc, cx + .45 * sc, cy - .15 * sc + y * 0, 8 + 34 * s, k * 3);
+        fc.fillStyle = '#FFD36B'; sparkle(fc, cx + .45 * sc, cy - .15 * sc, 4 + 16 * s, -k * 2);
+      }
+      fc.globalAlpha = bc.globalAlpha = 1;
+      bc.globalCompositeOperation = fc.globalCompositeOperation = 'source-over';
 
       // «Привет! Я Вироу» — буквы выскакивают по одной
-      if (t > STOP - .2 && !title.childElementCount) {
+      if (t > STOP && !title.childElementCount) {
         const str = T('Привет! Я Вироу', 'Hi! I’m Wirrow'), at = str.indexOf(T('Вироу', 'Wirrow'));
         [...str].forEach((ch, i) => {
           const s = document.createElement('span'); s.textContent = ch === ' ' ? ' ' : ch;
@@ -2203,7 +2313,7 @@ applyLang(); typeCmd();
         });
         setTimeout(() => el.querySelector('.i-sub').classList.add('on'), str.length * 55 + 250);
       }
-      if (t > STOP + 1.3 && !said) {
+      if (t > STOP + 1.4 && !said) {
         said = true;
         type(el.querySelector('.i-say'), T('Я тут главный по проводам. Давай покажу, что я умею, — это минута, не больше.',
           'I’m the one in charge of cables here. Let me show you what I can do — it takes a minute, tops.'),
