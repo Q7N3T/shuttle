@@ -65,7 +65,7 @@ struct TransferRow: View {
             .frame(width: 220, alignment: .leading)
             ProgressTrack(value: transfer.fraction,
                           color: transfer.state == .done ? p.ok : (transfer.state == .waiting ? p.muted : nil))
-                // a little Wirrow runs along the bar; if the cable drops it sits down and waits
+                // Shuttle the mascot runs along the bar; if the cable drops it sits down and waits
                 .overlay {
                     if transfer.state == .running || transfer.state == .waiting {
                         MascotRunner(fraction: transfer.fraction, waiting: transfer.state == .waiting)

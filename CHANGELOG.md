@@ -13,7 +13,7 @@ Every version can be downloaded from [Releases](https://github.com/Q7N3T/wirrow/
 
 ## [0.5.0] — 2026-11-08
 
-- Meet Wirrow, the little robot in the top corner of the window. Click him and he'll tell you a joke. He also reacts when you plug something in or a transfer finishes.
+- Meet Shuttle, the little robot in the top corner of the window. Click him and he'll tell you a joke. He also reacts when you plug something in or a transfer finishes.
 - While a file is copying, he runs along the progress bar. If the cable comes out, he sits down and waits.
 - Badges for things like your first transfer or your first 100 GB. You'll find them in Settings.
 - He dresses up for the holidays, and celebrates Wirrow's birthday.

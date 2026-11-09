@@ -514,6 +514,81 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .bento .big h3{font-size:21px;max-width:34ch}
 @media (max-width:900px){.bento{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.bento-stage{padding:20px 12px;border-radius:16px}.bento{grid-template-columns:1fr}.bento .big{grid-column:auto}.bcard canvas{height:200px}.bento .big h3,.bcard h3{font-size:17px}}
+/* Знакомство: Шаттл кружится, превращается и проводит экскурсию с большим пиксельным пальцем */
+.intro{position:fixed;inset:0;z-index:66;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 50% 46%,#33243d 0,#1a121f 45%,#0b080e 100%);opacity:0;transition:opacity .6s}
+.intro.on{opacity:1}
+.intro.out{opacity:0;transition:opacity .7s .15s}
+.intro canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.intro .i-front{z-index:3}
+.i-stage{position:relative;z-index:2;display:grid;justify-items:center;gap:6px;text-align:center;padding:0 16px}
+.i-hero{--is:9px;width:calc(32 * var(--is));height:calc(30 * var(--is));will-change:transform}
+.i-hero svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 28px rgba(233,185,73,.35))}
+.i-hero .m-arm{transition:transform .45s cubic-bezier(.2,1.7,.4,1)}
+.i-hero.pose .m-arm.l{transform:rotate(100deg)}
+.i-hero.pose .m-arm.r{transform:rotate(-100deg)}
+.i-hero.pose .m-eyes{animation:iWink 2.6s steps(1) .5s infinite}
+@keyframes iWink{0%,86%,100%{transform:none}88%,92%{transform:scaleY(.2)}}
+.i-hero.talk .m-smile{opacity:0}
+.i-hero.talk .m-talk{opacity:1;animation:mouth .24s steps(1) infinite}
+.i-title{margin:10px 0 0;font:400 clamp(30px,6.4vw,68px)/1 var(--display);color:#F6E7B8;letter-spacing:.02em;min-height:1em;
+  text-shadow:3px 3px 0 #9a7420,6px 6px 0 rgba(0,0,0,.35)}
+.i-title span{display:inline-block;animation:iPop .42s steps(4) both}
+.i-title span.g{color:#E9B949}
+@keyframes iPop{0%{transform:scale(0) translateY(.4em);opacity:0}60%{transform:scale(1.35) translateY(-.08em);opacity:1}100%{transform:none}}
+.i-sub{font:400 clamp(13px,1.8vw,16px)/1.4 var(--display);color:#bfa9c9;letter-spacing:.18em;text-transform:uppercase;opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s}
+.i-sub.on{opacity:1;transform:none}
+.i-say{min-height:3.2em;max-width:30ch;margin-top:12px;font:400 clamp(15px,2vw,19px)/1.45 var(--display);color:#F2EAE0}
+.i-say:not(:empty)::after{content:"";display:inline-block;width:.55em;height:1em;margin-left:4px;vertical-align:-.15em;background:#E9B949;animation:blink 1s steps(1) infinite}
+.i-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:14px;opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s;pointer-events:none}
+.i-btns.on{opacity:1;transform:none;pointer-events:auto}
+.px-btn{all:unset;cursor:pointer;padding:12px 20px;font:400 15px var(--display);color:#1F1822;background:#E9B949;box-shadow:0 4px 0 #9a7420;
+  clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));
+  transition:transform .08s steps(1),filter .15s}
+.px-btn:hover{filter:brightness(1.1)}
+.px-btn:active{transform:translateY(3px)}
+.px-btn:focus-visible{outline:2px dashed #E9B949;outline-offset:4px}
+.px-btn.ghost{background:transparent;color:#d9c9e0;box-shadow:inset 0 0 0 2px #5a4763}
+.i-skip{position:absolute;z-index:4;top:18px;right:18px;padding:8px 14px;font-size:13px}
+.i-flash{position:absolute;inset:0;z-index:4;background:#FFF6DA;opacity:0;pointer-events:none}
+.i-flash.go{animation:iFlash .6s steps(5) forwards}
+@keyframes iFlash{0%{opacity:0}20%{opacity:.95}100%{opacity:0}}
+
+/* экскурсия */
+.tour{position:fixed;inset:0;z-index:66;pointer-events:none}
+.t-spot{position:fixed;left:0;top:0;width:0;height:0;border-radius:6px;box-shadow:0 0 0 200vmax rgba(10,6,14,.62);outline:3px dashed #E9B949;outline-offset:6px;opacity:0;transition:opacity .5s}
+.tour.on .t-spot{opacity:1}
+:root[data-theme="light"] .t-spot{box-shadow:0 0 0 200vmax rgba(40,26,40,.45)}
+.t-hand{position:fixed;left:0;top:0;opacity:0;transition:opacity .4s;will-change:transform}
+.tour.on .t-hand{opacity:1}
+.t-hand svg{display:block;filter:drop-shadow(4px 5px 0 rgba(0,0,0,.35))}
+.t-hand .t-poke{animation:tPoke .7s steps(2) infinite}
+@keyframes tPoke{50%{transform:translateX(12px)}}
+.t-card{position:fixed;left:50%;bottom:22px;width:min(600px,calc(100vw - 32px));transform:translate(-50%,30px);opacity:0;pointer-events:auto;
+  display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:16px 18px;background:#221A26;color:#F2EAE0;
+  box-shadow:0 0 0 3px #E9B949,8px 8px 0 rgba(0,0,0,.35);transition:transform .5s cubic-bezier(.2,1.4,.4,1),opacity .35s}
+.tour.on .t-card{transform:translate(-50%,0);opacity:1}
+.t-mascot{width:86px;height:80px}
+.t-mascot svg{display:block;width:100%;height:100%;overflow:visible}
+.t-mascot .m-arm.r{transform:rotate(-70deg)}
+.t-mascot.talk .m-smile{opacity:0}
+.t-mascot.talk .m-talk{opacity:1;animation:mouth .24s steps(1) infinite}
+.t-mascot.hop{animation:hop .45s cubic-bezier(.3,1.6,.5,1)}
+.t-step{font:400 12px var(--display);color:#bfa9c9;letter-spacing:.14em}
+.t-title{display:block;margin:4px 0 4px;font:400 20px/1.2 var(--display);color:#E9B949}
+.t-text{margin:0;min-height:2.9em;font:400 15px/1.45 var(--display);color:#F2EAE0}
+.t-btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.t-btns .px-btn{padding:9px 14px;font-size:14px}
+.t-x{all:unset;position:absolute;top:8px;right:10px;cursor:pointer;color:#bfa9c9;font:400 16px var(--display);padding:4px}
+.t-x:hover{color:#E9B949}
+.touring .mascot{opacity:0;pointer-events:none;transition:opacity .3s}
+@media (max-width:560px){
+  .i-hero{--is:6px}.i-skip{top:12px;right:12px}
+  .t-card{bottom:12px;grid-template-columns:1fr;gap:6px;padding:14px}
+  .t-mascot{position:absolute;right:12px;top:-62px;width:64px;height:60px}
+  .t-title{font-size:18px}.t-text{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){.intro *,.tour *{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -521,7 +596,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <nav class="rail" id="rail" aria-hidden="true"></nav>
 <div class="mascot top" id="mascot"><div class="m-fly">
   <div class="m-bubble" id="m-bubble" role="status" aria-live="polite"><div class="m-box"><span></span></div><i></i></div>
-  <button class="m-sprite" id="m-sprite" type="button" aria-label="Шатл, маскот Wirrow"><svg viewBox="0 0 32 30" shape-rendering="crispEdges" aria-hidden="true"><g class="m-leg l"><g class="limb"><rect x="12" y="23" width="2" height="3"/></g><g class="sock"><rect x="12" y="26" width="2" height="1"/></g><g class="shoe"><rect x="9" y="27" width="5" height="2"/></g><g class="sole"><rect x="9" y="29" width="5" height="1"/></g><g class="toe"><rect x="10" y="27" width="1" height="1"/></g></g><g class="m-leg r"><g class="limb"><rect x="18" y="23" width="2" height="3"/></g><g class="sock"><rect x="18" y="26" width="2" height="1"/></g><g class="shoe"><rect x="18" y="27" width="5" height="2"/></g><g class="sole"><rect x="18" y="29" width="5" height="1"/></g><g class="toe"><rect x="21" y="27" width="1" height="1"/></g></g><g class="m-arm l"><g class="limb"><rect x="5" y="12" width="1" height="2"/><rect x="4" y="13" width="1" height="2"/><rect x="3" y="14" width="1" height="2"/></g><g class="cuff"><rect x="2" y="16" width="3" height="1"/></g><g class="glove"><rect x="1" y="17" width="4" height="3"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="20" width="2" height="1"/></g><g class="finger"><rect x="2" y="18" width="2" height="1"/></g></g><g class="m-arm r"><g class="limb"><rect x="26" y="12" width="1" height="2"/><rect x="27" y="13" width="1" height="2"/><rect x="28" y="14" width="1" height="2"/></g><g class="cuff"><rect x="27" y="16" width="3" height="1"/></g><g class="glove"><rect x="27" y="17" width="4" height="3"/><rect x="31" y="18" width="1" height="1"/><rect x="28" y="20" width="2" height="1"/></g><g class="finger"><rect x="28" y="18" width="2" height="1"/></g></g><g class="m-ant"><g class="stem"><rect x="10" y="4" width="1" height="1"/><rect x="11" y="5" width="1" height="2"/><rect x="21" y="4" width="1" height="1"/><rect x="20" y="5" width="1" height="2"/></g><g class="ball"><rect x="7" y="1" width="3" height="3"/><rect x="22" y="1" width="3" height="3"/></g><g class="glint"><rect x="8" y="1" width="1" height="1"/><rect x="23" y="1" width="1" height="1"/></g></g><g class="m-body"><g><rect x="10" y="7" width="12" height="1"/><rect x="8" y="8" width="16" height="1"/><rect x="7" y="9" width="18" height="1"/><rect x="6" y="10" width="20" height="10"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shade"><rect x="6" y="18" width="20" height="2"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shine"><rect x="10" y="8" width="4" height="1"/><rect x="8" y="9" width="2" height="1"/><rect x="7" y="10" width="1" height="3"/></g></g><g class="m-cheeks"><rect x="8" y="16" width="2" height="1"/><rect x="22" y="16" width="2" height="1"/></g><g class="m-eyes"><rect x="13" y="11" width="2" height="1"/><rect x="12" y="12" width="2" height="1"/><rect x="11" y="13" width="2" height="1"/><rect x="12" y="14" width="2" height="1"/><rect x="13" y="15" width="2" height="1"/><rect x="17" y="11" width="2" height="1"/><rect x="18" y="12" width="2" height="1"/><rect x="19" y="13" width="2" height="1"/><rect x="18" y="14" width="2" height="1"/><rect x="17" y="15" width="2" height="1"/></g><g class="m-smile"><rect x="14" y="17" width="1" height="1"/><rect x="15" y="18" width="2" height="1"/><rect x="17" y="17" width="1" height="1"/></g><g class="m-talk"><g><rect x="14" y="17" width="4" height="2"/></g><g class="tongue"><rect x="15" y="18" width="2" height="1"/></g></g></svg></button>
+  <button class="m-sprite" id="m-sprite" type="button" aria-label="Шаттл, маскот Wirrow"><svg viewBox="0 0 32 30" shape-rendering="crispEdges" aria-hidden="true"><g class="m-leg l"><g class="limb"><rect x="12" y="23" width="2" height="3"/></g><g class="sock"><rect x="12" y="26" width="2" height="1"/></g><g class="shoe"><rect x="9" y="27" width="5" height="2"/></g><g class="sole"><rect x="9" y="29" width="5" height="1"/></g><g class="toe"><rect x="10" y="27" width="1" height="1"/></g></g><g class="m-leg r"><g class="limb"><rect x="18" y="23" width="2" height="3"/></g><g class="sock"><rect x="18" y="26" width="2" height="1"/></g><g class="shoe"><rect x="18" y="27" width="5" height="2"/></g><g class="sole"><rect x="18" y="29" width="5" height="1"/></g><g class="toe"><rect x="21" y="27" width="1" height="1"/></g></g><g class="m-arm l"><g class="limb"><rect x="5" y="12" width="1" height="2"/><rect x="4" y="13" width="1" height="2"/><rect x="3" y="14" width="1" height="2"/></g><g class="cuff"><rect x="2" y="16" width="3" height="1"/></g><g class="glove"><rect x="1" y="17" width="4" height="3"/><rect x="0" y="18" width="1" height="1"/><rect x="2" y="20" width="2" height="1"/></g><g class="finger"><rect x="2" y="18" width="2" height="1"/></g></g><g class="m-arm r"><g class="limb"><rect x="26" y="12" width="1" height="2"/><rect x="27" y="13" width="1" height="2"/><rect x="28" y="14" width="1" height="2"/></g><g class="cuff"><rect x="27" y="16" width="3" height="1"/></g><g class="glove"><rect x="27" y="17" width="4" height="3"/><rect x="31" y="18" width="1" height="1"/><rect x="28" y="20" width="2" height="1"/></g><g class="finger"><rect x="28" y="18" width="2" height="1"/></g></g><g class="m-ant"><g class="stem"><rect x="10" y="4" width="1" height="1"/><rect x="11" y="5" width="1" height="2"/><rect x="21" y="4" width="1" height="1"/><rect x="20" y="5" width="1" height="2"/></g><g class="ball"><rect x="7" y="1" width="3" height="3"/><rect x="22" y="1" width="3" height="3"/></g><g class="glint"><rect x="8" y="1" width="1" height="1"/><rect x="23" y="1" width="1" height="1"/></g></g><g class="m-body"><g><rect x="10" y="7" width="12" height="1"/><rect x="8" y="8" width="16" height="1"/><rect x="7" y="9" width="18" height="1"/><rect x="6" y="10" width="20" height="10"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shade"><rect x="6" y="18" width="20" height="2"/><rect x="7" y="20" width="18" height="1"/><rect x="8" y="21" width="16" height="1"/><rect x="10" y="22" width="12" height="1"/></g><g class="shine"><rect x="10" y="8" width="4" height="1"/><rect x="8" y="9" width="2" height="1"/><rect x="7" y="10" width="1" height="3"/></g></g><g class="m-cheeks"><rect x="8" y="16" width="2" height="1"/><rect x="22" y="16" width="2" height="1"/></g><g class="m-eyes"><rect x="13" y="11" width="2" height="1"/><rect x="12" y="12" width="2" height="1"/><rect x="11" y="13" width="2" height="1"/><rect x="12" y="14" width="2" height="1"/><rect x="13" y="15" width="2" height="1"/><rect x="17" y="11" width="2" height="1"/><rect x="18" y="12" width="2" height="1"/><rect x="19" y="13" width="2" height="1"/><rect x="18" y="14" width="2" height="1"/><rect x="17" y="15" width="2" height="1"/></g><g class="m-smile"><rect x="14" y="17" width="1" height="1"/><rect x="15" y="18" width="2" height="1"/><rect x="17" y="17" width="1" height="1"/></g><g class="m-talk"><g><rect x="14" y="17" width="4" height="2"/></g><g class="tongue"><rect x="15" y="18" width="2" height="1"/></g></g></svg></button>
 </div></div>
 <div class="bg" aria-hidden="true"></div><div class="scan" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -685,7 +760,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <footer>
   <div class="wrap">
     <span style="display:flex;align-items:center;gap:10px"><img src="icon-256.png" alt="" width="26" height="26" style="border-radius:7px"><b style="font-family:var(--display)">Wirrow</b> — <a href="https://github.com/Q7N3T">Q7N3T</a></span>
-    <span><a href="https://github.com/Q7N3T/wirrow/releases" data-i18n="ft.all">Все версии</a> · <a href="https://github.com/Q7N3T/wirrow/blob/main/CHANGELOG.md">CHANGELOG</a> · <a href="https://github.com/Q7N3T/wirrow/issues" data-i18n="ft.issue">Сообщить о проблеме</a></span>
+    <span><a href="#tour" data-tour data-i18n="ft.tour">Знакомство с Шаттлом</a> · <a href="https://github.com/Q7N3T/wirrow/releases" data-i18n="ft.all">Все версии</a> · <a href="https://github.com/Q7N3T/wirrow/blob/main/CHANGELOG.md">CHANGELOG</a> · <a href="https://github.com/Q7N3T/wirrow/issues" data-i18n="ft.issue">Сообщить о проблеме</a></span>
   </div>
 </footer>
 
@@ -728,7 +803,7 @@ const EN = {
   'h.k4':'Free up space','h.t4':'<b>Only what’s safely on your Mac</b> gets deleted from the phone.',
   'h.k5':'Two devices','h.t5':'<b>A phone and a Switch at once,</b> each in its own tab.',
   'tape':'NOT NINTENDO · NOT GOOGLE',
-  'ft.all':'All releases','ft.issue':'Report an issue','sb.palette':'palette','sb.theme':'theme'
+  'ft.all':'All releases','ft.tour':'Meet Shuttle','ft.issue':'Report an issue','sb.palette':'palette','sb.theme':'theme'
 };
 const RU = {};
 $$('[data-i18n]').forEach(e => RU[e.dataset.i18n] = e.textContent);
@@ -1004,7 +1079,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
     // осмысленная бессмыслица и антишутки
     ['Почему файл перешёл дорогу? ‖ Его перетащили.', 'Why did the file cross the road? ‖ Someone dragged it.'],
     ['Тук-тук. ‖ — Кто там? ‖ — MTP. ‖ — MTP кто? ‖ — Разблокируй телефон — узнаешь.', 'Knock knock. ‖ Who’s there? ‖ MTP. ‖ MTP who? ‖ Unlock your phone and find out.'],
-    ['Сколько Шаттлов нужно, чтобы вкрутить лампочку? ‖ Ни одного. Лампочка не видна по MTP.', 'How many Wirrows to change a light bulb? ‖ None. Bulbs don’t show up over MTP.'],
+    ['Сколько Шаттлов нужно, чтобы вкрутить лампочку? ‖ Ни одного. Лампочка не видна по MTP.', 'How many Shuttles to change a light bulb? ‖ None. Bulbs don’t show up over MTP.'],
     // ложный вывод → поправка
     ["Я сегодня перенёс терабайт. ‖ Один и тот же файл. Туда-обратно. Нервы.", "Moved a terabyte today. ‖ Same file. Back and forth. Nerves."],
     ["Мне предлагали работу в облаке. ‖ Отказался. Там высоко и сыро.", "I was offered a job in the cloud. ‖ Declined. Too high, too damp."],
@@ -1029,7 +1104,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
     // двусмысленность
     ["Люблю ветки. ‖ В git. В лесу — не очень.", "I love branches. ‖ In git. In the woods, not so much."],
     ["У меня отличная связь. ‖ С тобой. И с телефоном. Но с телефоном лучше.", "I have a great connection. ‖ With you. And your phone. Mostly your phone."],
-    ["Шаттл — это не только космос. ‖ Это ещё и маршрутка до твоих файлов.", "A wirrow isn’t just space. ‖ It’s also the bus to your files."],
+    ["Шаттл — это не только космос. ‖ Это ещё и маршрутка до твоих файлов.", "A shuttle isn’t just space. ‖ It’s also the bus to your files."],
     ["Спросили, где я храню данные. ‖ На твоём диске. Это комплимент твоему диску.", "Asked where I store data. ‖ On your disk. That’s a compliment to your disk."],
     ["Я поддерживаю Switch. ‖ Морально. И по MTP.", "I support the Switch. ‖ Emotionally. And over MTP."],
     ["Телефон спрашивает: «Разрешить доступ к данным?» ‖ Разреши. Я милый.", "Your phone asks “Allow access to data?” ‖ Allow it. I’m adorable."],
@@ -1074,9 +1149,9 @@ document.fonts && document.fonts.ready.then(fitTitle);
     ["Ctrl+Z для жизни не завезли. ‖ Зато докачка после обрыва есть.", "No Ctrl+Z for life. ‖ But resume after a cable drop — yes."],
     ["HEIC в JPG — ‖ как перевести поэзию на язык мемов. Иногда нужно.", "HEIC to JPG — ‖ like translating poetry into memes. Sometimes necessary."],
     ["Мой пароль — ‖ ******. Ой. Даже я вижу звёздочки.", "My password is ‖ ******. Oops. Even I see asterisks."],
-    ["Ошибка 418: ‖ я чайник. ‖ Шучу. Я Шатл.", "Error 418: ‖ I’m a teapot. ‖ Kidding. I’m Shuttle."],
-    ["Меня зовут Шатл. ‖ Раньше так звали всё приложение. ‖ Приложение переехало. Я остался.", "My name is Shuttle. ‖ The whole app used to be called that. ‖ The app moved on. I stayed."],
-    ["Wirrow — это приложение. ‖ Шатл — это я. ‖ Не путай, я ранимый.", "Wirrow is the app. ‖ Shuttle is me. ‖ Don’t mix us up, I’m sensitive."],
+    ["Ошибка 418: ‖ я чайник. ‖ Шучу. Я Шаттл.", "Error 418: ‖ I’m a teapot. ‖ Kidding. I’m Shuttle."],
+    ["Меня зовут Шаттл. ‖ Раньше так звали всё приложение. ‖ Приложение переехало. Я остался.", "My name is Shuttle. ‖ The whole app used to be called that. ‖ The app moved on. I stayed."],
+    ["Wirrow — это приложение. ‖ Шаттл — это я. ‖ Не путай, я ранимый.", "Wirrow is the app. ‖ Shuttle is me. ‖ Don’t mix us up, I’m sensitive."],
     ["git commit -m «шутка» ‖ git push ‖ Шутка задеплоена. Смейся.", "git commit -m “joke” ‖ git push ‖ Joke deployed. Laugh now."],
     ["Мой стек: ‖ Swift, libmtp и чистый энтузиазм.", "My stack: ‖ Swift, libmtp and pure enthusiasm."],
     ["Скриншоты Switch названы как пароль от Wi‑Fi. ‖ Я переименовываю. Это призвание.", "Switch screenshots are named like Wi‑Fi passwords. ‖ I rename them. It’s my calling."],
@@ -1129,7 +1204,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
   };
   // реакции на события
   const EV = {
-    hello: ['Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает.', 'Hi! I’m Wirrow. ‖ I carry files by cable. Not clouds — I get airsick.'],
+    hello: ['Привет! Я Шаттл. ‖ Вожу файлы по кабелю. Облака не вожу — укачивает.', 'Hi! I’m Shuttle. ‖ I carry files by cable. Not clouds — I get airsick.'],
     again: ['Снова ты! ‖ Я скучал. Ровно {n} мин.', 'You’re back! ‖ I missed you. Exactly {n} min.'],
     light: [
       ["А-а-а, свет! ‖ Мои пиксели!", "Aaah, light! ‖ My pixels!"],
@@ -1169,7 +1244,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
       ["Ты кликаешь, как будто там бонус. ‖ Бонус — это я.", "You click like there’s a bonus. ‖ I am the bonus."],
     ],
     s8: ['Перегрев! ‖ Включаю кулер… ‖ А, у меня нет кулера.', 'Overheating! ‖ Turning on the fan… ‖ Oh. I don’t have a fan.'],
-    reboot: ['…Привет! Я Шаттл. ‖ Мы знакомы? Кэш чистый.', '…Hi! I’m Wirrow. ‖ Have we met? My cache is empty.'],
+    reboot: ['…Привет! Я Шаттл. ‖ Мы знакомы? Кэш чистый.', '…Hi! I’m Shuttle. ‖ Have we met? My cache is empty.'],
   };
   const BSOD = ['Маскот столкнулся с проблемой и будет перезапущен. Собрано 0% юмора.', 'Your mascot ran into a problem and needs to restart. 0% humor collected.'];
   let mode = '', clicks = 0, hideT = 0, busy = 0, timer = 0, speaking = false, lastAuto = 0, lastUser = 0, bag = [];
@@ -1349,8 +1424,10 @@ document.fonts && document.fonts.ready.then(fitTitle);
   // привет для тех, кто открыл консоль
   console.log('%c ‹ › %c Привет, разработчик. Я тоже из байтов. / Hi, dev. I’m made of bytes too.', 'background:#E9B949;color:#1F1822;font:bold 14px monospace;padding:4px 6px', 'color:#E9B949;font:12px monospace');
 
-  const label = () => sprite.setAttribute('aria-label', T('Шатл, маскот Wirrow — нажми', 'Shuttle, the Wirrow mascot — click me'));
+  const label = () => sprite.setAttribute('aria-label', T('Шаттл, маскот Wirrow — нажми', 'Shuttle, the Wirrow mascot — click me'));
   label();
+  // после экскурсии Шаттл возвращается на своё место и прощается
+  addEventListener('tour-done', () => setTimeout(() => auto([['Обращайся! ‖ Я тут, рядом.', 'Anytime! ‖ I’ll be around.']], true), 700));
 })();
 
 /* ---------- Заголовок иногда «лагает» сам ---------- */
@@ -1910,6 +1987,282 @@ applyLang(); typeCmd();
   let seen = false; try { seen = sessionStorage.getItem('boot') === '1'; sessionStorage.setItem('boot', '1'); } catch {}
   const wait = reduced ? 0 : seen ? 350 : 950;
   setTimeout(() => { $('#boot').classList.add('off'); playTitle(); }, wait);
+})();
+
+/* ---------- Знакомство: Шаттл кружится, превращается и проводит экскурсию ---------- */
+(() => {
+  const SPRITE = $('#m-sprite svg').outerHTML;
+  // большой палец в белой перчатке с золотой манжетой, смотрит вправо
+  const HAND = [
+    '....ooooooo.........',
+    'ooo.owwwwwwoooooooo.',
+    'occoowwwwwwwwwwwwwwo',
+    'occowwwwwwwwwwwwwwso',
+    'occowwwwwwwoooooooo.',
+    'occowwwwwwwwwo......',
+    'occowwwwwwssso......',
+    'occowwwwwwwwwo......',
+    'occowwwwwwsso.......',
+    'ooo.owwwwwwwo.......',
+    '....oooooooo........',
+  ];
+  const HC = { o: '#1F1822', w: '#F6F0E6', s: '#CFC3B4', c: '#E9B949' };
+  const hand = p => `<svg width="${20 * p}" height="${11 * p}" viewBox="0 0 20 11" shape-rendering="crispEdges" aria-hidden="true">` +
+    HAND.map((row, y) => [...row].map((ch, x) => HC[ch] ? `<rect x="${x}" y="${y}" width="1" height="1" fill="${HC[ch]}"/>` : '').join('')).join('') + '</svg>';
+  const KEY = 'wirrow-intro';
+  const seen = () => { try { return localStorage.getItem(KEY); } catch { return '1'; } };
+  const remember = () => { try { localStorage.setItem(KEY, '1'); } catch {} };
+  const clamp = v => v < 0 ? 0 : v > 1 ? 1 : v;
+  const ease = v => (v = clamp(v), v * v * (3 - 2 * v));
+  let running = false;
+
+  // печать текста по буквам; говорящий в это время открывает рот
+  function type(node, str, talker, cb, alive){
+    if (reduced) { node.textContent = str; cb && cb(); return; }
+    let i = 0; talker && talker.classList.add('talk');
+    (function next(){
+      if (!alive()) return;
+      node.textContent = str.slice(0, ++i);
+      if (i < str.length) setTimeout(next, /[.,!?…—]/.test(str[i - 1]) ? 140 : 30);
+      else { talker && talker.classList.remove('talk'); cb && cb(); }
+    })();
+  }
+
+  /* ---------- 1. Превращение ---------- */
+  function intro(){
+    if (running) return; running = true;
+    document.body.classList.add('touring');
+    const el = document.createElement('div');
+    el.className = 'intro'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', T('Знакомство с Шаттлом', 'Meet Shuttle'));
+    el.innerHTML = `<canvas class="i-back"></canvas><div class="i-stage"><div class="i-hero">${SPRITE}</div><h2 class="i-title" aria-label="${T('Привет! Я Шаттл', 'Hi! I’m Shuttle')}"></h2>` +
+      `<div class="i-sub">${T('маскот приложения Wirrow', 'the Wirrow mascot')}</div><div class="i-say" aria-live="polite"></div>` +
+      `<div class="i-btns"><button type="button" class="px-btn i-go">${T('Поехали →', 'Let’s go →')}</button><button type="button" class="px-btn ghost i-no">${T('В другой раз', 'Maybe later')}</button></div></div>` +
+      `<canvas class="i-front"></canvas><div class="i-flash"></div><button type="button" class="px-btn ghost i-skip">${T('Пропустить ✕', 'Skip ✕')}</button>`;
+    document.body.appendChild(el);
+    document.documentElement.style.overflow = 'hidden';
+    const hero = el.querySelector('.i-hero'), back = el.querySelector('.i-back'), front = el.querySelector('.i-front');
+    const bc = back.getContext('2d'), fc = front.getContext('2d'), title = el.querySelector('.i-title');
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    let W = 0, H = 0, P = 6;
+    function size(){
+      W = innerWidth; H = innerHeight; P = W < 560 ? 4 : 6;
+      [back, front].forEach(c => { c.width = W * dpr; c.height = H * dpr; c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0); });
+    }
+    size(); addEventListener('resize', size);
+    const snap = v => Math.round(v / P) * P;
+    const stars = Array.from({ length: 110 }, () => ({ x: Math.random(), y: Math.random(), p: Math.random() * 6.28, big: Math.random() < .18 }));
+    const COLORS = ['#E9B949', '#E8796E', '#8B5CF6'];
+    // звёздочка-плюсик из пикселей
+    const star = (ctx, x, y, s) => { ctx.fillRect(x - s * P, y, (2 * s + 1) * P, P); ctx.fillRect(x, y - s * P, P, (2 * s + 1) * P); };
+    let parts = [], phase = 0, pf = 0, pt = 0, last = performance.now(), raf = 0, closing = false, leaving = false, flashed = false, said = false, lastSpark = 0;
+    const t0 = performance.now(), alive = () => !closing;
+    requestAnimationFrame(() => el.classList.add('on'));
+
+    function burst(cx, cy, n, speed){
+      for (let k = 0; k < n; k++) {
+        const a = Math.random() * 6.283, v = speed * (.35 + Math.random() * .65);
+        parts.push({ x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, dec: .5 + Math.random() * .5,
+          c: Math.random() < .3 ? '#FFF6DA' : COLORS[k % 3], star: Math.random() < .35 });
+      }
+    }
+    function frame(now){
+      raf = requestAnimationFrame(frame);
+      const t = (now - t0) / 1000, dt = Math.min(.05, (now - last) / 1000); last = now;
+      bc.clearRect(0, 0, W, H); fc.clearRect(0, 0, W, H);
+      // мерцающие звёзды на фоне
+      bc.fillStyle = '#F6E7B8';
+      stars.forEach(s => { const a = Math.max(0, Math.sin(t * 1.7 + s.p)); bc.globalAlpha = .2 + .8 * a; star(bc, snap(s.x * W), snap(s.y * H), s.big && a > .75 ? 1 : 0); });
+      bc.globalAlpha = 1;
+
+      const hw = hero.offsetWidth, hh = hero.offsetHeight, hr = hero.parentElement.getBoundingClientRect();
+      const cx = hr.left + hr.width / 2, cy = hero.getBoundingClientRect().top + hero.getBoundingClientRect().height / 2;
+
+      // вращение: разгон до вспышки, потом плавная остановка лицом к зрителю
+      if (t < 2.9) phase += (2 + 34 * Math.pow(clamp((t - .4) / 2.5), 2)) * dt;
+      else {
+        if (!flashed) {
+          flashed = true; pf = phase; pt = (Math.ceil(phase / 6.283) + 1) * 6.283;
+          el.querySelector('.i-flash').classList.add('go');
+          hero.classList.add('pose'); burst(cx, cy, 110, 760);
+        }
+        const k = clamp((t - 2.9) / 1.1); phase = pf + (pt - pf) * (1 - Math.pow(1 - k, 3));
+      }
+      let sx = Math.cos(phase);
+      sx = (sx < 0 ? -1 : 1) * Math.max(.1, Math.round(Math.abs(sx) * 5) / 5); // ступеньками, как в старых играх
+      const grow = .45 + .55 * ease((t - .15) / 1.4), y = 70 * (1 - ease(t / 1.8)) + (flashed ? Math.sin(t * 2.4) * 5 : 0);
+      if (!leaving) hero.style.transform = `translateY(${y.toFixed(1)}px) scale(${(grow * sx).toFixed(3)}, ${grow.toFixed(3)})`;
+
+      // ленты: три спирали из пикселей обвивают Шаттла всё туже
+      if (t > .45 && t < 3) {
+        const g = ease((t - .45) / 1.2), tight = ease((t - .8) / 2.1), fade = 1 - ease((t - 2.65) / .3);
+        const R = Math.max(W, H) * .42 * (1 - tight) + hw * .62 * tight, HH = H * .95 * (1 - tight) + hh * 1.2 * tight;
+        for (let k = 0; k < 3; k++) for (let i = 0; i <= 110; i++) {
+          const u = i / 110; if (u > g) break;
+          const a = u * 12.566 + t * 6 + k * 2.094, z = Math.sin(a), ctx = z > 0 ? fc : bc;
+          ctx.globalAlpha = fade * (.5 + .5 * Math.abs(z)) * (u > g - .08 ? (g - u) / .08 : 1);
+          ctx.fillStyle = z > .8 ? '#FFF6DA' : COLORS[k];
+          ctx.fillRect(snap(cx + R * Math.cos(a)), snap(cy + (u - .5) * HH), P * 2, P * 2);
+          if (Math.random() < .004) parts.push({ x: cx + R * Math.cos(a), y: cy + (u - .5) * HH, vx: (Math.random() - .5) * 60, vy: -30 - Math.random() * 60, life: 1, dec: 1.2, c: COLORS[k], star: true });
+        }
+        fc.globalAlpha = bc.globalAlpha = 1;
+      }
+      // после превращения вокруг иногда вспыхивают искорки
+      if (flashed && !leaving && now - lastSpark > 260) {
+        lastSpark = now;
+        parts.push({ x: cx + (Math.random() - .5) * hw * 1.5, y: cy + (Math.random() - .5) * hh * 1.3, vx: 0, vy: -20, life: 1, dec: 1.1, c: Math.random() < .5 ? '#FFF6DA' : '#E9B949', star: true });
+      }
+      // частицы
+      parts = parts.filter(p => (p.life -= p.dec * dt) > 0);
+      parts.forEach(p => {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .965; p.vy = p.vy * .965 + 60 * dt;
+        fc.globalAlpha = Math.min(1, p.life * 1.4); fc.fillStyle = p.c;
+        if (p.star) star(fc, snap(p.x), snap(p.y), p.life > .55 ? 1 : 0); else fc.fillRect(snap(p.x), snap(p.y), P, P);
+      });
+      fc.globalAlpha = 1;
+
+      // «Привет! Я Шаттл» — буквы выскакивают по одной
+      if (t > 3.25 && !title.childElementCount) {
+        const str = T('Привет! Я Шаттл', 'Hi! I’m Shuttle'), name = T('Шаттл', 'Shuttle'), at = str.indexOf(name);
+        [...str].forEach((ch, i) => {
+          const s = document.createElement('span'); s.textContent = ch === ' ' ? ' ' : ch;
+          if (i >= at) s.className = 'g';
+          s.style.animationDelay = (i * 55) + 'ms'; s.setAttribute('aria-hidden', 'true'); title.appendChild(s);
+        });
+        setTimeout(() => el.querySelector('.i-sub').classList.add('on'), str.length * 55 + 250);
+      }
+      if (t > 4.6 && !said) {
+        said = true;
+        type(el.querySelector('.i-say'), T('Я тут главный по проводам. Давай покажу, что умеет Wirrow, — это минута, не больше.',
+          'I’m the one in charge of cables here. Let me show you what Wirrow can do — it takes a minute, tops.'),
+          hero, () => { el.querySelector('.i-btns').classList.add('on'); el.querySelector('.i-go').focus({ preventScroll: true }); }, alive);
+      }
+    }
+    raf = requestAnimationFrame(frame);
+
+    function close(then){
+      if (closing) return; closing = true; remember();
+      removeEventListener('keydown', key);
+      if (then) {
+        // Шаттл уменьшается и улетает вниз — туда, где появится карточка экскурсии
+        leaving = true; const r = hero.getBoundingClientRect();
+        hero.style.transition = 'transform .75s cubic-bezier(.5,0,.3,1)';
+        hero.style.transform = `translate(${(innerWidth / 2 - 240 - (r.left + r.width / 2)).toFixed(0)}px, ${(innerHeight - 70 - (r.top + r.height / 2)).toFixed(0)}px) scale(.3)`;
+      }
+      el.classList.add('out');
+      setTimeout(() => {
+        cancelAnimationFrame(raf); removeEventListener('resize', size); el.remove();
+        document.documentElement.style.overflow = ''; running = false;
+        then ? then() : document.body.classList.remove('touring');
+      }, then ? 700 : 850);
+    }
+    const key = e => { if (e.key === 'Escape') close(); };
+    addEventListener('keydown', key);
+    el.querySelector('.i-go').addEventListener('click', () => close(tour));
+    el.querySelector('.i-no').addEventListener('click', () => close());
+    el.querySelector('.i-skip').addEventListener('click', () => close());
+  }
+
+  /* ---------- 2. Экскурсия: большой палец показывает главное ---------- */
+  const STEPS = [
+    ['.hero .btns .primary', 'Скачать — вот тут', 'Wirrow бесплатный и весит около 6 МБ. Нужен macOS 14 или новее.',
+      'Download is right here', 'Wirrow is free and weighs about 6 MB. It needs macOS 14 or newer.'],
+    ['#feat-grid', 'Просто перетаскивай', 'Подключи телефон или Switch кабелем и тащи файлы туда-обратно, как между папками.',
+      'Just drag and drop', 'Plug in a phone or a Switch and drag files back and forth, like between folders.'],
+    ['#switch .frame', 'Switch с DBI', 'Игры ставятся перетаскиванием, сейвы копируются одной кнопкой, а вместо цифр — названия игр.',
+      'Switch with DBI', 'Install games by dragging, back up saves with one button, and see game names instead of numbers.'],
+    ['#android .frame', 'Android', 'Новые фото с камеры — одной кнопкой. Синхронизация папок только добавляет и ничего не удаляет.',
+      'Android', 'New camera photos with one button. Folder sync only adds and never deletes.'],
+    ['#how .bento', 'Под капотом', 'Докачка после обрыва кабеля, проверка каждой копии и никакого облака.',
+      'Under the hood', 'Resume after the cable drops, a check for every copy, and no cloud at all.'],
+    ['#drag-icon', 'Вот и всё!', 'Перетащи меня в «Программы» — увидимся на твоём Mac.',
+      'That’s it!', 'Drag me into Applications and see you on your Mac.'],
+  ];
+  function tour(){
+    if (running) return; running = true;
+    document.body.classList.add('touring');
+    const HP = innerWidth < 560 ? 4 : 7, hw = 20 * HP, hh = 11 * HP;
+    const el = document.createElement('div'); el.className = 'tour';
+    el.innerHTML = `<div class="t-spot"></div><div class="t-hand"><div class="t-rot"><div class="t-poke">${hand(HP)}</div></div></div>` +
+      `<div class="t-card" role="dialog" aria-label="${T('Экскурсия с Шаттлом', 'Tour with Shuttle')}"><div class="t-mascot">${SPRITE}</div>` +
+      `<div><div class="t-step"></div><b class="t-title"></b><p class="t-text" aria-live="polite"></p>` +
+      `<div class="t-btns"><button type="button" class="px-btn ghost t-prev">← ${T('Назад', 'Back')}</button><button type="button" class="px-btn t-next"></button></div></div>` +
+      `<button type="button" class="t-x" aria-label="${T('Закрыть', 'Close')}">✕</button></div>`;
+    document.body.appendChild(el);
+    const spot = el.querySelector('.t-spot'), handEl = el.querySelector('.t-hand'), rot = el.querySelector('.t-rot'), card = el.querySelector('.t-card');
+    const mini = el.querySelector('.t-mascot'), text = el.querySelector('.t-text'), next = el.querySelector('.t-next'), prev = el.querySelector('.t-prev');
+    let i = 0, cur = null, hc = null, raf = 0, ended = false, ticket = 0;
+
+    function goal(){
+      const e = $(STEPS[i][0]); if (!e) return null;
+      const r = e.getBoundingClientRect(), pad = 12, limit = card.getBoundingClientRect().top - 18;
+      const top = Math.max(10, r.top - pad), bottom = Math.max(top + 24, Math.min(limit, r.bottom + pad));
+      const s = { x: r.left - pad, y: top, w: r.width + pad * 2, h: bottom - top };
+      // палец: слева от цели, если там есть место; иначе сверху вниз или снизу вверх
+      let tip, a;
+      if (s.x > hw + 30) { tip = [s.x - 10, s.y + Math.min(s.h / 2, 80)]; a = 0; }
+      else if (s.y > hw * .8) { tip = [s.x + Math.min(s.w / 2, 150), s.y - 10]; a = 90; }
+      else { tip = [s.x + Math.min(s.w / 2, 150), s.y + s.h + 10]; a = -90; }
+      const dir = [Math.cos(a * Math.PI / 180), Math.sin(a * Math.PI / 180)];
+      const c = [tip[0] - dir[0] * hw / 2, tip[1] - dir[1] * hw / 2];
+      return { s, h: { x: c[0] - hw / 2, y: c[1] - hh / 2, a } };
+    }
+    function frame(){
+      raf = requestAnimationFrame(frame);
+      const g = goal(); if (!g) return;
+      const k = reduced || !cur ? 1 : .14;
+      cur = cur ? { x: cur.x + (g.s.x - cur.x) * k, y: cur.y + (g.s.y - cur.y) * k, w: cur.w + (g.s.w - cur.w) * k, h: cur.h + (g.s.h - cur.h) * k } : { ...g.s };
+      hc = hc ? { x: hc.x + (g.h.x - hc.x) * k, y: hc.y + (g.h.y - hc.y) * k, a: hc.a + (g.h.a - hc.a) * k } : { ...g.h };
+      spot.style.transform = `translate(${cur.x.toFixed(1)}px, ${cur.y.toFixed(1)}px)`;
+      spot.style.width = cur.w.toFixed(1) + 'px'; spot.style.height = cur.h.toFixed(1) + 'px';
+      handEl.style.transform = `translate(${hc.x.toFixed(1)}px, ${hc.y.toFixed(1)}px)`;
+      rot.style.transform = `rotate(${hc.a.toFixed(1)}deg)`;
+    }
+    function go(n){
+      if (n < 0 || ended) return;
+      if (n >= STEPS.length) return finish();
+      i = n; const st = STEPS[i], my = ++ticket;
+      // высокие блоки — к верху экрана, чтобы над ними осталось место для пальца; остальные — по центру
+      const e = $(st[0]);
+      if (e) {
+        const r = e.getBoundingClientRect(), behavior = reduced ? 'auto' : 'smooth';
+        if (r.height > innerHeight * .45) scrollTo({ top: scrollY + r.top - (hw + 80), behavior });
+        else e.scrollIntoView({ behavior, block: 'center' });
+      }
+      el.querySelector('.t-step').textContent = `${i + 1} / ${STEPS.length}`;
+      el.querySelector('.t-title').textContent = T(st[1], st[3]);
+      next.textContent = i === STEPS.length - 1 ? T('Готово ✓', 'Done ✓') : T('Дальше →', 'Next →');
+      prev.style.visibility = i ? 'visible' : 'hidden';
+      mini.classList.remove('hop'); void mini.offsetWidth; mini.classList.add('hop');
+      text.textContent = '';
+      type(text, T(st[2], st[4]), mini, null, () => my === ticket && !ended);
+    }
+    function finish(){
+      if (ended) return; ended = true; remember();
+      removeEventListener('keydown', key);
+      el.classList.remove('on');
+      setTimeout(() => {
+        cancelAnimationFrame(raf); el.remove(); running = false;
+        document.body.classList.remove('touring');
+        dispatchEvent(new Event('tour-done'));
+      }, 500);
+    }
+    const key = e => {
+      if (e.key === 'Escape') finish();
+      else if (e.key === 'ArrowRight') { e.preventDefault(); go(i + 1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); go(i - 1); }
+    };
+    addEventListener('keydown', key);
+    next.addEventListener('click', () => go(i + 1));
+    prev.addEventListener('click', () => go(i - 1));
+    el.querySelector('.t-x').addEventListener('click', finish);
+    requestAnimationFrame(() => { el.classList.add('on'); go(0); raf = requestAnimationFrame(frame); next.focus({ preventScroll: true }); });
+  }
+
+  const start = () => (reduced ? tour : intro)();
+  document.addEventListener('click', e => { if (e.target.closest('[data-tour]')) { e.preventDefault(); start(); } });
+  // первый визит — знакомство само; ещё раз — ссылкой в подвале или адресом с #tour
+  if (/(^|[?&#])tour\b/.test(location.search.slice(1) + '#' + location.hash.slice(1))) setTimeout(start, 1200);
+  else if (!reduced && !seen()) setTimeout(() => { if (scrollY < 200 && !document.hidden && !running) intro(); }, 1500);
 })();
 
 /* ---------- Пиксельный ореол вокруг окна ---------- */

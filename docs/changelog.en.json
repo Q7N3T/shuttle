@@ -2,7 +2,7 @@
   "0.5.2": ["New Switch icon, in Wirrow's gold."],
   "0.5.1": ["The \"last checked\" time now follows the app's language.",
             "Updates now download from the Wirrow website, so they work even where GitHub is blocked."],
-  "0.5.0": ["Meet Wirrow, the little robot in the top corner of the window. Click him and he'll tell you a joke. He also reacts when you plug something in or a transfer finishes.",
+  "0.5.0": ["Meet Shuttle, the little robot in the top corner of the window. Click him and he'll tell you a joke. He also reacts when you plug something in or a transfer finishes.",
             "While a file is copying, he runs along the progress bar. If the cable comes out, he sits down and waits.",
             "Badges for things like your first transfer or your first 100 GB. You'll find them in Settings.",
             "He dresses up for the holidays, and celebrates Wirrow's birthday.",
