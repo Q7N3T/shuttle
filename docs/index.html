@@ -1532,10 +1532,12 @@ document.fonts && document.fonts.ready.then(fitTitle);
       rot: t => [Math.sin(t * .4) * .6, .28 + Math.sin(t * .3) * .08],
       post(p, V, t){
         const ph = (t % 8) / 8, a = ph < .3 ? 0 : ph < .55 ? ease((ph - .3) / .25) : ph < .6 ? 1 : 1 - ease((ph - .6) / .3);
-        const own = clamp(a * 1.8 - (p[8] * .5 + (1 - p[7]) * .3));
+        // Точки уходят по порядку справа налево и плавно разгоняются, без дрожи на старте
+        const own = clamp(a * 1.6 - ((1 - p[7]) * .45 + p[8] * .15));
         if (!own) return;
-        V[0] += own * own * 2.6 + own * .2; V[1] += p[9] * own * .7 - own * own * .35 + Math.sin(t * 6 + p[8] * 9) * own * .05;
-        V[6] *= 1 - own * own; V[7] = 1;
+        const go = own * own * own;
+        V[0] += go * 2.8; V[1] += (p[9] * .6 - .25) * go;
+        V[6] *= 1 - go;
       }
     },
     loop: {
