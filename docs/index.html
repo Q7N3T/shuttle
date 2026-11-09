@@ -163,7 +163,7 @@ section{margin:0 0 100px}
 .sec-head{margin-bottom:28px}
 h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.6vw,44px);line-height:1.12;margin:10px 0 10px;letter-spacing:0;text-shadow:2px 0 0 rgba(139,92,246,.45),-2px 0 0 rgba(233,185,73,.35)}
 .sub{color:var(--muted);max-width:60ch;margin:0}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 @media (max-width:1060px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.grid{grid-template-columns:1fr}}
 .card{position:relative;background:var(--surface);border:1px solid var(--line);padding:22px;border-radius:14px;transition:transform .3s,border-color .3s;overflow:hidden}
@@ -578,13 +578,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 <div class="ticker" aria-hidden="true"><div id="ticker"></div></div>
 
 <div class="wrap">
-  <div class="stats">
-    <div class="stat rv"><b data-count="30" data-suffix=" МБ/с">0</b><span data-i18n="st.speed">по кабелю — без загрузки в облако</span></div>
-    <div class="stat rv"><b data-count="9">0</b><span data-i18n="st.parts">разделов Switch, каждый во вкладке</span></div>
-    <div class="stat rv"><b data-count="0">0</b><span data-i18n="st.zero">аккаунтов, подписок и рекламы</span></div>
-    <div class="stat rv"><b data-count="1">0</b><span data-i18n="st.setup">кабель — и больше ничего</span></div>
-  </div>
-
   <section id="features" class="node">
     <div class="sec-head rv">
       <div class="num">01 / <span data-i18n="n.f">возможности</span></div>
@@ -601,7 +594,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <div class="num">02 / nintendo switch</div>
       <div class="code">switch { <i>dbi</i> --mtp {</div>
       <h2 class="glitch" data-i18n="sw.title">Для Switch с DBI</h2>
-      <p class="sub" data-i18n="sw.sub">Все разделы DBI — вкладками. Игры, homebrew и сейвы без ручной раскладки по папкам.</p>
+      <p class="sub" data-i18n="sw.sub">Включите в DBI режим MTP — и всё, что есть на консоли, откроется вкладками.</p>
       <ul class="list" id="sw-list"></ul>
     </div>
     <div class="frame rv flat"><i class="c1"></i><i class="c2"></i><div class="shot"><img src="screenshot-switch-light.png" class="on" alt="Разделы Switch в Shuttle" loading="lazy"></div></div>
@@ -614,7 +607,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <div class="num">03 / android</div>
       <div class="code">android { <i>camera</i> → mac {</div>
       <h2 class="glitch" data-i18n="an.title">Камера — одной кнопкой</h2>
-      <p class="sub" data-i18n="an.sub">Shuttle помнит, что уже скачано, и забирает только новые фото и видео.</p>
+      <p class="sub" data-i18n="an.sub">Всё, что на телефоне, видно на Mac как обычные папки.</p>
       <ul class="list" id="an-list"></ul>
     </div>
   </section>
@@ -639,7 +632,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   </section>
   <div class="close" aria-hidden="true">} }</div>
 </div>
-<div class="ticker warn" aria-hidden="true"><div id="ticker2"></div></div>
 <div class="wrap">
 
   <section id="download">
@@ -658,7 +650,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       </div>
       <div class="progress"><i></i></div>
       <p style="margin:26px 0 0"><a class="btn primary dl-link" href="https://github.com/Q7N3T/shuttle/releases/latest"><span data-i18n="btn.download">Скачать для Mac</span> <span class="m-ver2"></span> ↓</a></p>
-      <p class="hint" id="dl-hint" data-i18n="dl.hint">бесплатно · macOS 14+ · обновляется само</p>
+      <p class="hint" id="dl-hint" data-i18n="dl.hint">macOS 14+ · Apple Silicon и Intel</p>
       <ol class="steps">
         <li data-i18n-html="st1"><b>Откройте DMG</b> и перетащите Shuttle в «Программы».</li>
         <li data-i18n-html="st2"><b>Первый запуск:</b> Настройки → Конфиденциальность и безопасность → «Всё равно открыть».</li>
@@ -720,10 +712,10 @@ const EN = {
   'st.speed':'over the cable — no cloud uploads','st.parts':'Switch storages, each in a tab','st.zero':'accounts, subscriptions and ads','st.setup':'cable — nothing else',
   'nav.faq':'FAQ','n.q':'faq','q.title':'The short version','q.sub':'What people ask before installing.',
   'f.title':'It just works','f.sub':'Plug in the cable and drag files back and forth. Shuttle handles the rest.',
-  'sw.title':'For a Switch with DBI','sw.sub':'Every DBI storage as a tab. Games, homebrew and saves without sorting folders by hand.',
-  'an.title':'Your camera in one click','an.sub':'Shuttle remembers what you already have and fetches only new photos and videos.',
+  'sw.title':'For a Switch with DBI','sw.sub':'Turn on MTP mode in DBI and everything on the console opens as tabs.',
+  'an.title':'Your camera in one click','an.sub':'Everything on your phone shows up on your Mac like regular folders.',
   'dl.title':'Drag Shuttle to Applications','dl.sub':'Right here, like in a DMG. Or press the button — the download starts right away.',
-  'dl.apps':'Applications','dl.hint':'free · macOS 14+ · updates itself',
+  'dl.apps':'Applications','dl.hint':'macOS 14+ · Apple Silicon and Intel',
   'st1':'<b>Open the DMG</b> and drag Shuttle to Applications.',
   'st2':'<b>First launch:</b> Settings → Privacy & Security → “Open Anyway”.',
   'st3':'<b>Plug in the cable.</b> Android: “File transfer”. Switch: DBI → “Run MTP responder”.',
@@ -757,27 +749,25 @@ const ICONS = {
 };
 const FEATURES = [
   ['⇄','drag','Перетаскивание','Между панелями, из Finder и в Finder. Файлы можно бросить прямо на папку.','Drag & drop','Between panes, from Finder and back. Drop files right onto a folder.'],
-  ['⏸','resume','Продолжение после обрыва','Кабель отошёл — Shuttle дождётся устройства и докачает с того же места.','Resumes after a drop','Cable came out? Shuttle waits for the device and continues where it stopped.'],
   ['␣','quicklook','Быстрый просмотр','Пробел — и файл с устройства открывается, как в Finder.','Quick Look','Press Space and a file from the device opens, just like in Finder.'],
   ['★','find','Поиск и избранное','Ищите по всем вложенным папкам, закрепляйте нужные звёздочкой.','Search & favorites','Search every subfolder and pin the ones you need with a star.'],
   ['Aa','rename','Пакетное переименование','Шаблон с датой и номером: «2026-11-07 Отпуск 01».','Batch rename','A pattern with date and number: “2026-11-07 Trip 01”.'],
-  ['↻','updates','Обновляется само','Новая версия приходит в окно Shuttle: обновить сейчас, позже или пропустить.','Updates itself','New versions show up in Shuttle: update now, later or skip.'],
   ['🕘','history','История и уведомления','Что, куда и когда копировалось. Баннер, когда всё готово.','History & notifications','What went where and when. A banner when everything is done.'],
   ['◐','themes','Тёмная и светлая','Плавные переходы, своя палитра и шрифты. Как в системе — или как хотите вы.','Dark & light','Smooth transitions, its own palette and fonts. Follow the system — or don’t.'],
 ];
 const SWITCH = [
-  ['Установка игр','.nsp / .nsz / .xci уходят в DBI на SD или NAND — с проверкой места.','Install games','.nsp / .nsz / .xci go to DBI on SD or NAND — with a space check.'],
-  ['Homebrew из архива','.zip раскладывается по папкам SD-карты: atmosphere, switch, оверлеи.','Homebrew from a zip','A .zip is laid out across the SD card: atmosphere, switch, overlays.'],
-  ['Сейвы на Mac','Одна кнопка — все сохранения в папку с датой.','Saves to Mac','One button backs up every save into a dated folder.'],
-  ['Обновление Atmosphère','Скачает свежую версию с GitHub и сделает копию старой.','Update Atmosphère','Downloads the latest from GitHub and backs up the old one.'],
-  ['Альбом сеткой','Скриншоты и ролики с превью, выгрузка в «Фото».','Album as a grid','Screenshots and clips with previews, export to Photos.'],
-  ['Понятные имена','«Mario Kart 8 Deluxe», а не 0100152000022000.','Readable names','“Mario Kart 8 Deluxe”, not 0100152000022000.'],
+  ['Игры','Перетащите .nsp, .nsz или .xci — Shuttle установит через DBI. Если места не хватит, скажет заранее.','Games','Drop an .nsp, .nsz or .xci and Shuttle installs it through DBI. If there isn’t enough space, it tells you first.'],
+  ['Homebrew','Перетащите .zip — файлы сами разложатся по нужным папкам.','Homebrew','Drop a .zip and the files land in the right folders.'],
+  ['Сейвы','Одна кнопка — и копия всех сохранений уже на Mac.','Saves','One button and a copy of every save is on your Mac.'],
+  ['Atmosphère','Обновляется в один клик, старая версия остаётся в копии.','Atmosphère','Updates in one click, and the old version is kept.'],
+  ['Скриншоты и видео','Смотрите сеткой и отправляйте в «Фото».','Screenshots and clips','Browse them as a grid and send them to Photos.'],
+  ['Названия игр','«Mario Kart 8 Deluxe» вместо 0100152000022000.','Game names','“Mario Kart 8 Deluxe” instead of 0100152000022000.'],
 ];
 const ANDROID = [
-  ['«С камеры»','фото и видео, которых ещё нет на Mac. HEIC по желанию сразу в JPG.','“From camera”','photos and videos that aren’t on your Mac yet. HEIC to JPG on the fly, if you want.'],
-  ['Синхронизация папок','только новое, ничего не удаляется. Можно при каждом подключении.','Folder sync','only new files, nothing deleted. Can run on every connect.'],
-  ['Превью и дубли','миниатюры, сетка с фото и пометка «уже на Mac».','Previews & duplicates','thumbnails, a photo grid and an “already on Mac” badge.'],
-  ['ADB по желанию','быстрее, по Wi‑Fi, установка APK и снимок экрана телефона.','ADB if you want','faster, over Wi‑Fi, installs APKs and takes phone screenshots.'],
+  ['«С камеры»','Одна кнопка забирает новые фото и видео. HEIC можно сразу превращать в JPG.','“From camera”','One button grabs new photos and videos. HEIC can turn into JPG on the way.'],
+  ['Синхронизация','Выберите папку на телефоне и на Mac — копируется только новое, ничего не удаляется.','Sync','Pick a folder on the phone and one on your Mac: only new files are copied, nothing is deleted.'],
+  ['Превью','Фото видно сеткой, а то, что уже есть на Mac, помечено.','Previews','Photos show as a grid, and anything already on your Mac is marked.'],
+  ['ADB, если хочется','Быстрее, работает по Wi‑Fi, ставит APK и делает скриншоты телефона.','ADB, if you like','Faster, works over Wi‑Fi, installs APKs and takes phone screenshots.'],
 ];
 const TITLE = { ru: ['Файлы,', 'без облака', 'в пути.'], en: ['Files,', 'no cloud', 'in between.'] };
 const FAQ = [
@@ -787,20 +777,16 @@ const FAQ = [
    'Why won’t macOS open it the first time?', 'Shuttle is signed but not notarized by Apple — that costs money. Once: Settings → Privacy & Security → “Open Anyway”. The code is open, check it yourself.'],
   ['Что нужно на Switch?', 'DBI с режимом MTP («Run MTP responder»). Shuttle ничего не взламывает и не раздаёт игры — только переносит ваши файлы.',
    'What does the Switch need?', 'DBI in MTP mode (“Run MTP responder”). Shuttle doesn’t hack anything or hand out games — it only moves your own files.'],
-  ['Выдернул кабель посреди копирования. Всё пропало?', 'Нет. Shuttle дождётся устройства и докачает с того же места — заново начинать не придётся.',
-   'Pulled the cable mid-copy. Is it gone?', 'No. Shuttle waits for the device and continues from the same spot — no starting over.'],
   ['Телефон не появляется', 'Закройте Android File Transfer, OpenMTP и похожие программы: устройство может держать только одна. Потом переподключите кабель.',
    'My phone doesn’t show up', 'Quit Android File Transfer, OpenMTP and similar apps: only one program can hold the device. Then replug the cable.'],
   ['Сколько стоит?', 'Нисколько. Без аккаунтов, подписок и рекламы. Новые версии приходят прямо в приложение.',
    'How much is it?', 'Nothing. No accounts, subscriptions or ads. New versions arrive right inside the app.'],
 ];
-const TICKER_RU = ['БЕЗ ОТЛАДКИ','ANDROID','NINTENDO SWITCH','DBI','~30 МБ/С ПО USB','ПРОДОЛЖЕНИЕ ПОСЛЕ ОБРЫВА','АВТООБНОВЛЕНИЯ','БЕСПЛАТНО','APPLE SILICON И INTEL','ОТКРЫТЫЙ КОД'];
-const TICKER_EN = ['NO DEBUGGING','ANDROID','NINTENDO SWITCH','DBI','~30 MB/S OVER USB','RESUMES AFTER A DROP','AUTO UPDATES','FREE','APPLE SILICON & INTEL','OPEN SOURCE'];
+const TICKER_RU = ['БЕЗ ОТЛАДКИ','ANDROID','NINTENDO SWITCH','DBI','~30 МБ/С ПО USB','БЕСПЛАТНО','APPLE SILICON И INTEL','ОТКРЫТЫЙ КОД'];
+const TICKER_EN = ['NO DEBUGGING','ANDROID','NINTENDO SWITCH','DBI','~30 MB/S OVER USB','FREE','APPLE SILICON & INTEL','OPEN SOURCE'];
 const CMDS_RU = ['shuttle --device switch  → 9 разделов','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle camera  → 12 новых: фото и видео','shuttle resume  → продолжаем с 61%','shuttle sync DCIM/Camera ~/Pictures  → только новое'];
 const CMDS_EN = ['shuttle --device switch  → 9 storages','shuttle install "Celeste [01002B30028F6000].nsp"  → DBI','shuttle camera  → 12 new: photos and videos','shuttle resume  → continuing from 61%','shuttle sync DCIM/Camera ~/Pictures  → new only'];
 
-const WARN_RU = ['ДЛЯ SWITCH НУЖЕН DBI','MACOS 14 И НОВЕЕ','ПЕРВЫЙ ЗАПУСК — «ВСЁ РАВНО ОТКРЫТЬ»','ДЕЛАЙТЕ КОПИЮ СЕЙВОВ','НЕ ОТКЛЮЧАЙТЕ КАБЕЛЬ ПРИ УСТАНОВКЕ','ТОЛЬКО ВАШИ ФАЙЛЫ'];
-const WARN_EN = ['A SWITCH NEEDS DBI','MACOS 14 OR LATER','FIRST LAUNCH — “OPEN ANYWAY”','BACK UP YOUR SAVES','KEEP THE CABLE IN DURING INSTALLS','YOUR OWN FILES ONLY'];
 const FRAGS = ['device <b>kind</b>=switch storages=9','transfer <b>resume</b>=true from=61%','mtp <b>responder</b>=dbi','camera <b>new</b>=12 photos+videos','heic → <b>jpg</b>','sparkle <b>feed</b>=appcast.xml','queue <b>parallel</b>=1 speed=31MB/s','theme <b>palette</b>=plum accent=#E9B949','drop <b>target</b>=/Applications','sync DCIM/Camera → <b>~/Pictures</b>'];
 function spawnFrag(){
   if (reduced || document.hidden) return;
@@ -835,11 +821,9 @@ addEventListener('mousemove', e => { const xy = document.getElementById('st-xy')
 function renderLists(){
   $('#feat-grid').innerHTML = FEATURES.map((f,i) => `<div class="card rv in" style="transition-delay:${i*50}ms"><span class="ico">${ICONS[f[1]] || f[0]}</span><div class="k">--${f[1]}</div><h3>${T(f[2],f[4])}</h3><p>${T(f[3],f[5])}</p></div>`).join('');
   $('#sw-list').innerHTML = SWITCH.map(s => `<li><span><b>${T(s[0],s[2])}.</b> ${T(s[1],s[3])}</span></li>`).join('');
-  $('#an-list').innerHTML = ANDROID.map(s => `<li><span><b>${T(s[0],s[2])}</b> — ${T(s[1],s[3])}</span></li>`).join('');
+  $('#an-list').innerHTML = ANDROID.map(s => `<li><span><b>${T(s[0],s[2])}.</b> ${T(s[1],s[3])}</span></li>`).join('');
   const items = (lang === 'en' ? TICKER_EN : TICKER_RU).map(t => `<span>${t}</span>`).join('');
   $('#ticker').innerHTML = items + items;
-  const warn = (lang === 'en' ? WARN_EN : WARN_RU).map(t => `<span>${t}</span>`).join('');
-  $('#ticker2').innerHTML = warn + warn;
   $('#faq-list').innerHTML = FAQ.map((q, i) => `<details${i === 0 ? ' open' : ''}><summary><i>${String(i + 1).padStart(2, '0')}</i>${T(q[0], q[2])}</summary><p>${T(q[1], q[3])}</p></details>`).join('');
   bindCards();
 }
