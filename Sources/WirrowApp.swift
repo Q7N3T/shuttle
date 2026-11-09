@@ -8,6 +8,7 @@ struct WirrowApp: App {
     @AppStorage("theme") private var theme: ThemeMode = .system
 
     init() {
+        if !AppFolders.testing { BundleRename.runIfNeeded() }
         #if DEBUG
         SelfTest.runIfRequested()
         MainActor.assumeIsolated { Snapshot.runIfRequested() }
@@ -129,5 +130,23 @@ enum MenuBarMode {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         if let w = NSApp.windows.first(where: { $0.canBecomeMain }) { w.makeKeyAndOrderFront(nil) } else { open() }
+    }
+}
+
+/// Updates from 0.5.x arrive as "Shuttle.app": Sparkle installs over the old path. Once, the app renames
+/// its bundle to "Wirrow.app" and relaunches from there, so Finder, Launchpad and Spotlight show the new name.
+/// If the folder isn't writable or "Wirrow.app" already exists, it just keeps running as is.
+enum BundleRename {
+    static func runIfNeeded() {
+        let fm = FileManager.default
+        let old = Bundle.main.bundleURL
+        guard old.lastPathComponent == AppFolders.legacyName + ".app" else { return }
+        let new = old.deletingLastPathComponent().appendingPathComponent("Wirrow.app")
+        guard !fm.fileExists(atPath: new.path), (try? fm.moveItem(at: old, to: new)) != nil else { return }
+        let open = Process()
+        open.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        open.arguments = ["-n", new.path]
+        guard (try? open.run()) != nil else { try? fm.moveItem(at: new, to: old); return }
+        exit(0)
     }
 }

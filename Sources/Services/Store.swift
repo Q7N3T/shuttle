@@ -6,20 +6,32 @@ enum AppFolders {
     /// The app's name before 0.6.0. Only used to carry old data over to the new folders.
     static let legacyName = "Shuttle"
 
-    /// One time: move Application Support and Documents folders from the old name to the new one.
-    private static let migrated: Void = {
-        guard !testing else { return }
+    /// Moves a folder left under the old name to the new one. Returns true if the old folder was there.
+    @discardableResult
+    private static func moveLegacy(_ dir: FileManager.SearchPathDirectory) -> Bool {
+        guard !testing else { return false }
         let fm = FileManager.default
-        for dir in [FileManager.SearchPathDirectory.applicationSupportDirectory, .documentDirectory] {
-            let base = fm.urls(for: dir, in: .userDomainMask)[0]
-            let old = base.appendingPathComponent(legacyName, isDirectory: true)
-            let new = base.appendingPathComponent("Wirrow", isDirectory: true)
-            if fm.fileExists(atPath: old.path), !fm.fileExists(atPath: new.path) { try? fm.moveItem(at: old, to: new) }
+        let base = fm.urls(for: dir, in: .userDomainMask)[0]
+        let old = base.appendingPathComponent(legacyName, isDirectory: true)
+        let new = base.appendingPathComponent("Wirrow", isDirectory: true)
+        guard fm.fileExists(atPath: old.path) else { return false }
+        if !fm.fileExists(atPath: new.path) { try? fm.moveItem(at: old, to: new) }
+        return true
+    }
+
+    /// One time, on first use: Application Support is moved at launch. Documents is protected by macOS,
+    /// so it is only touched when the app writes there anyway, to avoid an access prompt on launch.
+    private static let migratedSupport: Void = {
+        // An existing user: imported photos stay in the old Pictures folder (sync pairs and the import log point there).
+        if moveLegacy(.applicationSupportDirectory), UserDefaults.standard.string(forKey: "photosFolder") == nil {
+            let pics = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask)[0]
+            UserDefaults.standard.set(pics.appendingPathComponent(legacyName, isDirectory: true).path, forKey: "photosFolder")
         }
     }()
+    private static let migratedDocuments: Void = { moveLegacy(.documentDirectory) }()
 
     static var support: URL {
-        _ = migrated
+        _ = migratedSupport
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let u = base.appendingPathComponent(testing ? "Wirrow-Tests" : "Wirrow", isDirectory: true)
         try? FileManager.default.createDirectory(at: u, withIntermediateDirectories: true)
@@ -37,7 +49,7 @@ enum AppFolders {
     static var testing: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
 
     static func documents(_ sub: String) -> URL {
-        _ = migrated
+        _ = migratedDocuments
         let u = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Wirrow", isDirectory: true).appendingPathComponent(sub, isDirectory: true)
         try? FileManager.default.createDirectory(at: u, withIntermediateDirectories: true)
@@ -104,10 +116,9 @@ final class AppSettings: ObservableObject {
         autoSync = d.bool(forKey: "autoSync")
         thumbnails = d.bool(forKey: "thumbnails")
         language = AppLanguage(rawValue: d.string(forKey: "language") ?? "") ?? .system
-        let picsBase = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask)[0]
-        // Photos already imported under the old name stay where they are: sync pairs and the import log point there.
-        let legacyPics = picsBase.appendingPathComponent(AppFolders.legacyName, isDirectory: true)
-        let pics = FileManager.default.fileExists(atPath: legacyPics.path) ? legacyPics : picsBase.appendingPathComponent("Wirrow", isDirectory: true)
+        _ = AppFolders.support // moves data from the old name first, including the Pictures folder choice
+        let pics = FileManager.default.urls(for: .picturesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Wirrow", isDirectory: true)
         photosFolder = d.string(forKey: "photosFolder").map { URL(fileURLWithPath: $0) } ?? pics
     }
 }
