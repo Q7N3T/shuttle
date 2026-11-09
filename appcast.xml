@@ -6,6 +6,16 @@
     <description>Обновления Wirrow</description>
     <language>ru</language>
     <item>
+      <title>Wirrow 0.6.0</title>
+      <pubDate>Mon, 09 Nov 2026 15:27:24 +0300</pubDate>
+      <sparkle:version>12</sparkle:version>
+      <sparkle:shortVersionString>0.6.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.6.0</link>
+      <description><![CDATA[<ul><li>Shuttle теперь называется Wirrow. Приложение то же, просто других Shuttle слишком много. Настройки, история и значки переедут сами.</li><li>Маскот оставил себе старое имя: знакомьтесь, Шаттл. У него пара новых реплик на эту тему.</li><li>На сайте появилось знакомство: Шаттл кружится, превращается и проводит экскурсию.</li></ul><div data-lang="en"><p>Shuttle is now called Wirrow. Same app, new name: there were just too many other Shuttles out there. Your settings, history and badges move over by themselves.</p><p>The mascot kept the old name. Meet Shuttle — he has a couple of new lines about it.</p><p>The website has a new intro: Shuttle spins, transforms and shows you around.</p></div>]]></description>
+      <enclosure url="https://q7n3t.github.io/wirrow/dl/Wirrow-0.6.0.dmg" sparkle:edSignature="y5QPkBTtK3/lwE/OvchngzL/sHo6XD2Cfu62ew0JxrhqIOHnm4tbzAjXQT6GSKXiCfYceuWDTlE1A7V4Mu7NCw==" length="6553474" type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Wirrow 0.5.2</title>
       <pubDate>Sun, 08 Nov 2026 14:39:47 +0300</pubDate>
       <sparkle:version>11</sparkle:version>
