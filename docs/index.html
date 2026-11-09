@@ -1415,7 +1415,7 @@ document.fonts && document.fonts.ready.then(fitTitle);
   palette();
   let sd = 11; const rnd = () => (sd = sd * 16807 % 2147483647) / 2147483647;
   const clamp = (v, a = 0, b = 1) => v < a ? a : v > b ? b : v;
-  const ease = v => v * v * (3 - 2 * v);
+  const ease = v => (v = clamp(v), v * v * (3 - 2 * v));
 
   /* Геометрия. Точка: x y z, нормаль, яркость k, параметр u, три случайных числа */
   const P = (x, y, z, nx, ny, nz, k = 1, u = 0) => [x, y, z, nx, ny, nz, k, u, rnd(), rnd() - .5, rnd() - .5];
