@@ -2,6 +2,10 @@
 
 Every version can be downloaded from [Releases](https://github.com/Q7N3T/wirrow/releases). [По-русски](CHANGELOG.ru.md).
 
+## [0.6.1] — 2026-11-09
+
+- The mascot is called Wirrow now, in the app too.
+
 ## [0.6.0] — 2026-11-09
 
 - Shuttle is now called Wirrow. Same app, new name: there were just too many other Shuttles out there. Your settings, history and badges move over by themselves.
