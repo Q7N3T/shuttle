@@ -34,8 +34,8 @@ targets:
         CFBundleLocalizations: [ru, en]
         NSPhotoLibraryAddUsageDescription: Wirrow добавляет фото и видео с телефона или Switch в «Фото».
         CFBundleAllowMixedLocalizations: true
-        CFBundleShortVersionString: "0.6.1"
-        CFBundleVersion: "13"
+        CFBundleShortVersionString: "0.6.2"
+        CFBundleVersion: "14"
         ATSApplicationFontsPath: Fonts
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "14.0"

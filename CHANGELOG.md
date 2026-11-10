@@ -2,6 +2,10 @@
 
 Every version can be downloaded from [Releases](https://github.com/Q7N3T/wirrow/releases). [По-русски](CHANGELOG.ru.md).
 
+## [0.6.2] — 2026-11-11
+
+- How to connect a Switch, right in the app: plug it in while it's asleep, then start DBI. If the Mac doesn't see the console, or the Switch starts charging the Mac, put the Mac on its charger first. The steps show up while nothing is connected and in Settings → Devices.
+
 ## [0.6.1] — 2026-11-09
 
 - The mascot is called Wirrow now, in the app too.
