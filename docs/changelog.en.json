@@ -1,4 +1,5 @@
 {
+  "0.6.2": ["How to connect a Switch, right in the app: plug it in while it's asleep, then start DBI. If the Mac doesn't see the console, or the Switch starts charging the Mac, put the Mac on its charger first. The steps show up while nothing is connected and in Settings → Devices."],
   "0.6.1": ["The mascot is called Wirrow now, in the app too."],
   "0.6.0": ["Shuttle is now called Wirrow. Same app, new name: there were just too many other Shuttles out there. Your settings, history and badges move over by themselves.",
             "The mascot is called Wirrow too.",
