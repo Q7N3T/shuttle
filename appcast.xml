@@ -6,6 +6,16 @@
     <description>Обновления Wirrow</description>
     <language>ru</language>
     <item>
+      <title>Wirrow 0.6.2</title>
+      <pubDate>Wed, 11 Nov 2026 00:01:47 +0300</pubDate>
+      <sparkle:version>14</sparkle:version>
+      <sparkle:shortVersionString>0.6.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.6.2</link>
+      <description><![CDATA[<ul><li>Как подключить Switch — прямо в приложении: подключайте её, пока она спит, а потом запускайте DBI. Если Mac не видит консоль или Switch начала заряжать Mac, сначала поставьте Mac на зарядку. Шаги видны, пока ничего не подключено, и в Настройках → Устройства.</li></ul><div data-lang="en"><p>How to connect a Switch, right in the app: plug it in while it&#x27;s asleep, then start DBI. If the Mac doesn&#x27;t see the console, or the Switch starts charging the Mac, put the Mac on its charger first. The steps show up while nothing is connected and in Settings → Devices.</p></div>]]></description>
+      <enclosure url="https://q7n3t.github.io/wirrow/dl/Wirrow-0.6.2.dmg" sparkle:edSignature="fecaWEY3P9/eE+6n/6aP/sgaA2DwcVk0Rb70C4/mm9nMQOLhzZlyBJGMaM80BoOCl1IhDPD1T+MC9a+dGcKnAg==" length="6582970" type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Wirrow 0.6.1</title>
       <pubDate>Mon, 09 Nov 2026 15:43:08 +0300</pubDate>
       <sparkle:version>13</sparkle:version>
