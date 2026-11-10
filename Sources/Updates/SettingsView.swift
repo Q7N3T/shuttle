@@ -152,8 +152,9 @@ struct SettingsView: View {
                 }
             }
             section("Nintendo Switch") {
-                Text(L("Нужна Switch с Atmosphère и DBI. Запустите DBI → «Run MTP responder» и подключите кабель."))
+                Text(L("Нужна Switch с Atmosphère и DBI."))
                     .font(AppFont.body(12)).foregroundStyle(p.muted).fixedSize(horizontal: false, vertical: true)
+                SwitchConnectTip(bare: true)
                 HStack(spacing: 8) {
                     Chip(title: L("Папка сейвов"), icon: "tray.full") {
                         NSWorkspace.shared.open(AppFolders.documents(L("Сейвы Switch")))

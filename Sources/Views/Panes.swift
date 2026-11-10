@@ -219,16 +219,71 @@ struct Hint: View {
     let icon: String
     let title: String
     var lines: [String] = []
+    /// Show the "connect the Switch while it's asleep" steps under the hint.
+    var switchTip = false
 
     var body: some View {
         VStack(spacing: 10) {
             Image(systemName: icon).font(.system(size: 26, weight: .light)).foregroundStyle(p.accent)
             Text(title).font(AppFont.display(13))
             ForEach(lines, id: \.self) { Text($0).font(AppFont.body(12)).foregroundStyle(p.muted) }
+            if switchTip { SwitchConnectTip().padding(.top, 10) }
         }
         .multilineTextAlignment(.center)
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// DBI works with a Mac reliably only when the Switch is plugged in while asleep.
+/// Three steps plus the fallback: put the Mac on its charger first.
+struct SwitchConnectTip: View {
+    @Environment(\.palette) private var p
+    /// Inside a card that already has its own background (Settings).
+    var bare = false
+
+    private var steps: [String] {
+        [L("Нажмите кнопку питания — Switch уснёт."),
+         L("Подключите кабель к Mac, не будя консоль."),
+         L("Разбудите Switch и запустите DBI → «Run MTP responder».")]
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "moon.zzz.fill").foregroundStyle(p.accent)
+                Text(L("Подключайте Switch, пока она спит")).font(AppFont.display(12))
+            }
+            ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
+                HStack(alignment: .top, spacing: 10) {
+                    Text("\(i + 1)").font(AppFont.display(11)).foregroundStyle(p.ink)
+                        .frame(width: 20, height: 20)
+                        .background(RoundedRectangle(cornerRadius: 5).fill(p.accent))
+                    Text(step).font(AppFont.body(12)).foregroundStyle(p.text)
+                        .fixedSize(horizontal: false, vertical: true).padding(.top, 2)
+                }
+            }
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "bolt.fill").font(.system(size: 11)).foregroundStyle(p.accent).padding(.top, 2)
+                Text(L("Mac не видит консоль или Switch заряжает Mac? Сначала поставьте Mac на зарядку, потом подключите спящую Switch и снова запустите DBI."))
+                    .font(AppFont.body(11.5)).foregroundStyle(p.muted).fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 8).fill(p.accent.opacity(0.1)))
+            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(p.accent.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [3, 3])))
+        }
+        .multilineTextAlignment(.leading)
+        .padding(bare ? 0 : 16)
+        .frame(maxWidth: bare ? .infinity : 400, alignment: .leading)
+        .background {
+            if !bare {
+                RoundedRectangle(cornerRadius: 12).fill(p.surface)
+                    .overlay(alignment: .leading) { Rectangle().fill(p.accent).frame(width: 3) }
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+        .overlay { if !bare { RoundedRectangle(cornerRadius: 12).stroke(p.line, lineWidth: 1) } }
     }
 }
 
@@ -530,11 +585,10 @@ struct DevicePane: View {
         case .searching:
             if state.nintendoWithoutMTP {
                 Hint(icon: "gamecontroller", title: L("Switch подключена, но DBI не в режиме MTP"),
-                     lines: [L("На Switch: DBI → «Run MTP responder»"), L("Wirrow подхватит её сам")])
+                     lines: [L("На Switch: DBI → «Run MTP responder»"), L("Wirrow подхватит её сам")], switchTip: true)
             } else {
                 Hint(icon: "cable.connector", title: L("Подключите устройство"),
-                     lines: [L("Android: уведомление USB → «Передача файлов»"),
-                             L("Switch: DBI → «Run MTP responder»")])
+                     lines: [L("Android: уведомление USB → «Передача файлов»")], switchTip: true)
             }
         case .busy:
             Hint(icon: "exclamationmark.triangle", title: L("Устройство занято другой программой"),

@@ -25,7 +25,7 @@ struct MenuBarView: View {
                     .disabled(d.storage(where: \.isSaves) == nil)
             }
         } else if state.nintendoWithoutMTP {
-            Text(L("Switch: запустите DBI → MTP"))
+            Text(L("Switch: подключайте спящую, затем DBI → MTP"))
         } else {
             Text(L("Устройство не подключено"))
         }

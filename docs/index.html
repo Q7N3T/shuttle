@@ -186,6 +186,20 @@ h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.6vw,44px);l
 .list li{display:flex;gap:12px;align-items:flex-start}
 .list li::before{content:"";flex:none;width:18px;height:18px;margin-top:3px;border-radius:6px;background:rgba(233,185,73,.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23E9B949' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/12px no-repeat}
 .list b{font-weight:600}
+/* подсказка: Switch подключается к Mac только во сне */
+.sleep-tip{position:relative;margin-top:26px;padding:18px 20px 16px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;
+  background:linear-gradient(135deg,rgba(233,185,73,.10),rgba(139,92,246,.06) 70%),var(--surface)}
+.st-head{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:15px;color:var(--text)}
+.st-head b{font-weight:400}
+.st-moon{flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent);box-shadow:inset -7px -3px 0 0 var(--surface),0 0 14px rgba(233,185,73,.45);transform:rotate(-20deg)}
+.st-steps{counter-reset:sl;list-style:none;margin:14px 0 0;padding:0;display:grid;gap:9px}
+.st-steps li{counter-increment:sl;position:relative;padding-left:32px;font-size:14px;line-height:1.45;color:var(--muted)}
+.st-steps li::before{content:counter(sl);position:absolute;left:0;top:0;width:21px;height:21px;border-radius:6px;display:grid;place-items:center;
+  background:var(--accent);color:var(--ink);font:700 11px var(--mono)}
+.st-steps b{color:var(--text);font-weight:600}
+.st-fix{margin:14px 0 0;padding:10px 12px 10px 34px;position:relative;border-radius:8px;background:rgba(233,185,73,.08);border:1px dashed rgba(233,185,73,.35);font-size:13px;line-height:1.45;color:var(--muted)}
+.st-fix::before{content:"⚡";position:absolute;left:11px;top:9px;font-size:14px}
+.st-fix b{color:var(--text);font-weight:600}
 .flat .shot{transform:none}
 
 /* Скачать: перетащите в «Программы» */
@@ -677,6 +691,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <h2 class="glitch" data-i18n="sw.title">Для Switch с DBI</h2>
       <p class="sub" data-i18n="sw.sub">Включите в DBI режим MTP — и всё, что есть на консоли, откроется вкладками.</p>
       <ul class="list" id="sw-list"></ul>
+      <div class="sleep-tip" role="note">
+        <div class="st-head"><span class="st-moon" aria-hidden="true"></span><b data-i18n="sl.title">Подключайте Switch, пока она спит</b></div>
+        <ol class="st-steps">
+          <li data-i18n-html="sl.1">Нажмите кнопку питания — консоль <b>уснёт</b>.</li>
+          <li data-i18n-html="sl.2">Подключите кабель к Mac, <b>не будя</b> Switch.</li>
+          <li data-i18n-html="sl.3">Разбудите консоль и запустите <b>DBI → «Run MTP responder»</b>.</li>
+        </ol>
+        <p class="st-fix" data-i18n-html="sl.fix"><b>Mac не видит консоль или Switch заряжает Mac?</b> Сначала поставьте Mac на зарядку, потом подключите спящую Switch и снова запустите DBI.</p>
+      </div>
     </div>
     <div class="frame rv flat"><i class="c1"></i><i class="c2"></i><div class="shot"><img src="screenshot-switch-light.png" class="on" alt="Разделы Switch в Wirrow" loading="lazy"></div></div>
   </section>
@@ -735,7 +758,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
       <ol class="steps">
         <li data-i18n-html="st1"><b>Откройте DMG</b> и перетащите Wirrow в «Программы».</li>
         <li data-i18n-html="st2"><b>Первый запуск:</b> Настройки → Конфиденциальность и безопасность → «Всё равно открыть».</li>
-        <li data-i18n-html="st3"><b>Подключите кабель.</b> Android: «Передача файлов». Switch: DBI → «Run MTP responder».</li>
+        <li data-i18n-html="st3"><b>Подключите кабель.</b> Android: «Передача файлов». Switch: подключайте спящую, потом DBI → «Run MTP responder».</li>
       </ol>
     </div>
   </section>
@@ -799,7 +822,12 @@ const EN = {
   'dl.apps':'Applications','dl.hint':'macOS 14+ · Apple Silicon and Intel',
   'st1':'<b>Open the DMG</b> and drag Wirrow to Applications.',
   'st2':'<b>First launch:</b> Settings → Privacy & Security → “Open Anyway”.',
-  'st3':'<b>Plug in the cable.</b> Android: “File transfer”. Switch: DBI → “Run MTP responder”.',
+  'st3':'<b>Plug in the cable.</b> Android: “File transfer”. Switch: connect it while it’s asleep, then DBI → “Run MTP responder”.',
+  'sl.title':'Connect the Switch while it’s asleep',
+  'sl.1':'Press the power button so the console <b>goes to sleep</b>.',
+  'sl.2':'Plug the cable into your Mac <b>without waking</b> the Switch.',
+  'sl.3':'Wake the console and start <b>DBI → “Run MTP responder”</b>.',
+  'sl.fix':'<b>Mac doesn’t see the console, or the Switch is charging your Mac?</b> Put the Mac on its charger first, then connect the sleeping Switch and start DBI again.',
   'ch.title':'What’s new','ch.sub':'Every version with notes and its own DMG. Older ones stay downloadable.',
   'n.f':'features','n.d':'download','n.c':'releases',
   'n.h':'under the hood','h.title':'Under the hood','h.sub':'Five things Wirrow quietly does while you just drag files around.',
@@ -858,6 +886,8 @@ const FAQ = [
    'Why won’t macOS open it the first time?', 'Wirrow is signed but not notarized by Apple — that costs money. Once: Settings → Privacy & Security → “Open Anyway”. The code is open, check it yourself.'],
   ['Что нужно на Switch?', 'DBI с режимом MTP («Run MTP responder»). Wirrow ничего не взламывает и не раздаёт игры — только переносит ваши файлы.',
    'What does the Switch need?', 'DBI in MTP mode (“Run MTP responder”). Wirrow doesn’t hack anything or hand out games — it only moves your own files.'],
+  ['Mac не видит Switch', 'Подключайте кабель, пока Switch спит: нажмите кнопку питания, вставьте кабель, разбудите консоль и запустите DBI → «Run MTP responder». Если Mac всё равно её не видит или консоль начала заряжать Mac — сначала поставьте Mac на зарядку, потом подключите спящую Switch и снова запустите DBI.',
+   'My Mac doesn’t see the Switch', 'Plug the cable in while the Switch is asleep: press the power button, connect the cable, wake the console and start DBI → “Run MTP responder”. If the Mac still doesn’t see it, or the console starts charging the Mac, put the Mac on its charger first, then connect the sleeping Switch and start DBI again.'],
   ['Телефон не появляется', 'Закройте Android File Transfer, OpenMTP и похожие программы: устройство может держать только одна. Потом переподключите кабель.',
    'My phone doesn’t show up', 'Quit Android File Transfer, OpenMTP and similar apps: only one program can hold the device. Then replug the cable.'],
   ['Сколько стоит?', 'Нисколько. Без аккаунтов, подписок и рекламы. Новые версии приходят прямо в приложение.',

@@ -37,7 +37,7 @@
 
 **Android:** plug in the cable and pick “File transfer” in the USB notification.
 
-**Nintendo Switch:** launch DBI, choose “Run MTP responder” and plug in the cable.
+**Nintendo Switch:** put the console to sleep, plug the cable into your Mac, then wake it and choose “Run MTP responder” in DBI. If the Mac doesn’t see it, or the Switch starts charging the Mac, put the Mac on its charger first and connect the sleeping Switch again.
 
 If the device doesn’t show up, quit Image Capture, Photos and Android File Transfer, then replug the cable.
 

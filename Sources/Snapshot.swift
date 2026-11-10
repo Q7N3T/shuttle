@@ -3,7 +3,7 @@ import SwiftUI
 import AppKit
 
 /// Debug:
-/// `Wirrow --snapshot out.png [dark|light] [phone|switch] [nomac]` — the window with test data;
+/// `Wirrow --snapshot out.png [dark|light] [phone|switch|empty] [nomac]` — the window with test data;
 /// `Wirrow --icon out.png` — a 1024×1024 icon.
 enum Snapshot {
     @MainActor
@@ -33,7 +33,7 @@ enum Snapshot {
         let out = URL(fileURLWithPath: args[i + 1])
         let dark = !args.contains("light")
         let s = AppState(preview: true)
-        if args.contains("switch") { fillSwitch(s) } else { fillPhone(s) }
+        if args.contains("empty") {} else if args.contains("switch") { fillSwitch(s) } else { fillPhone(s) }
         if args.contains("nomac") { UserDefaults.standard.set(false, forKey: "showMacPane") }
         else { UserDefaults.standard.set(true, forKey: "showMacPane") }
 
@@ -86,7 +86,7 @@ enum Snapshot {
         if args.contains("installed") { updates.phase = .installed("0.3.1") }
         if args.contains("settings") {
             updates.resetSkipped()
-            let v = ThemedRoot(theme: dark ? .dark : .light) { SettingsView(startTab: args.contains("badges") ? 3 : 0) }
+            let v = ThemedRoot(theme: dark ? .dark : .light) { SettingsView(startTab: args.contains("badges") ? 3 : args.contains("devices") ? 1 : 0) }
                 .environmentObject(updates).environment(\.isSnapshot, true)
             let r = ImageRenderer(content: v)
             r.scale = 2
