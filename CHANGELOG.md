@@ -2,6 +2,13 @@
 
 Every version can be downloaded from [Releases](https://github.com/Q7N3T/wirrow/releases). [По-русски](CHANGELOG.ru.md).
 
+## [0.6.3] — 2026-11-11
+
+- Wirrow's wardrobe: every badge now unlocks a costume, from a courier cap to a crown and disco shades. Pick one in Settings → Badges, and Wirrow wears it in the header and while running along the transfer bar.
+- If your Mac is on battery while you connect a Switch, the app tells you to plug in the charger: that's the most common reason the console isn't seen.
+- "Report a problem" in the Help menu and in Settings opens a GitHub issue with the version, macOS, device and recent errors already filled in.
+- Wirrow can now be installed with Homebrew: `brew install --cask q7n3t/tap/wirrow`.
+
 ## [0.6.2] — 2026-11-11
 
 - How to connect a Switch, right in the app: plug it in while it's asleep, then start DBI. If the Mac doesn't see the console, or the Switch starts charging the Mac, put the Mac on its charger first. The steps show up while nothing is connected and in Settings → Devices.

@@ -10,6 +10,12 @@
 
 **[Download the latest version](https://github.com/Q7N3T/wirrow/releases/latest)** · [Website](https://q7n3t.github.io/wirrow/) · macOS 14+, Apple Silicon and Intel
 
+Or with Homebrew:
+
+```sh
+brew install --cask q7n3t/tap/wirrow
+```
+
 1. Open the DMG.
 2. Drag Wirrow to Applications.
 3. Launch Wirrow.
