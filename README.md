@@ -10,9 +10,10 @@
 
 **[Download the latest version](https://github.com/Q7N3T/wirrow/releases/latest)** · [Website](https://q7n3t.github.io/wirrow/) · macOS 14+, Apple Silicon and Intel
 
-Or with Homebrew:
+Or with Homebrew (the first command lets Homebrew load a cask from a third-party tap):
 
 ```sh
+brew trust --cask q7n3t/tap/wirrow
 brew install --cask q7n3t/tap/wirrow
 ```
 
