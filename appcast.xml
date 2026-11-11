@@ -6,6 +6,16 @@
     <description>Обновления Wirrow</description>
     <language>ru</language>
     <item>
+      <title>Wirrow 0.6.3</title>
+      <pubDate>Wed, 11 Nov 2026 21:27:37 +0300</pubDate>
+      <sparkle:version>15</sparkle:version>
+      <sparkle:shortVersionString>0.6.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/Q7N3T/wirrow/releases/tag/v0.6.3</link>
+      <description><![CDATA[<ul><li>Гардероб Вироу: каждый значок теперь открывает костюм — от кепки курьера до короны и диско-очков. Выбирается в Настройках → Значки, и Вироу носит его в шапке окна и на полоске передачи.</li><li>Если Mac на батарее, а вы подключаете Switch, приложение подскажет поставить его на зарядку: чаще всего консоль не видно именно из-за этого.</li><li>«Сообщить о проблеме» в меню «Справка» и в настройках открывает issue на GitHub, где уже указаны версия, macOS, устройство и последние ошибки.</li><li>Wirrow теперь можно поставить через Homebrew: `brew install --cask q7n3t/tap/wirrow`.</li></ul><div data-lang="en"><p>Wirrow&#x27;s wardrobe: every badge now unlocks a costume, from a courier cap to a crown and disco shades. Pick one in Settings → Badges, and Wirrow wears it in the header and while running along the transfer bar.</p><p>If your Mac is on battery while you connect a Switch, the app tells you to plug in the charger: that&#x27;s the most common reason the console isn&#x27;t seen.</p><p>&quot;Report a problem&quot; in the Help menu and in Settings opens a GitHub issue with the version, macOS, device and recent errors already filled in.</p><p>Wirrow can now be installed with Homebrew: `brew install --cask q7n3t/tap/wirrow`.</p></div>]]></description>
+      <enclosure url="https://q7n3t.github.io/wirrow/dl/Wirrow-0.6.3.dmg" sparkle:edSignature="fk0fFMImCttAwEdpJh9G7hlbOuGrSKEhTjoGJyvsRXkkSgw+IsFeHs3iKOX0337m/N2ZM0RBy3k+ZjWmI8MtDw==" length="6692124" type="application/octet-stream"/>
+    </item>
+    <item>
       <title>Wirrow 0.6.2</title>
       <pubDate>Wed, 11 Nov 2026 00:01:47 +0300</pubDate>
       <sparkle:version>14</sparkle:version>
