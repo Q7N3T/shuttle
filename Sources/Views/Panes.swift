@@ -239,6 +239,7 @@ struct Hint: View {
 /// Three steps plus the fallback: put the Mac on its charger first.
 struct SwitchConnectTip: View {
     @Environment(\.palette) private var p
+    @ObservedObject private var power = PowerSource.shared
     /// Inside a card that already has its own background (Settings).
     var bare = false
 
@@ -250,6 +251,18 @@ struct SwitchConnectTip: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            if power.onBattery {
+                // The most common reason the Switch isn't seen — say it first, while it's true.
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "battery.25percent").font(.system(size: 12, weight: .semibold)).foregroundStyle(p.ink)
+                    Text(L("Mac сейчас на батарее. Подключите зарядку — с ней Switch подключается надёжнее."))
+                        .font(AppFont.body(11.5, .semibold)).foregroundStyle(p.ink).fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: 0xF2A33A)))
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
             HStack(spacing: 8) {
                 Image(systemName: "moon.zzz.fill").foregroundStyle(p.accent)
                 Text(L("Подключайте Switch, пока она спит")).font(AppFont.display(12))
@@ -284,6 +297,7 @@ struct SwitchConnectTip: View {
             }
         }
         .overlay { if !bare { RoundedRectangle(cornerRadius: 12).stroke(p.line, lineWidth: 1) } }
+        .animation(.easeOut(duration: 0.25), value: power.onBattery)
     }
 }
 

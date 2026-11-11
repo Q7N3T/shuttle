@@ -33,6 +33,7 @@ enum Snapshot {
         let out = URL(fileURLWithPath: args[i + 1])
         let dark = !args.contains("light")
         let s = AppState(preview: true)
+        if args.contains("battery") { PowerSource.shared.pretendBattery() }
         if args.contains("empty") {} else if args.contains("switch") { fillSwitch(s) } else { fillPhone(s) }
         if args.contains("nomac") { UserDefaults.standard.set(false, forKey: "showMacPane") }
         else { UserDefaults.standard.set(true, forKey: "showMacPane") }

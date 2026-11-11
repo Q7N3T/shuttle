@@ -124,9 +124,19 @@ final class FeatureTests: XCTestCase {
             Calendar.current.date(from: DateComponents(year: 2027, month: m, day: d, hour: h))!
         }
         XCTAssertEqual(Mascot.hat(at: date(11, 7, 14)), .party)
-        XCTAssertEqual(Mascot.hat(at: date(12, 31, 14)), .newYear)
-        XCTAssertEqual(Mascot.hat(at: date(1, 5, 14)), .newYear)
+        XCTAssertEqual(Mascot.hat(at: date(12, 31, 14)), .santa)
+        XCTAssertEqual(Mascot.hat(at: date(1, 5, 14)), .santa)
         XCTAssertEqual(Mascot.hat(at: date(6, 1, 2)), .nightcap)
-        XCTAssertEqual(Mascot.hat(at: date(6, 1, 14)), Mascot.Hat.none)
+        XCTAssertEqual(Mascot.hat(at: date(6, 1, 14)), Costume.none)
+    }
+
+    @MainActor
+    func testWardrobeCoversEveryBadgeOnce() {
+        let badges = Costume.allCases.compactMap(\.badge)
+        XCTAssertEqual(Set(badges), Set(Achievements.all.map(\.id)), "every badge opens a costume")
+        XCTAssertEqual(badges.count, Set(badges).count, "no badge opens two costumes")
+        XCTAssertTrue(Wardrobe.shared.isUnlocked(.none))
+        XCTAssertTrue(Wardrobe.shared.isUnlocked(.santa))
+        XCTAssertFalse(Wardrobe.shared.visible.contains(.creator), "the exclusive costume is hidden unless given")
     }
 }

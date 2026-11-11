@@ -176,6 +176,9 @@ final class AppState: ObservableObject {
     private var monitor: Task<Void, Never>?
     private var lastDeviceKey: String?
 
+    /// The app's main state — for "Report a problem" from Settings, which has no window state of its own.
+    static weak var current: AppState?
+
     /// `service`/`services` — given devices (tests); without them — everything `DeviceHub` finds.
     init(preview: Bool = false, service: DeviceService? = nil, services: [DeviceService] = []) {
         let given = (service.map { [$0] } ?? []) + services
@@ -187,6 +190,7 @@ final class AppState: ObservableObject {
             hub = .shared
         }
         if preview || AppFolders.testing { return }
+        Self.current = self
         // Thumbnails wait while transfers run; leaving a folder clears the thumbnail queue.
         Thumbnails.shared.isBusy = { [weak self] in self?.hasActiveTransfers ?? false }
         Thumbnails.shared.service = { [weak self] key in self?.service(for: key) }
@@ -340,7 +344,10 @@ final class AppState: ObservableObject {
             setConnection(trouble ?? .searching)
             if wasConnected { resetDevice() }
             let nintendo = connection == .searching && USBProbe.nintendoPresent()
-            if nintendo != nintendoWithoutMTP { nintendoWithoutMTP = nintendo }
+            if nintendo != nintendoWithoutMTP {
+                nintendoWithoutMTP = nintendo
+                if nintendo && PowerSource.shared.onBattery { Mascot.shared.react(.switchOnBattery) }
+            }
         }
     }
 

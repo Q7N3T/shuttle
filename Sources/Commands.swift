@@ -244,6 +244,8 @@ struct HelpCommands: Commands, MenuPickers {
             Link(L("Справка Wirrow"), destination: URL(string: "https://github.com/Q7N3T/wirrow#readme")!)
             Link(L("Как подключить Switch"), destination: URL(string: L("https://github.com/Q7N3T/wirrow#подключение"))!)
             Link(L("История версий"), destination: URL(string: "https://github.com/Q7N3T/wirrow/blob/main/CHANGELOG.md")!)
+            Divider()
+            Button(L("Сообщить о проблеме…")) { IssueReport.open() }
         }
     }
 }

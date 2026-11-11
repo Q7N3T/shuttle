@@ -202,6 +202,12 @@ struct SettingsView: View {
                 Label(L("История версий и старые сборки"), systemImage: "clock.arrow.circlepath")
                     .font(AppFont.body(12))
             }
+            Button { IssueReport.open() } label: {
+                Label(L("Сообщить о проблеме"), systemImage: "ladybug")
+                    .font(AppFont.body(12)).foregroundStyle(p.accent)
+            }
+            .buttonStyle(.plain)
+            .help(L("Откроет GitHub с уже заполненными версией, macOS, устройством и последними ошибками"))
         }
     }
 

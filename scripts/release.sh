@@ -54,4 +54,16 @@ for i in $(seq 1 30); do
 done
 git add appcast.xml && git commit -q -m "update appcast" && git push -q
 
+echo "▸ Homebrew tap (brew install --cask q7n3t/tap/wirrow)"
+# The cask lives in Q7N3T/homebrew-tap: bump the version and checksum to the DMG just released.
+if gh repo view Q7N3T/homebrew-tap >/dev/null 2>&1; then
+  SHA=$(shasum -a 256 "$DMG" | cut -d' ' -f1)
+  CASK=repos/Q7N3T/homebrew-tap/contents/Casks/wirrow.rb
+  OLD=$(gh api "$CASK" -q .sha)
+  NEW=$(gh api "$CASK" -q .content | base64 -D | sed -E "s/^  version \".*\"/  version \"$VERSION\"/; s/^  sha256 \".*\"/  sha256 \"$SHA\"/")
+  gh api -X PUT "$CASK" -f message="wirrow $VERSION" -f content="$(printf '%s\n' "$NEW" | base64)" -f sha="$OLD" >/dev/null
+else
+  echo "  (no Q7N3T/homebrew-tap yet — skipped)"
+fi
+
 echo "✓ Wirrow $VERSION released: https://github.com/Q7N3T/wirrow/releases/tag/v$VERSION"

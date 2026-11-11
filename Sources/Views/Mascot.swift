@@ -14,10 +14,8 @@ final class Mascot: ObservableObject {
     enum Mood { case calm, happy, sad, hot }
     enum Event {
         case connected(console: Bool), disconnected, done(Int), failed, newPhotos(Int), error
-        case lowBattery(Int), batteryOK, achievement(String)
+        case lowBattery(Int), batteryOK, achievement(String), switchOnBattery
     }
-    /// What it wears on its head: depends on the date and time.
-    enum Hat { case none, nightcap, newYear, party }
 
     /// The typed part of the line. nil — the bubble is hidden.
     @Published private(set) var shown: String?
@@ -60,6 +58,18 @@ final class Mascot: ObservableObject {
         if konami == seq { konami = []; dance() }
     }
 
+    /// Put on a costume from the wardrobe — and comment on it.
+    func wear(_ c: Costume) {
+        hop()
+        switch c {
+        case .none: say(L("Снял костюм. ‖ Так даже легче бегать по полоске."))
+        case .creator: say(L("Колпак самого создателя! ‖ Теперь я на особом счету."), mood: .happy)
+        case .crown: say(L("Корона? ‖ Ну, терабайт — это не шутки."), mood: .happy)
+        case .shades: say(L("Диско-режим: всегда. ‖ Даже когда кабель отошёл."), mood: .happy)
+        default: say(L("«%@» — как я тебе? ‖ Только честно.", c.title), mood: .happy)
+        }
+    }
+
     func dance() {
         guard !dancing else { return }
         dancing = true
@@ -74,11 +84,12 @@ final class Mascot: ObservableObject {
         }
     }
 
-    static func hat(at date: Date = Date()) -> Hat {
+    /// The holiday hat by the date and time: used when no costume is picked in the wardrobe.
+    static func hat(at date: Date = Date()) -> Costume {
         let cal = Calendar.current
         let c = cal.dateComponents([.month, .day, .hour], from: date)
         if c.month == birthday.month && c.day == birthday.day { return .party }
-        if (c.month == 12 && (c.day ?? 0) >= 20) || (c.month == 1 && (c.day ?? 0) <= 10) { return .newYear }
+        if (c.month == 12 && (c.day ?? 0) >= 20) || (c.month == 1 && (c.day ?? 0) <= 10) { return .santa }
         if let h = c.hour, h >= 23 || h < 6 { return .nightcap }
         return .none
     }
@@ -180,10 +191,12 @@ final class Mascot: ObservableObject {
             auto(L("Заряд телефона: %d%%. ‖ *зевает* Я тоже на последних процентах.", b), .calm, force: true)
         case .batteryOK:
             tired = false
+        case .switchOnBattery:
+            auto(L("Mac на батарее, а Switch капризничает. ‖ Дай Mac’у зарядку — и подключи спящую Switch."), .calm, force: true)
         case .achievement(let title):
             cheer()
             hop()
-            auto(L("Новое достижение: «%@»! ‖ Значок — в настройках.", title), .happy, force: true)
+            auto(L("Новое достижение: «%@»! ‖ Значок и новый костюм — в настройках.", title), .happy, force: true)
         case .error:
             mood = .sad
             Task { [weak self] in
@@ -301,7 +314,7 @@ struct MascotSprite: View {
     var arms: Arms = .hidden
     var mood: Mascot.Mood = .calm
     var tired = false
-    var hat: Mascot.Hat = .none
+    var costume: Costume = .none
     /// nil — no legs; 0/1 — a step with the left or right foot.
     var step: Int? = nil
 
@@ -338,7 +351,7 @@ struct MascotSprite: View {
     private static let sock: [R] = [(12, 26, 2, 1)]
     private static let shoe: [R] = [(9, 27, 5, 2)]
     private static let sole: [R] = [(9, 29, 5, 1)]
-    // hats
+    // hats and costumes
     private static let nightcap: [R] = [(9, 7, 14, 1), (10, 5, 12, 2), (12, 3, 9, 2), (15, 1, 6, 2), (20, 0, 3, 1)]
     private static let nightcapStripe: [R] = [(12, 4, 9, 1), (16, 1, 5, 1)]
     private static let nightcapPom: [R] = [(23, 0, 2, 2)]
@@ -347,6 +360,77 @@ struct MascotSprite: View {
     private static let santaPom: [R] = [(7, 0, 3, 2)]
     private static let party: [R] = [(11, 6, 10, 1), (12, 4, 8, 2), (13, 2, 6, 2), (15, 0, 2, 2)]
     private static let partyStripe: [R] = [(12, 5, 8, 1), (14, 2, 4, 1)]
+    private static let dome: [R] = [(13, 3, 6, 1), (11, 4, 10, 1), (10, 5, 12, 1), (9, 6, 14, 1)]
+
+    /// One costume layer: rectangles and their colour.
+    private typealias Layer = (rects: [R], color: Color)
+
+    /// What goes on the head, drawn over the body. `frame` flips 0/1 for blinking stars and a spinning propeller.
+    private static func head(_ c: Costume, frame: Int) -> [Layer] {
+        switch c {
+        case .none, .shades: return []
+        case .courier:
+            return [(dome, Color(hex: 0xD94040)), ([(9, 6, 14, 1)], white), ([(15, 2, 2, 1)], Color(hex: 0xA82E2E)),
+                    ([(22, 6, 7, 1), (23, 7, 6, 1)], Color(hex: 0xA82E2E))]
+        case .headphones:
+            return [([(7, 4, 18, 1), (6, 5, 1, 1), (25, 5, 1, 1), (5, 6, 1, 4), (26, 6, 1, 4)], Color(hex: 0x3A2A3F)),
+                    ([(3, 10, 3, 6), (26, 10, 3, 6)], Color(hex: 0x8B5CF6)),
+                    ([(3, 10, 1, 2), (28, 10, 1, 2)], Color(hex: 0xB79BFF))]
+        case .pilot:
+            return [([(11, 4, 10, 1), (10, 5, 12, 2), (9, 7, 14, 1)], Color(hex: 0x8A5A34)),
+                    ([(7, 8, 2, 4), (23, 8, 2, 4)], Color(hex: 0x6E4426)),
+                    ([(10, 5, 5, 3), (17, 5, 5, 3), (15, 6, 2, 1)], Color(hex: 0x3A2A3F)),
+                    ([(11, 6, 3, 1), (18, 6, 3, 1)], Color(hex: 0x8FD3F0))]
+        case .crown:
+            return [([(9, 5, 14, 1), (9, 3, 2, 2), (14, 2, 4, 3), (21, 3, 2, 2), (9, 2, 1, 1), (15, 1, 2, 1), (22, 2, 1, 1)], Color(hex: 0xFFD54A)),
+                    ([(9, 6, 14, 1)], Color(hex: 0xD9A520)),
+                    ([(12, 5, 2, 1)], blush), ([(18, 5, 2, 1)], Color(hex: 0x6FA8FF)), ([(15, 3, 2, 1)], Color(hex: 0x7FC79A))]
+        case .beret:
+            return [([(11, 4, 11, 1), (9, 5, 15, 1)], Color(hex: 0xC2406A)), ([(9, 6, 15, 1)], Color(hex: 0x9E2F55)),
+                    ([(17, 3, 2, 1)], Color(hex: 0x9E2F55))]
+        case .knight:
+            return [([(11, 4, 10, 1), (10, 5, 12, 2), (9, 7, 14, 1)], Color(hex: 0xB8C0CC)),
+                    ([(15, 4, 2, 4)], Color(hex: 0xDDE3EA)), ([(10, 6, 1, 1), (21, 6, 1, 1)], Color(hex: 0x8A93A0)),
+                    ([(14, 1, 4, 3), (15, 0, 3, 1)], Color(hex: 0xD94040))]
+        case .hardhat:
+            return [([(12, 3, 8, 1), (11, 4, 10, 2), (10, 6, 12, 1)], Color(hex: 0xFF9A2E)),
+                    ([(8, 7, 16, 1)], Color(hex: 0xD9700F)), ([(15, 3, 2, 4)], Color(hex: 0xFFC06A))]
+        case .bandana:
+            return [([(7, 8, 18, 2), (25, 8, 2, 1), (26, 9, 2, 1), (27, 10, 1, 1)], Color(hex: 0xD94040)),
+                    ([(10, 8, 1, 1), (14, 9, 1, 1), (19, 8, 1, 1), (22, 9, 1, 1)], white)]
+        case .nightcap:
+            return [(nightcap, Color(hex: 0x4F6BD8)), (nightcapStripe, Color(hex: 0x7D95F0)), (nightcapPom, white)]
+        case .viking:
+            return [([(12, 3, 8, 1), (11, 4, 10, 2)], Color(hex: 0x9AA3B0)), ([(10, 6, 12, 1)], goldDark),
+                    ([(8, 5, 2, 2), (7, 3, 2, 2), (7, 2, 1, 1), (22, 5, 2, 2), (23, 3, 2, 2), (24, 2, 1, 1)], Color(hex: 0xF1E6C8))]
+        case .propeller:
+            return [([(13, 3, 2, 1), (11, 4, 4, 2), (10, 6, 5, 1)], Color(hex: 0xD94040)),
+                    ([(15, 3, 2, 1), (15, 4, 2, 2), (15, 6, 2, 1)], Color(hex: 0xFFD54A)),
+                    ([(17, 3, 2, 1), (17, 4, 4, 2), (17, 6, 5, 1)], Color(hex: 0x4F6BD8)),
+                    ([(15, 1, 2, 2)], Color(hex: 0x3A2A3F)),
+                    (frame == 0 ? [(11, 0, 10, 1)] : [(14, 0, 4, 1)], Color(hex: 0x7D95F0))]
+        case .santa:
+            return [(santa, Color(hex: 0xD94040)), (santaBrim, white), (santaPom, white)]
+        case .party:
+            return [(party, Color(hex: 0x8B5CF6)), (partyStripe, blush), ([(15, 0, 2, 1)], gold)]
+        case .creator:
+            let spark: [R] = frame == 0
+                ? [(1, 6, 3, 1), (2, 5, 1, 3), (28, 14, 3, 1), (29, 13, 1, 3), (2, 22, 3, 1), (3, 21, 1, 3)]
+                : [(27, 4, 3, 1), (28, 3, 1, 3), (0, 15, 3, 1), (1, 14, 1, 3), (27, 23, 3, 1), (28, 22, 1, 3)]
+            return [([(10, 5, 12, 1), (11, 4, 10, 1), (12, 3, 8, 1), (14, 2, 5, 1), (16, 1, 3, 1), (18, 0, 2, 1)], Color(hex: 0x5B3FD0)),
+                    ([(8, 6, 16, 2)], Color(hex: 0x432DA0)), ([(9, 5, 14, 1)], gold), ([(15, 5, 2, 1)], blush),
+                    (frame == 0 ? [(13, 3, 1, 1), (17, 1, 1, 1)] : [(16, 3, 1, 1), (12, 4, 1, 1)], Color(hex: 0xFFE9A8)),
+                    (spark, Color(hex: 0xFFE9A8))]
+        }
+    }
+
+    /// What goes over the face, drawn after the eyes and mouth.
+    private static func face(_ c: Costume) -> [Layer] {
+        guard c == .shades else { return [] }
+        return [([(10, 11, 5, 5), (17, 11, 5, 5), (15, 12, 2, 1)], Color(hex: 0x141018)),
+                ([(11, 12, 2, 1), (18, 12, 2, 1)], Color(hex: 0xF6F0E6).opacity(0.85)),
+                ([(10, 11, 5, 1), (17, 11, 5, 1)], Color(hex: 0xE9B949))]
+    }
 
     private static let gold = Color(hex: 0xE9B949), goldDark = Color(hex: 0xC99632), goldLight = Color(hex: 0xF8DC8B)
     private static let ink = Color(hex: 0x1F1822), blush = Color(hex: 0xE8796E)
@@ -381,7 +465,7 @@ struct MascotSprite: View {
             case .cheer(let up): drawArm(left: true, up: false); drawArm(left: false, up: up)
             case .dance(let left): drawArm(left: true, up: left); drawArm(left: false, up: !left)
             }
-            if hat == .none {
+            if !costume.hidesAntennas {
                 let ay: CGFloat = antennaUp ? -1 : 0
                 fill(Self.stem, Self.goldDark, dy: ay); fill(Self.ball, Self.gold, dy: ay); fill(Self.glint, Color(hex: 0xFFF1C4), dy: ay)
             }
@@ -389,15 +473,7 @@ struct MascotSprite: View {
             fill(Self.body, hot ? Color(hex: 0xF0874A) : Self.gold)
             fill(Self.shade, hot ? Color(hex: 0xC9622E) : Self.goldDark)
             fill(Self.shine, Self.goldLight)
-            switch hat {
-            case .none: break
-            case .nightcap:
-                fill(Self.nightcap, Color(hex: 0x4F6BD8)); fill(Self.nightcapStripe, Color(hex: 0x7D95F0)); fill(Self.nightcapPom, Self.white)
-            case .newYear:
-                fill(Self.santa, Color(hex: 0xD94040)); fill(Self.santaBrim, Self.white); fill(Self.santaPom, Self.white)
-            case .party:
-                fill(Self.party, Color(hex: 0x8B5CF6)); fill(Self.partyStripe, Self.blush); fill([(15, 0, 2, 1)], Self.gold)
-            }
+            for l in Self.head(costume, frame: antennaUp ? 1 : 0) { fill(l.rects, l.color) }
             if blink { fill(Self.closed, Self.ink) }
             else if tired { fill(Self.sleepy, Self.ink) }
             else { fill(mood == .sad ? Self.sadEyes : Self.eyes, Self.ink) }
@@ -409,6 +485,7 @@ struct MascotSprite: View {
             } else {
                 fill(mood == .sad ? Self.frown : Self.smile, Self.ink)
             }
+            for l in Self.face(costume) { fill(l.rects, l.color) }
         }
         .frame(width: 32 * scale, height: 30 * scale)
     }
@@ -417,7 +494,7 @@ struct MascotSprite: View {
 // MARK: - Mascot in the header
 
 /// A small mascot instead of the icon in the header. Blinks, wiggles its antennas,
-/// hops with joy, puts on a hat for the occasion and answers in a bubble on click.
+/// hops with joy, wears a costume from the wardrobe (or a holiday hat) and answers in a bubble on click.
 struct HeaderMascot: View {
     @ObservedObject private var m = Mascot.shared
     @Environment(\.isSnapshot) private var snap
@@ -426,7 +503,8 @@ struct HeaderMascot: View {
     @State private var lift: CGFloat = 0
     @State private var wave = false
     @State private var hover = false
-    @State private var hat = Mascot.hat()
+    @ObservedObject private var wardrobe = Wardrobe.shared
+    @State private var now = Date()
 
     private var arms: MascotSprite.Arms {
         if snap { return .hidden }
@@ -436,7 +514,7 @@ struct HeaderMascot: View {
 
     var body: some View {
         MascotSprite(scale: 1, blink: blink, antennaUp: antenna, talking: m.talking && !snap,
-                     arms: arms, mood: snap ? .calm : m.mood, tired: m.tired && !snap, hat: snap ? .none : hat)
+                     arms: arms, mood: snap ? .calm : m.mood, tired: m.tired && !snap, costume: snap ? .none : wardrobe.current(at: now))
             .offset(y: lift)
             .rotationEffect(.degrees(hover && !snap ? -6 : 0), anchor: .bottom)
             .animation(.spring(response: 0.3, dampingFraction: 0.5), value: hover)
@@ -462,7 +540,7 @@ struct HeaderMascot: View {
                 }
                 async let a: Void = loop(every: 0.9) { antenna.toggle() }
                 async let w: Void = loop(every: 0.3) { if m.cheering || m.dancing { wave.toggle() } else { wave = false } }
-                async let h: Void = loop(every: 60) { hat = Mascot.hat() }
+                async let h: Void = loop(every: 60) { now = Date() }
                 _ = await (b, a, w, h)
             }
     }
@@ -481,6 +559,7 @@ struct HeaderMascot: View {
 struct MascotRunner: View {
     let fraction: Double
     let waiting: Bool
+    @ObservedObject private var wardrobe = Wardrobe.shared
     @Environment(\.isSnapshot) private var snap
     @Environment(\.palette) private var p
 
@@ -491,7 +570,7 @@ struct MascotRunner: View {
                 let phase = Int(tl.date.timeIntervalSinceReferenceDate / 0.16) % 2
                 ZStack(alignment: .topTrailing) {
                     MascotSprite(scale: 0.5, blink: waiting, arms: waiting ? .hidden : .down,
-                                 tired: waiting, step: waiting ? nil : (snap ? 0 : phase))
+                                 tired: waiting, costume: snap ? .none : wardrobe.current(), step: waiting ? nil : (snap ? 0 : phase))
                         .offset(y: waiting ? 2 : (snap || phase == 0 ? 0 : -1))
                     if waiting {
                         Text("z").font(AppFont.pixel(9)).foregroundStyle(p.muted).offset(x: 6, y: -8)
